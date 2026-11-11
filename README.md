@@ -1,6 +1,8 @@
 # Asof
 
 A chat agent with one tool, web search, that remembers what you asked and when.
+**Live demo:** https://asof-agent.asof-agent.workers.dev (runs on my free-tier keys, so it can be slow or capped; local is the real thing)
+
 Built for the [minimi hiring challenge](https://app.notion.com/p/minimi-hiring-challenge-build-a-chat-agent-4100a8b933b181b98277d8ea5a534d6f). The reasoning is in [DESIGN.md](DESIGN.md).
 
 ## Run it
