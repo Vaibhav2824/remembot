@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Asof</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%23c2410c' stroke-width='3'/%3E%3Cpath d='M16 9v7l5 3' fill='none' stroke='%23c2410c' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #faf8f5; --panel: #f1ede6; --ink: #1c1917; --muted: #6b635a; --line: #e2dcd2;
+    --accent: #c2410c; --accent-ink: #fff; --bubble: #fff; --mine: #1c1917; --mine-ink: #faf8f5;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #151311; --panel: #1d1a17; --ink: #efe9e1; --muted: #a39a8f; --line: #2e2a25;
+      --accent: #fb923c; --accent-ink: #1c1917; --bubble: #211e1a; --mine: #efe9e1; --mine-ink: #151311;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; height: 100dvh; display: grid; grid-template-columns: 300px 1fr; background: var(--bg); color: var(--ink);
+    font: 15px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .mono { font: 12px/1.4 ui-monospace, "SF Mono", Menlo, Consolas, monospace; color: var(--muted); }
+
+  /* Memory sidebar */
+  aside { background: var(--panel); border-right: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
+  aside header { padding: 18px 18px 12px; }
+  h1 { margin: 0; font-size: 20px; letter-spacing: -0.02em; }
+  h1 span { color: var(--accent); }
+  aside header p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+  #timeline { overflow-y: auto; padding: 0 10px 12px; flex: 1; }
+  #timeline h2 { margin: 14px 8px 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+  #timeline details { border-radius: 8px; padding: 6px 8px; }
+  #timeline details[open] { background: var(--bubble); }
+  #timeline summary { cursor: pointer; list-style: none; display: flex; gap: 8px; align-items: baseline; }
+  #timeline summary::-webkit-details-marker { display: none; }
+  #timeline summary b { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #timeline details[open] summary b { white-space: normal; }
+  #timeline .stored { font-size: 13.5px; margin-top: 4px; }
+  .empty-memory { margin: 14px 8px; color: var(--muted); font-size: 13.5px; }
+  aside footer { padding: 12px 18px; border-top: 1px solid var(--line); }
+
+  /* Chat */
+  main { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+  .bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; border-bottom: 1px solid var(--line); }
+  .btn { background: none; border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; }
+  .btn:hover { border-color: var(--muted); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+  .btn:disabled { opacity: 0.55; cursor: default; }
+  #menu { display: none; }
+  #chat { flex: 1; overflow-y: auto; padding: 24px 20px; }
+  #chat > * { max-width: 760px; margin-inline: auto; }
+  .welcome h2 { font-size: 26px; letter-spacing: -0.02em; margin: 8vh 0 6px; }
+  .welcome p { color: var(--muted); margin: 0 0 18px; max-width: 56ch; }
+  .examples { display: grid; gap: 8px; margin-bottom: 22px; }
+  .examples button { text-align: left; background: var(--bubble); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; }
+  .examples button:hover { border-color: var(--accent); }
+  .msg { margin-bottom: 22px; }
+  .msg.user { display: flex; flex-direction: column; align-items: flex-end; }
+  .msg.user .body { background: var(--mine); color: var(--mine-ink); border-radius: 14px 14px 4px 14px; padding: 9px 14px; max-width: 85%; white-space: pre-wrap; }
+  .msg.agent .body { background: var(--bubble); border: 1px solid var(--line); border-radius: 4px 14px 14px 14px; padding: 12px 16px; }
+  .msg.agent .body:empty { display: none; }
+  .body p { margin: 0 0 10px; } .body p:last-child, .body ul:last-child { margin-bottom: 0; }
+  .body ul { margin: 0 0 10px; padding-left: 20px; } .body li { margin-bottom: 4px; }
+  .body code { font: 13px ui-monospace, Menlo, Consolas, monospace; background: var(--panel); padding: 1px 5px; border-radius: 4px; }
+  .body a { color: var(--accent); }
+  a.cite { display: inline-block; min-width: 17px; text-align: center; font: 600 11px/17px ui-monospace, Menlo, Consolas, monospace; background: var(--panel);
+    border: 1px solid var(--line); border-radius: 5px; text-decoration: none; margin: 0 1px; vertical-align: 1px; padding: 0 3px; }
+  a.cite:hover { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .steps { margin: 0 0 8px; padding: 0; list-style: none; display: grid; gap: 3px; }
+  .steps li::before { content: "› "; color: var(--accent); }
+  .msg .meta { margin-top: 6px; }
+  .sources { margin: 8px 0 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
+  .sources a { display: block; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px; color: var(--muted);
+    border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; text-decoration: none; }
+  .sources a:hover { color: var(--ink); border-color: var(--muted); }
+  .error { color: #b91c1c; }
+  @media (prefers-color-scheme: dark) { .error { color: #fca5a5; } }
+  .cursor::after { content: "▍"; color: var(--accent); animation: blink 1s steps(2) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .cursor::after { animation: none; } }
+
+  form { padding: 12px 20px 18px; }
+  .composer { max-width: 760px; margin-inline: auto; display: flex; gap: 8px; align-items: flex-end; background: var(--bubble); border: 1px solid var(--line); border-radius: 14px; padding: 8px 8px 8px 14px; }
+  .composer:focus-within { border-color: var(--accent); }
+  textarea { flex: 1; border: 0; outline: 0; resize: none; background: none; color: inherit; font: inherit; max-height: 160px; padding: 6px 0; }
+
+  @media (max-width: 760px) {
+    body { grid-template-columns: 1fr; }
+    aside { position: fixed; inset: 0 20% 0 0; z-index: 2; transform: translateX(-100%); transition: transform 0.2s; }
+    body.menu-open aside { transform: none; box-shadow: 0 0 0 100vmax rgb(0 0 0 / 0.4); }
+    #menu { display: inline-block; }
+  }
+</style>
+</head>
+<body>
+<aside aria-label="Memory">
+  <header>
+    <h1>As<span>of</span></h1>
+    <p>Remembers what you asked, and when.</p>
+  </header>
+  <div id="timeline"></div>
+  <footer><button class="btn" id="demo" type="button" title="Replays three real questions through the agent with the clock set to past days">Load demo memory</button></footer>
+</aside>
+
+<main>
+  <div class="bar">
+    <button class="btn" id="menu" type="button">Memory</button>
+    <span class="mono" id="clock"></span>
+    <button class="btn" id="new" type="button" title="Starts an empty conversation. Memory is kept.">New chat</button>
+  </div>
+  <div id="chat" aria-live="polite"></div>
+  <form id="form">
+    <div class="composer">
+      <label for="input" hidden>Message</label>
+      <textarea id="input" rows="1" placeholder="Ask anything. Ask again next week." maxlength="2000" autofocus></textarea>
+      <button class="btn primary" id="send" type="submit">Send</button>
+    </div>
+  </form>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id)
+const chat = $('chat'), input = $('input'), sendBtn = $('send'), demoBtn = $('demo')
+
+// Identity is a random id kept in this browser. Memory belongs to it, across every chat.
+let userId = null
+try { userId = localStorage.getItem('asof-user') } catch {}
+if (!userId) { userId = crypto.randomUUID(); try { localStorage.setItem('asof-user', userId) } catch {} }
+let threadId = crypto.randomUUID()
+const tz = -new Date().getTimezoneOffset()
+let busy = null // AbortController while a reply is streaming
+
+const EXAMPLES = [
+  'Last Tuesday I asked you about Postgres hosting. Has any pricing changed since then?',
+  'What did I ask you on 3 November? Is your answer still correct today?',
+  'On Monday we shortlisted 5 CRM tools for a 20-person sales team. Has any of them changed pricing or shipped something big since?',
+]
+
+// ---------- rendering ----------
+const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
+const safeUrl = (u) => (/^https?:\/\//i.test(u) ? esc(u) : '#')
+const link = (href, text, cls = '') => `<a ${cls && `class="${cls}"`} href="${href}" target="_blank" rel="noopener noreferrer">${text}</a>`
+const timeOf = (ms) => new Date(ms).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+const dayOf = (ms) => new Date(ms).toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
+
+// Minimal, escape-first markdown: everything is escaped, then a few safe patterns are turned back into tags.
+function markdown(text, sources) {
+  const inline = (s) => esc(s)
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (_, label, url) => link(url, label))
+    .replace(/\[(\d+)\]/g, (_, n) => { const s = sources[n - 1]; return s ? link(safeUrl(s.url), n, 'cite').replace('<a ', `<a title="${esc(s.title)}" `) : '' })
+  const out = []
+  let items = []
+  const flush = () => { if (items.length) out.push(`<ul>${items.join('')}</ul>`); items = [] }
+  for (const line of text.split('\n')) {
+    const bullet = line.match(/^\s*(?:[-*•]|\d+[.)])\s+(.*)/)
+    if (bullet) items.push(`<li>${inline(bullet[1])}</li>`)
+    else { flush(); if (line.trim()) out.push(`<p>${inline(line.replace(/^#+\s*/, ''))}</p>`) }
+  }
+  flush()
+  return out.join('')
+}
+
+function addMessage(role, text = '') {
+  const el = document.createElement('div')
+  el.className = `msg ${role}`
+  el.innerHTML = role === 'user'
+    ? `<div class="body"></div><div class="meta mono">${timeOf(Date.now())}</div>`
+    : `<ul class="steps mono"></ul><div class="body"></div><ul class="sources"></ul><div class="meta mono"></div>`
+  el.querySelector('.body').textContent = text
+  chat.append(el)
+  chat.scrollTop = chat.scrollHeight
+  return el
+}
+
+function welcome() {
+  chat.innerHTML = `<div class="welcome">
+    <h2>Ask something. Ask again next week.</h2>
+    <p>One tool, web search. Every exchange is remembered with the time it happened, so you can ask what you asked, when, and whether the answer still holds.</p>
+    <div class="examples">${EXAMPLES.map((q) => `<button type="button">${esc(q)}</button>`).join('')}</div>
+    <p class="mono">New here? "Load demo memory" replays three real questions as if asked on 3 November, last Monday and last Tuesday.</p>
+  </div>`
+  chat.querySelectorAll('.examples button').forEach((b) => b.addEventListener('click', () => send(b.textContent)))
+}
+
+async function loadTimeline() {
+  const turns = await fetch(`/api/turns?userId=${userId}`).then((r) => (r.ok ? r.json() : [])).catch(() => [])
+  const box = $('timeline')
+  if (!turns.length) { box.innerHTML = '<p class="empty-memory">Nothing remembered yet. Everything you ask will show up here, by day.</p>'; return }
+  let html = '', day = ''
+  for (const t of turns) {
+    if (dayOf(t.askedAt) !== day) html += `<h2>${(day = dayOf(t.askedAt))}</h2>`
+    html += `<details><summary><span class="mono">${timeOf(t.askedAt)}</span><b>${esc(t.question)}</b></summary>
+      <div class="stored body">${markdown(t.answer, t.sources)}</div></details>`
+  }
+  box.innerHTML = html
+}
+
+// ---------- streaming ----------
+async function* stream(path, body, signal) {
+  const res = await fetch(path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body), signal })
+  if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || `Request failed (${res.status})`)
+  const reader = res.body.getReader(), decoder = new TextDecoder()
+  let buffer = ''
+  for (;;) {
+    const { value, done } = await reader.read()
+    if (done) return
+    buffer += decoder.decode(value, { stream: true })
+    const frames = buffer.split('\n\n')
+    buffer = frames.pop()
+    for (const f of frames) if (f.startsWith('data: ')) yield JSON.parse(f.slice(6))
+  }
+}
+
+function setBusy(controller) {
+  busy = controller
+  sendBtn.textContent = busy ? 'Stop' : 'Send'
+  demoBtn.disabled = !!busy
+}
+
+async function send(text) {
+  text = text.trim()
+  if (!text || busy) return
+  if (chat.querySelector('.welcome')) chat.innerHTML = ''
+  input.value = ''; input.style.height = 'auto'
+  addMessage('user', text)
+  const el = addMessage('agent')
+  const steps = el.querySelector('.steps'), body = el.querySelector('.body'), meta = el.querySelector('.meta')
+  const step = (s) => { steps.insertAdjacentHTML('beforeend', `<li>${esc(s)}</li>`); chat.scrollTop = chat.scrollHeight }
+  let answer = '', sources = [], firstTokenMs = 0
+  const started = performance.now()
+  const paint = () => { body.innerHTML = markdown(answer, sources); chat.scrollTop = chat.scrollHeight }
+
+  setBusy(new AbortController())
+  body.classList.add('cursor')
+  try {
+    for await (const e of stream('/api/chat', { userId, threadId, message: text, tz }, busy.signal)) {
+      if (e.type === 'memory') {
+        const found = e.windows.filter((w) => w.count)
+        if (found.length) step(`Remembered ${found.map((w) => `${w.count} from ${w.label}`).join(', ')}`)
+        else if (e.windows.length) step(`Nothing remembered for ${e.windows.map((w) => w.label).join(' or ')}`)
+        if (e.related) step(`Remembered ${e.related} related exchange${e.related > 1 ? 's' : ''}`)
+      } else if (e.type === 'search') {
+        answer = ''; paint() // anything said before a search was a preamble, not the answer
+        step(`Searching: ${e.queries.join(' · ')}`)
+      } else if (e.type === 'sources') {
+        sources = e.sources
+      } else if (e.type === 'text') {
+        firstTokenMs ||= performance.now() - started
+        answer += e.delta; paint()
+      } else if (e.type === 'done') {
+        const cited = sources.filter((s) => answer.includes(`[${s.n}]`))
+        el.querySelector('.sources').innerHTML = cited.map((s) => `<li>${link(safeUrl(s.url), `${s.n} · ${esc(s.title)}`)}</li>`).join('')
+        const secs = (ms) => (ms / 1000).toFixed(1) + ' s'
+        meta.textContent = `${timeOf(e.askedAt)} · first word ${secs(firstTokenMs)} · done ${secs(performance.now() - started)}` + (e.searches ? ` · ${e.searches} search${e.searches > 1 ? 'es' : ''}` : ' · from memory, no search')
+        loadTimeline()
+      } else if (e.type === 'error') {
+        throw new Error(e.message)
+      }
+    }
+  } catch (err) {
+    if (err.name === 'AbortError') meta.textContent = 'Stopped. Not saved to memory.'
+    else meta.innerHTML = `<span class="error">${esc(err.message)}</span>`
+  }
+  body.classList.remove('cursor')
+  setBusy(null)
+  input.focus()
+}
+
+async function loadDemo() {
+  if (busy) return
+  setBusy(new AbortController())
+  const label = demoBtn.textContent
+  try {
+    for await (const e of stream('/api/demo', { userId, tz }, busy.signal)) {
+      if (e.type === 'demo') demoBtn.textContent = `Replaying ${e.step}/${e.total}: ${e.label}…`
+      if (e.type === 'error') throw new Error(e.message)
+      await loadTimeline()
+    }
+  } catch (err) {
+    if (err.name !== 'AbortError') alert(`Could not load demo memory: ${err.message}`)
+  }
+  demoBtn.textContent = label
+  setBusy(null)
+  await loadTimeline()
+}
+
+// ---------- wiring ----------
+$('form').addEventListener('submit', (e) => { e.preventDefault(); busy ? busy.abort() : send(input.value) })
+input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); send(input.value) } })
+input.addEventListener('input', () => { input.style.height = 'auto'; input.style.height = input.scrollHeight + 'px' })
+$('new').addEventListener('click', () => { if (busy) return; threadId = crypto.randomUUID(); welcome(); input.focus() })
+$('menu').addEventListener('click', (e) => { e.stopPropagation(); document.body.classList.toggle('menu-open') })
+$('chat').addEventListener('click', () => document.body.classList.remove('menu-open'))
+demoBtn.addEventListener('click', loadDemo)
+const tick = () => { $('clock').textContent = `${dayOf(Date.now())} · ${timeOf(Date.now())}` }
+tick(); setInterval(tick, 30_000)
+welcome()
+loadTimeline()
+</script>
+</body>
+</html>

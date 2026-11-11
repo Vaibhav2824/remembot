@@ -1,0 +1,16 @@
+// Cloudflare deployment of the same app: Worker for /api/*, static assets for the UI, D1 for memory.
+{
+  "name": "asof-agent",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-11-01",
+  "assets": { "directory": "public" },
+  "d1_databases": [{ "binding": "DB", "database_name": "asof", "database_id": "REPLACE_WITH_D1_ID" }],
+  "vars": {
+    "LLM_BASE_URL": "https://api.groq.com/openai/v1",
+    "LLM_MODEL": "openai/gpt-oss-120b",
+    "LLM_REASONING_EFFORT": "low",
+    // Public demo runs on the author's keys: cap what strangers can spend per day.
+    "MAX_TURNS_PER_DAY": "300"
+  }
+  // Secrets (set with `npx wrangler secret put`): LLM_API_KEY, FIRECRAWL_API_KEY
+}

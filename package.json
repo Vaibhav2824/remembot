@@ -1,0 +1,22 @@
+{
+  "name": "asof-agent",
+  "version": "1.0.0",
+  "description": "A chat agent with one tool (web search) that remembers what you asked and when.",
+  "type": "module",
+  "private": true,
+  "engines": { "node": ">=22.18" },
+  "scripts": {
+    "dev": "node --env-file-if-exists=.env --watch src/node.ts",
+    "start": "node --env-file-if-exists=.env src/node.ts",
+    "test": "node --test",
+    "typecheck": "tsc --noEmit",
+    "deploy": "npx wrangler@4 deploy"
+  },
+  "dependencies": {
+    "chrono-node": "^2.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0"
+  }
+}
