@@ -28,11 +28,14 @@ export type AgentEvent =
   | { type: 'search'; queries: string[] }
   | { type: 'sources'; sources: (Source & { n: number })[] }
   | { type: 'text'; delta: string }
+  | { type: 'wait'; seconds: number } // the model provider is rate-limiting us
   | { type: 'done'; turnId: number; askedAt: number; ms: number; searches: number }
   | { type: 'error'; message: string }
 
-const MAX_SEARCH_ROUNDS = 2 // after this the model must answer with what it has
-const MAX_SEARCHES_PER_ROUND = 6
+// A turn's cost is bounded two ways: how many searches it may run, and how many
+// times it may call the model. The model is told what it has left after each search.
+const MAX_QUERIES_PER_TURN = 6
+const MAX_MODEL_CALLS = 4 // the last one is made without the tool, so it has to answer
 const THREAD_TURNS = 3
 
 export async function* answer(deps: Deps, ask: Ask): AsyncGenerator<AgentEvent> {
@@ -55,7 +58,6 @@ export async function* answer(deps: Deps, ask: Ask): AsyncGenerator<AgentEvent> 
       const known = sources.findIndex((x) => x.url === s.url)
       return known >= 0 ? known + 1 : sources.push({ title: s.title, url: s.url })
     }
-
     const numbered = () => ({ type: 'sources' as const, sources: sources.map((s, i) => ({ ...s, n: i + 1 })) })
 
     const messages: Msg[] = [
@@ -66,48 +68,51 @@ export async function* answer(deps: Deps, ask: Ask): AsyncGenerator<AgentEvent> 
     if (sources.length) yield numbered()
 
     let text = ''
-    let searches = 0
-    for (let round = 0; ; round++) {
-      const canSearch = round < MAX_SEARCH_ROUNDS
-      const stream = deps.chat(messages, canSearch ? [WEB_SEARCH_TOOL] : undefined)
+    let queriesLeft = MAX_QUERIES_PER_TURN
+    for (let modelCall = 1; ; modelCall++) {
+      const isLastCall = modelCall === MAX_MODEL_CALLS
+      const stream = deps.chat(messages, isLastCall ? undefined : [WEB_SEARCH_TOOL])
       text = ''
       let step = await stream.next()
       while (!step.done) {
-        text += step.value
-        yield { type: 'text', delta: step.value }
+        if (typeof step.value === 'string') {
+          text += step.value
+          yield { type: 'text', delta: step.value }
+        } else {
+          yield { type: 'wait', seconds: step.value.waitSeconds }
+        }
         step = await stream.next()
       }
       const calls = step.value.filter((c) => c.name === WEB_SEARCH_TOOL.function.name)
-      if (!calls.length) break
+      if (!calls.length) {
+        if (text.trim() || isLastCall) break
+        continue // said nothing and asked for nothing (it happens): ask again
+      }
 
-      const queries = calls.map(parseArgs)
-      yield { type: 'search', queries: queries.slice(0, MAX_SEARCHES_PER_ROUND).map((q) => q.query) }
-      // All searches of a round run at once: the round costs one search's latency, not the sum.
-      const results = await Promise.all(
-        queries.map(async ({ query, since }, i) => {
-          if (i >= MAX_SEARCHES_PER_ROUND) return 'Skipped: too many searches in one step.'
-          if (!query) return 'Invalid search: no query given.'
-          try {
-            const hits = await deps.search(query, since)
-            if (!hits.length) return 'No results.'
-            return hits.map((h) => `[${cite(h)}] ${h.title}\n${h.url}\n${h.snippet}`).join('\n\n')
-          } catch (err) {
-            return `Search failed: ${err instanceof Error ? err.message : err}`
-          }
-        }),
-      )
-      searches += Math.min(queries.length, MAX_SEARCHES_PER_ROUND)
-      yield numbered()
+      // Hand out what is left of the turn's query budget, in the order asked.
+      const plans = calls.map((call) => {
+        const queries = parseQueries(call).slice(0, queriesLeft)
+        queriesLeft -= queries.length
+        return queries
+      })
+      const asked = plans.flat()
+      if (asked.length) yield { type: 'search', queries: asked }
+      // Every query of the step runs at once: the step costs one search's latency, not the sum.
+      const results = await Promise.all(plans.map((queries) => Promise.all(queries.map((q) => searchBlock(deps.search, q, cite)))))
+      if (asked.length) yield numbered()
 
+      const budgetNote = queriesLeft
+        ? `${queriesLeft} search queries left this message. Answer now unless a specific fact is still missing.`
+        : 'No search queries left this message. Answer now from the results above and MEMORY, and say what you could not verify.'
       messages.push({
         role: 'assistant',
         content: text,
         tool_calls: calls.map((c) => ({ id: c.id, type: 'function', function: { name: c.name, arguments: c.args } })),
       })
-      calls.forEach((c, i) => messages.push({ role: 'tool', tool_call_id: c.id, content: results[i] }))
+      calls.forEach((c, i) => messages.push({ role: 'tool', tool_call_id: c.id, content: [...results[i], budgetNote].join('\n\n') }))
     }
 
-    if (!text.trim()) throw new Error('The model returned an empty answer.')
+    if (!text.trim()) throw new Error('The model returned an empty answer. Please try again.')
     const askedAt = now.getTime()
     const turnId = await remember(deps.db, ask.userId, {
       threadId: ask.threadId,
@@ -115,18 +120,32 @@ export async function* answer(deps: Deps, ask: Ask): AsyncGenerator<AgentEvent> 
       question: ask.message,
       ...keepCited(text, sources),
     })
-    yield { type: 'done', turnId, askedAt, ms: Date.now() - startedAt, searches }
+    yield { type: 'done', turnId, askedAt, ms: Date.now() - startedAt, searches: MAX_QUERIES_PER_TURN - queriesLeft }
   } catch (err) {
     yield { type: 'error', message: err instanceof Error ? err.message : String(err) }
   }
 }
 
-function parseArgs(call: ToolCall): { query: string; since?: string } {
+// One query's results as the model sees them. A failed search is reported, not thrown,
+// so one bad query cannot sink the turn and the model can say what it could not check.
+async function searchBlock(search: Search, query: string, cite: (s: Source) => number): Promise<string> {
+  try {
+    const hits = await search(query)
+    const body = hits.map((h) => `[${cite(h)}] ${h.title}\n${h.url}\n${h.snippet}`).join('\n\n')
+    return `Results for "${query}":\n${body || 'No results.'}`
+  } catch (err) {
+    return `Results for "${query}":\nSearch failed: ${err instanceof Error ? err.message : err}`
+  }
+}
+
+// Models send {queries: [...]}; tolerate a lone {query: "..."} too.
+function parseQueries(call: ToolCall): string[] {
   try {
     const args = JSON.parse(call.args || '{}')
-    return { query: String(args.query ?? '').trim(), since: typeof args.since === 'string' ? args.since : undefined }
+    const list: unknown[] = Array.isArray(args.queries) ? args.queries : [args.query]
+    return list.filter((q): q is string => typeof q === 'string' && !!q.trim()).map((q) => q.trim())
   } catch {
-    return { query: '' }
+    return []
   }
 }
 
@@ -134,10 +153,13 @@ function parseArgs(call: ToolCall): { query: string; since?: string } {
 // its source list make sense on their own. Citations of numbers that were never
 // handed out are dropped.
 export function keepCited(text: string, sources: Source[]): { answer: string; sources: Source[] } {
-  const cited = [...text.matchAll(/\[(\d+)\]/g)].map((m) => Number(m[1]))
+  const plain = text
+    .replace(/【(\d+)[^】]*】/g, '[$1]') // some models cite as 【1†L2-L5】
+    .replace(/(\[\d+\])(?:\s*\1)+/g, '$1') // ...and then repeat the same number
+  const cited = [...plain.matchAll(/\[(\d+)\]/g)].map((m) => Number(m[1]))
   const used = [...new Set(cited)].filter((n) => sources[n - 1])
   return {
-    answer: text.replace(/\[(\d+)\]/g, (_, n) => (used.includes(Number(n)) ? `[${used.indexOf(Number(n)) + 1}]` : '')),
+    answer: plain.replace(/\[(\d+)\]/g, (_, n) => (used.includes(Number(n)) ? `[${used.indexOf(Number(n)) + 1}]` : '')),
     sources: used.map((n) => sources[n - 1]),
   }
 }

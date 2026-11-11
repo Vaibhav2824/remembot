@@ -5,7 +5,6 @@ import type { AddressInfo } from 'node:net'
 import { after, before, test } from 'node:test'
 import { createApp } from '../src/app.ts'
 import { createChat } from '../src/llm.ts'
-import { publishedSince } from '../src/search.ts'
 import { openSqlite } from '../src/sqlite.ts'
 
 // Each request pops the next scripted reply: an HTTP status, or a list of stream chunks.
@@ -32,16 +31,18 @@ const chatClient = () => createChat({ baseUrl, apiKey: 'k', model: 'm' })
 async function collect(stream: ReturnType<ReturnType<typeof createChat>>) {
   let text = ''
   let step = await stream.next()
+  let waits = 0
   while (!step.done) {
-    text += step.value
+    if (typeof step.value === 'string') text += step.value
+    else waits++
     step = await stream.next()
   }
-  return { text, calls: step.value }
+  return { text, calls: step.value, waits }
 }
 
 test('streamed text is yielded in order', async () => {
   script = [[{ content: 'Hel' }, { content: 'lo' }]]
-  assert.deepEqual(await collect(chatClient()([{ role: 'user', content: 'hi' }])), { text: 'Hello', calls: [] })
+  assert.deepEqual(await collect(chatClient()([{ role: 'user', content: 'hi' }])), { text: 'Hello', calls: [], waits: 0 })
 })
 
 test('tool calls that arrive in fragments are reassembled', async () => {
@@ -59,19 +60,15 @@ test('tool calls that arrive in fragments are reassembled', async () => {
   ])
 })
 
-test('a rate-limited request is retried once, then succeeds', async () => {
-  script = [429, [{ content: 'second try' }]]
-  assert.equal((await collect(chatClient()([{ role: 'user', content: 'hi' }]))).text, 'second try')
+test('a rate-limited request waits as told and retries until it succeeds', async () => {
+  script = [429, 429, [{ content: 'third try' }]]
+  const { text, waits } = await collect(chatClient()([{ role: 'user', content: 'hi' }]))
+  assert.deepEqual([text, waits], ['third try', 2])
 })
 
 test('a failing model endpoint throws with the status', async () => {
   script = [500]
   await assert.rejects(collect(chatClient()([{ role: 'user', content: 'hi' }])), /Model request failed \(500\)/)
-})
-
-test('since dates become a search date range; bad input is ignored', () => {
-  assert.equal(publishedSince('2026-11-03'), 'cdr:1,cd_min:11/03/2026')
-  assert.equal(publishedSince('last tuesday'), undefined)
 })
 
 // ---------- HTTP API ----------

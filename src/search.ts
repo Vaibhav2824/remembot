@@ -7,39 +7,43 @@ export interface Hit {
   snippet: string
 }
 
-// `since` is YYYY-MM-DD: only pages published on or after that day.
-export type Search = (query: string, since?: string) => Promise<Hit[]>
+export type Search = (query: string) => Promise<Hit[]>
 
-const RESULTS_PER_QUERY = 4
-const SNIPPET_CHARS = 450
+const RESULTS_PER_QUERY = 3
+const SNIPPET_CHARS = 500
 const TIMEOUT_MS = 10_000
 
-// The tool schema the model sees.
+// The tool schema the model sees. One call takes a list of queries: not every model
+// can emit several tool calls in one step, but every model can fill in an array.
 export const WEB_SEARCH_TOOL = {
   type: 'function',
   function: {
     name: 'web_search',
-    description: 'Search the live web. Returns numbered results with excerpts. Call it several times in one step to run searches in parallel.',
+    description: 'Search the live web. Takes a list of queries, runs them all in parallel, and returns numbered results with excerpts for each.',
     parameters: {
       type: 'object',
       properties: {
-        query: { type: 'string', description: 'A specific search query, e.g. "HubSpot Sales Hub Starter price per seat 2026"' },
-        since: { type: 'string', description: 'Optional YYYY-MM-DD. Only pages published on or after this date. Use it for "what changed since ...".' },
+        queries: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Specific queries, one per thing you need to know, e.g. ["HubSpot Sales Hub Starter price per seat 2026", "Pipedrive pricing per seat 2026"]',
+        },
       },
-      required: ['query'],
+      required: ['queries'],
     },
   },
 }
 
 export function createSearch(apiKey: string): Search {
-  return async (query, since) => {
+  return async (query) => {
     const res = await fetch('https://api.firecrawl.dev/v2/search', {
       method: 'POST',
       headers: { authorization: `Bearer ${apiKey}`, 'content-type': 'application/json' },
-      body: JSON.stringify({ query, limit: RESULTS_PER_QUERY, ...(since && { tbs: publishedSince(since) }) }),
+      body: JSON.stringify({ query, limit: RESULTS_PER_QUERY }),
       signal: AbortSignal.timeout(TIMEOUT_MS),
     })
-    if (!res.ok) throw new Error(`search failed (${res.status})`)
+    if (res.status === 429) throw new Error('the search provider is rate-limiting this key')
+    if (!res.ok) throw new Error(`the search provider returned ${res.status}`)
     const json = (await res.json()) as { data?: { web?: { title?: string; url: string; description?: string }[] } }
     return (json.data?.web ?? []).map((hit) => ({
       title: hit.title ?? hit.url,
@@ -47,10 +51,4 @@ export function createSearch(apiKey: string): Search {
       snippet: (hit.description ?? '').replace(/\s+/g, ' ').slice(0, SNIPPET_CHARS),
     }))
   }
-}
-
-// YYYY-MM-DD -> the search engine's custom date range syntax.
-export function publishedSince(since: string): string | undefined {
-  const [, y, m, d] = since.match(/^(\d{4})-(\d{2})-(\d{2})$/) ?? []
-  return y && `cdr:1,cd_min:${m}/${d}/${y}`
 }

@@ -34,6 +34,12 @@ test('an empty window is reported as empty, never filled from elsewhere', async 
   assert.deepEqual(r.windows.map((w) => w.turns), [[]])
 })
 
+test('when the named day has a hit, other dates are kept out of the way', async () => {
+  const r = await recall(await seeded(), 'u1', 'On Monday we shortlisted CRM tools. Any pricing changes?', NOW, IST)
+  assert.deepEqual(r.windows[0].turns.map((t) => t.question), ['Shortlist 5 CRM tools for a 20-person team'])
+  assert.deepEqual(r.related, [], 'the Postgres pricing exchange from 3 Nov is not offered')
+})
+
 test('wrong day, right topic: keyword recall still finds the exchange', async () => {
   const r = await recall(await seeded(), 'u1', 'Yesterday I asked about Postgres pricing', NOW, IST)
   assert.deepEqual(r.related.map((t) => t.question), ['Compare managed Postgres hosting prices'])

@@ -77,8 +77,10 @@ export async function recall(db: Db, userId: string, message: string, now: Date,
   ])
 
   const filled = windows.map((w, i) => ({ ...w, turns: mostRelevant(inWindows[i], keywords, PER_WINDOW) }))
-  const seen = new Set(filled.flatMap((w) => w.turns.map((t) => t.id)))
-  return { windows: filled, related: matches.filter((t) => !seen.has(t.id)).slice(0, RELATED), timeline }
+  // Topic matches from other dates are a fallback for when the day the user named
+  // holds nothing. Next to a real hit they only invite the model to mix up dates.
+  const foundByTime = filled.some((w) => w.turns.length > 0)
+  return { windows: filled, related: foundByTime ? [] : matches.slice(0, RELATED), timeline }
 }
 
 export async function threadTurns(db: Db, userId: string, threadId: string, limit: number): Promise<Turn[]> {

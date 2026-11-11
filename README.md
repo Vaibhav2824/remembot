@@ -22,11 +22,11 @@ Two keys, both with free tiers:
 
 Any OpenAI-compatible endpoint works: set `LLM_BASE_URL` and `LLM_MODEL` in `.env`.
 
-Groq's free tier allows 8,000 tokens a minute on this model, roughly one searched answer a minute. The agent waits and retries once when it hits that limit, so it stays correct but gets slow. A paid Groq key removes the wait.
+**Free-tier limits.** Groq's free tier allows 8,000 tokens a minute on this model, which is about one searched answer a minute, and the Firecrawl plan I tested on allowed about 10 searches a minute. One question always fits. Ask several quickly and the agent waits for the model (the UI says "retrying in N s") or reports a search as failed and marks that fact unverified. Paid keys remove both.
 
 ## Try the questions from the brief
 
-A new install has no past. Click **Load demo memory**: it replays three real questions through the agent with the clock set to 3 November, last Monday and last Tuesday (live searches, real answers, backdated timestamps). Then ask:
+A new install has no past. Click **Load demo memory**: it replays three real questions through the agent with the clock set to 3 November, last Monday and last Tuesday (live searches, real answers, backdated timestamps). It takes about half a minute and uses ten searches, so on free keys give it a minute before asking:
 
 - "Last Tuesday I asked you about Postgres hosting. Has any pricing changed since then?"
 - "What did I ask you on 3 November? Is your answer still correct today?"
@@ -51,7 +51,7 @@ Send later messages with a later `now` (or none) and the agent treats the first 
 ## Tests
 
 ```bash
-npm test          # 33 tests, offline: time phrases, recall, the agent loop against a scripted model, the HTTP API
+npm test          # 36 tests, offline: time phrases, recall, the agent loop against a scripted model, the HTTP API
 npm run typecheck
 ```
 

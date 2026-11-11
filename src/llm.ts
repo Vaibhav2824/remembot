@@ -12,8 +12,9 @@ export type Msg =
   | { role: 'assistant'; content: string; tool_calls?: { id: string; type: 'function'; function: { name: string; arguments: string } }[] }
   | { role: 'tool'; tool_call_id: string; content: string }
 
-// Yields answer text as it arrives; returns the tool calls the model asked for (if any).
-export type Chat = (messages: Msg[], tools?: object[]) => AsyncGenerator<string, ToolCall[]>
+// Yields answer text as it arrives, or { waitSeconds } while backing off from a rate
+// limit; returns the tool calls the model asked for (if any).
+export type Chat = (messages: Msg[], tools?: object[]) => AsyncGenerator<string | { waitSeconds: number }, ToolCall[]>
 
 export interface LlmConfig {
   baseUrl: string
@@ -23,7 +24,7 @@ export interface LlmConfig {
 }
 
 const MAX_OUTPUT_TOKENS = 1500
-const MAX_RATE_LIMIT_WAIT_S = 30
+const MAX_RATE_LIMIT_WAIT_S = 45 // total, across retries, before giving up on a turn
 
 export function createChat(cfg: LlmConfig): Chat {
   const post = (body: object) =>
@@ -44,17 +45,23 @@ export function createChat(cfg: LlmConfig): Chat {
     }
 
     let res = await post(body)
-    // Free tiers have tight per-minute budgets. One patient retry beats failing the turn.
-    const retryAfter = Number(res.headers.get('retry-after'))
-    if (res.status === 429 && retryAfter <= MAX_RATE_LIMIT_WAIT_S) {
-      await new Promise((resolve) => setTimeout(resolve, (retryAfter || 1) * 1000))
-      res = await post(body)
+    // Free tiers have tight per-minute token budgets. Waiting as long as the provider
+    // asks, and saying so, beats failing the turn.
+    for (let waited = 0; res.status === 429; res = await post(body)) {
+      const waitSeconds = Math.ceil(Number(res.headers.get('retry-after') ?? 2))
+      waited += waitSeconds || 1
+      if (waited > MAX_RATE_LIMIT_WAIT_S) break
+      yield { waitSeconds }
+      await new Promise((resolve) => setTimeout(resolve, waitSeconds * 1000))
     }
     if (!res.ok || !res.body) throw new Error(`Model request failed (${res.status}): ${(await res.text()).slice(0, 300)}`)
 
     const calls: ToolCall[] = []
     for await (const data of sseData(res.body)) {
-      const delta = JSON.parse(data).choices?.[0]?.delta
+      const chunk = JSON.parse(data)
+      // Providers can fail mid-stream (e.g. a malformed tool call) with a 200 status.
+      if (chunk.error) throw new Error(`Model stream failed: ${String(chunk.error.message ?? chunk.error).slice(0, 300)}`)
+      const delta = chunk.choices?.[0]?.delta
       if (delta?.content) yield delta.content as string
       // Tool calls stream in fragments, keyed by index.
       for (const part of delta?.tool_calls ?? []) {

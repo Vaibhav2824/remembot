@@ -148,6 +148,7 @@ const dayOf = (ms) => new Date(ms).toLocaleDateString([], { weekday: 'short', da
 
 // Minimal, escape-first markdown: everything is escaped, then a few safe patterns are turned back into tags.
 function markdown(text, sources) {
+  text = text.replace(/【(\d+)[^】]*】/g, '[$1]').replace(/(\[\d+\])(?:\s*\1)+/g, '$1') // some models cite as 【1†L2-L5】, twice
   const inline = (s) => esc(s)
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/`([^`]+)`/g, '<code>$1</code>')
@@ -247,6 +248,8 @@ async function send(text) {
       } else if (e.type === 'search') {
         answer = ''; paint() // anything said before a search was a preamble, not the answer
         step(`Searching: ${e.queries.join(' · ')}`)
+      } else if (e.type === 'wait') {
+        step(`Model rate limit reached, retrying in ${e.seconds} s`)
       } else if (e.type === 'sources') {
         sources = e.sources
       } else if (e.type === 'text') {
