@@ -35,10 +35,7 @@
     --z-bar: 10; --z-drawer: 20; --z-island: 30; --z-tooltip: 40;
 
     /* Transitional aliases: old names point at the system until each area is migrated, then go. */
-    --bg: var(--canvas); --surface: var(--raised); --panel: var(--canvas);
-    --ink: var(--text-1); --muted: var(--text-2); --line: var(--hairline);
-    --accent: var(--signal); --accent-ink: var(--signal-ink); --accent-soft: var(--signal-wash);
-    --ring: 0 0 0 1px var(--hairline); --spring: var(--ease-out); --ease: var(--ease-out);
+    --line: var(--hairline); --ease: var(--ease-out);
     color-scheme: light;
   }
   @media (prefers-color-scheme: dark) {
@@ -132,24 +129,23 @@
   #chat { flex: 1; overflow-y: auto; padding: var(--s3) var(--s6) var(--s10); scroll-behavior: smooth; }
   #chat > * { max-width: var(--col); margin-inline: auto; }
 
-  .welcome { position: relative; padding-top: 9vh; }
-  .eyebrow { display: inline-flex; align-items: center; gap: var(--s2); font: var(--t-small); font-weight: 500; color: var(--text-2); padding: var(--s1) var(--s3) var(--s1) var(--s1); border-radius: 999px; background: var(--surface); box-shadow: var(--ring); }
-  .eyebrow b { font-weight: 500; color: var(--accent-ink); background: var(--accent); border-radius: 999px; padding: 0 var(--s2); }
-  .welcome h2 { font: var(--t-display); letter-spacing: -0.03em; margin: var(--s6) 0 var(--s4); text-wrap: balance; overflow-wrap: break-word; min-width: 0; }
-  .welcome p { color: var(--text-2); margin: 0 0 var(--s8); max-width: 54ch; font: var(--t-body); text-wrap: pretty; }
-  .examples { display: grid; gap: var(--s3); margin-bottom: var(--s6); }
-  .examples button { all: unset; cursor: pointer; display: grid; grid-template-columns: 1fr auto; gap: var(--s1) var(--s4); align-items: center; padding: var(--s3) var(--s4);
-    background: var(--surface); box-shadow: var(--ring); border-radius: 14px; transition: transform 0.25s var(--ease), box-shadow 0.25s; }
-  .examples button:hover { transform: translateY(-2px); box-shadow: var(--ring), 0 14px 30px -12px var(--accent-soft); }
-  .examples button:active { transform: translateY(0) scale(0.99); }
-  .examples button:focus-visible { outline: 2px solid var(--signal-text); outline-offset: 2px; }
+  /* Welcome: a heading, one sentence, then the example questions as a ruled list. No badges, no cards. */
+  .welcome { padding-top: 9vh; }
+  .welcome h2 { font: var(--t-display); letter-spacing: -0.03em; margin: 0 0 var(--s3); text-wrap: balance; overflow-wrap: break-word; min-width: 0; }
+  .welcome h2 span { display: inline-block; } /* break between the two sentences, not inside one */
+  .welcome .lede { color: var(--text-2); margin: 0 0 var(--s8); max-width: 54ch; font: var(--t-body); text-wrap: pretty; }
+  .examples { list-style: none; margin: 0 0 var(--s6); padding: 0; border-top: 1px solid var(--hairline); }
+  .examples li { border-bottom: 1px solid var(--hairline); }
+  .examples button { all: unset; box-sizing: border-box; width: 100%; cursor: pointer; display: grid; grid-template-columns: 10rem minmax(0, 1fr); gap: var(--s1) var(--s4);
+    align-items: baseline; padding: var(--s3) var(--s2); border-radius: var(--r-sm); transition: background-color var(--d-quick) var(--ease-out); }
+  @media (hover: hover) { .examples button:hover { background: var(--raised); } }
+  .examples button:active { background: var(--raised-2); }
+  .examples button:focus-visible { outline: 2px solid var(--signal-text); outline-offset: -2px; }
   .examples .tag { font: var(--t-small); color: var(--text-3); }
-  .examples .q { grid-column: 1; font: var(--t-ui); text-wrap: pretty; }
-  .examples .go { grid-row: 1 / span 2; grid-column: 2; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; background: var(--panel);
-    color: var(--muted); transition: background 0.2s, color 0.2s, transform 0.3s var(--spring); }
-  .examples button:hover .go { background: var(--ink); color: var(--bg); transform: rotate(-45deg); }
-  .hint { font: var(--t-small); color: var(--text-2); display: flex; gap: var(--s2); align-items: flex-start; }
-  .hint svg { margin-top: 2px; color: var(--signal-text); }
+  .examples .q { font: var(--t-ui); color: var(--text-1); text-wrap: pretty; }
+  .hint { margin: 0; max-width: 54ch; font: var(--t-small); color: var(--text-3); display: flex; gap: var(--s2); align-items: flex-start; text-wrap: pretty; }
+  .hint svg { margin-top: 2px; }
+  @media (max-width: 480px) { .examples button { grid-template-columns: minmax(0, 1fr); } }
 
   /* Staggered entry */
   .rise { animation: rise 0.6s var(--ease) both; animation-delay: calc(var(--i, 0) * 70ms); }
@@ -276,7 +272,6 @@
   <symbol id="i-memory" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
   <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
   <symbol id="i-wait" viewBox="0 0 24 24"><path d="M7 3h10M7 21h10M8 3c0 5 8 6 8 9s-8 4-8 9M16 3c0 5-8 6-8 9"/></symbol>
-  <symbol id="i-go" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
 </svg>
 <aside id="memory" aria-label="Memory">
   <div class="brand">
@@ -326,9 +321,9 @@ const tz = -new Date().getTimezoneOffset()
 let busy = null // AbortController while a reply is streaming
 
 const EXAMPLES = [
-  ['recall + recheck', 'Last Tuesday I asked you about Postgres hosting. Has any pricing changed since then?'],
-  ['exact date', 'What did I ask you on 3 November? Is your answer still correct today?'],
-  ['diff since monday', 'On Monday we shortlisted 5 CRM tools for a 20-person sales team. Has any of them changed pricing or shipped something big since?'],
+  ['Recall and recheck', 'Last Tuesday I asked you about Postgres hosting. Has any pricing changed since then?'],
+  ['Exact date', 'What did I ask you on 3 November? Is your answer still correct today?'],
+  ['Diff since Monday', 'On Monday we shortlisted 5 CRM tools for a 20-person sales team. Has any of them changed pricing or shipped something big since?'],
 ]
 
 // ---------- rendering ----------
@@ -379,12 +374,11 @@ function addMessage(role, text = '') {
 
 function welcome() {
   chat.innerHTML = `<section class="welcome">
-    <span class="eyebrow rise"><b>memory</b> every answer is a dated snapshot</span>
-    <h2 class="rise" style="--i:1">Ask something. Ask again next week.</h2>
-    <p class="rise" style="--i:2">One tool, web search. Every exchange is remembered with the time it happened, so you can ask what you asked, when, and whether the answer still holds.</p>
-    <div class="examples">${EXAMPLES.map(([tag, q], i) => `<button type="button" class="rise" style="--i:${i + 3}" data-q="${esc(q)}">
-      <span class="tag">${esc(tag)}</span><span class="q">${esc(q)}</span><span class="go">${icon('go')}</span></button>`).join('')}</div>
-    <p class="hint rise" style="--i:6">${icon('rewind')}<span>New here? "Load demo memory" replays three real questions as if asked on 3 November, last Monday and last Tuesday.</span></p>
+    <h2 class="rise"><span>Ask something.</span> <span>Ask again next week.</span></h2>
+    <p class="lede rise" style="--i:1">One tool, web search. Every exchange is remembered with the time it happened, so you can ask what you asked, when, and whether the answer still holds.</p>
+    <ul class="examples" aria-label="Try one">${EXAMPLES.map(([tag, q], i) => `<li class="rise" style="--i:${i + 2}"><button type="button" data-q="${esc(q)}">
+      <span class="tag">${esc(tag)}</span><span class="q">${esc(q)}</span></button></li>`).join('')}</ul>
+    <p class="hint rise" style="--i:5">${icon('rewind')}<span>New here? “Load demo memory” replays three real questions as if asked on 3 November, last Monday and last Tuesday.</span></p>
   </section>`
   chat.querySelectorAll('.examples button').forEach((b) => b.addEventListener('click', () => send(b.dataset.q)))
 }
