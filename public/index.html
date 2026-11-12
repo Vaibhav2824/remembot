@@ -34,9 +34,7 @@
     --ease-out: cubic-bezier(0.23, 1, 0.32, 1); --ease-move: cubic-bezier(0.77, 0, 0.175, 1); --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
     --z-bar: 10; --z-drawer: 20; --z-island: 30; --z-tooltip: 40;
 
-    /* Transitional aliases: old names point at the system until each area is migrated, then go. */
-    --line: var(--hairline);
-    color-scheme: light;
+    /* Transitional aliases: old names point at the system until each area is migrated, then go. */    color-scheme: light;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -116,7 +114,11 @@
   #timeline summary b { font-weight: inherit; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   #timeline details[open] summary b { white-space: normal; }
   #timeline .stored { font: var(--t-small); margin-top: var(--s2); color: var(--text-2); }
-  .empty-memory { margin: var(--s5) 0; padding: var(--s4); border: 1px dashed var(--line); border-radius: 12px; color: var(--text-2); font: var(--t-small); text-wrap: pretty; }
+  /* Memory states: loading, empty and failed are quiet notes, not boxes. */
+  .memory-note { margin: var(--s4) 0; font: var(--t-small); color: var(--text-3); text-wrap: pretty; }
+  .memory-note b { display: block; margin-bottom: var(--s1); font-weight: 500; color: var(--text-2); }
+  .memory-note.error { color: var(--danger); }
+  .scrub-empty { margin: var(--s2) var(--s1) 0; }
   aside footer { padding: var(--s4); border-top: 1px solid var(--hairline); display: grid; gap: var(--s2); }
   aside footer .btn { justify-content: center; width: 100%; }
   aside footer .note { text-align: center; }
@@ -200,6 +202,7 @@
   .meta { margin-top: var(--s3); display: flex; flex-wrap: wrap; gap: var(--s1) var(--s4); }
   .meta:empty { display: none; }
   .error { color: var(--danger); }
+  .meta .error { font: var(--t-small); } /* an error is a sentence, not a readout */
   .cursor::after { content: ""; display: inline-block; width: 8px; height: 8px; margin-left: var(--s2); border-radius: 50%; background: var(--signal); vertical-align: 1px;
     animation: breathe 1.2s var(--ease-move) infinite; }
   .msg.agent .body.cursor:empty { display: block; }
@@ -220,12 +223,14 @@
   @keyframes cell { from { opacity: 0; } }
   #island { position: absolute; left: 50%; top: calc(-1 * var(--s12)); display: flex; align-items: center; gap: var(--s2); max-width: calc(100% - var(--s12)); padding: var(--s2) var(--s4) var(--s2) var(--s3);
     border-radius: var(--r-pill); background: var(--raised-2); color: var(--text-1); font: var(--t-small); font-weight: 500; white-space: nowrap; box-shadow: var(--shadow-float);
-    z-index: var(--z-island); opacity: 0; transform: translate(-50%, var(--s2)) scale(0.96); pointer-events: none;
+    z-index: var(--z-island); transform: translate(-50%, 0); pointer-events: none;
     transition: opacity var(--d-press) var(--ease-out), transform var(--d-press) var(--ease-out); } /* leaves faster than it arrives */
-  #island.on { opacity: 1; transform: translate(-50%, 0) scale(1); transition-duration: var(--d-detent); }
+  .js #island:not(.on) { opacity: 0; transform: translate(-50%, var(--s2)) scale(0.96); } /* idle: hidden only when a script can show it */
+  #island.on { transition-duration: var(--d-detent); }
   #island span { overflow: hidden; text-overflow: ellipsis; }
   #island i { width: 6px; height: 6px; border-radius: var(--r-xs); flex: none; background: var(--signal); animation: breathe 1.2s var(--ease-move) infinite; }
   #island.wait i { background: var(--text-3); }
+  html:not(.js) #island { display: none; } /* without scripts there is no live state to report */
   #island.wait i, #island.error i { animation: none; }
   #island.error i { background: var(--danger); }
   .composer { max-width: var(--col); margin-inline: auto; display: flex; gap: var(--s2); align-items: flex-end; background: var(--raised);
@@ -292,8 +297,9 @@
   <section class="scrub" aria-label="Last 14 days">
     <header><b>Last 14 days</b><span class="mono" id="count"></span></header>
     <div id="days"></div>
+    <p class="note scrub-empty" id="scrub-empty" hidden>Your questions will show here, one bar per day.</p>
   </section>
-  <div id="timeline"></div>
+  <div id="timeline" aria-busy="true"><p class="memory-note">Loading memory…</p></div>
   <footer>
     <button class="btn" id="demo" type="button" title="Replays three real questions through the agent with the clock set to past days"><svg class="i" aria-hidden="true"><use href="#i-rewind"/></svg><span>Load demo memory</span></button>
     <span class="note">Replays 3 questions, takes about 30 s</span>
@@ -415,13 +421,26 @@ function scrubber(turns) {
   }).join('')
   const days = new Set(Object.keys(counts)).size
   $('count').textContent = turns.length ? `${turns.length} asked over ${days} day${days === 1 ? '' : 's'}` : ''
+  $('scrub-empty').hidden = turns.length > 0
 }
 
 async function loadTimeline() {
-  const turns = await fetch(`/api/turns?userId=${userId}`).then((r) => (r.ok ? r.json() : [])).catch(() => [])
-  scrubber(turns)
   const box = $('timeline')
-  if (!turns.length) { box.innerHTML = '<p class="empty-memory">Nothing remembered yet. Everything you ask lands here, grouped by day, with the sources the answer cited.</p>'; return }
+  let turns
+  try {
+    const r = await fetch(`/api/turns?userId=${userId}`)
+    if (!r.ok) throw new Error(`status ${r.status}`)
+    turns = await r.json()
+  } catch {
+    // A failed load is not an empty memory: say so, and keep whatever was already shown.
+    box.removeAttribute('aria-busy')
+    if (!box.querySelector('.day')) box.innerHTML = '<p class="memory-note error">Couldn’t load your memory. It reloads after your next question.</p>'
+    if (!$('days').children.length) { scrubber([]); $('scrub-empty').hidden = true }
+    return
+  }
+  box.removeAttribute('aria-busy')
+  scrubber(turns)
+  if (!turns.length) { box.innerHTML = '<p class="memory-note"><b>Nothing remembered yet</b>Everything you ask lands here, grouped by day, with the sources the answer cited.</p>'; return }
   const name = (ms) => { const k = dayKey(ms); return k === dayKey(Date.now()) ? 'Today' : k === dayKey(Date.now() - DAY) ? 'Yesterday' : dayOf(ms) }
   let html = '', day = ''
   for (const t of turns) {
@@ -535,7 +554,10 @@ async function send(text) {
     status('')
   } catch (err) {
     if (err.name === 'AbortError') { meta.innerHTML = '<span>Stopped. Not saved to memory.</span>'; status('') }
-    else { meta.innerHTML = `<span class="error">${esc(err.message)}</span>`; status('Something went wrong', 'error') }
+    else {
+      meta.innerHTML = `<span class="error">This answer didn’t finish: ${esc(err.message.replace(/\.$/, ''))}. Ask again to retry.</span>`
+      status('Answer failed. Ask again to retry.', 'error')
+    }
   }
   body.classList.remove('cursor')
   setBusy(null)
@@ -555,7 +577,7 @@ async function loadDemo() {
     }
     status('')
   } catch (err) {
-    if (err.name !== 'AbortError') status(`Could not load demo memory: ${err.message}`, 'error')
+    if (err.name !== 'AbortError') status(`Couldn’t load demo memory: ${err.message.replace(/\.$/, '')}`, 'error')
   }
   label.textContent = original
   setBusy(null)
