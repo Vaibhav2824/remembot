@@ -10,7 +10,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23111214'/%3E%3Ccircle cx='16' cy='16' r='8.5' fill='none' stroke='%23f0a43a' stroke-width='2.5'/%3E%3Cpath d='M16 11.5V16l3 2' fill='none' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   /* Tokens: the Instrument system, .interface-design/system.md. No literal values past this block. */
   :root {
@@ -37,7 +37,6 @@
     --ink: var(--text-1); --muted: var(--text-2); --faint: var(--text-3); --line: var(--hairline);
     --accent: var(--signal); --accent-ink: var(--signal-ink); --accent-soft: var(--signal-wash);
     --ring: 0 0 0 1px var(--hairline); --spring: var(--ease-out); --ease: var(--ease-out);
-    --serif: "Instrument Serif", ui-serif, Georgia, serif;
     color-scheme: light;
   }
   @media (prefers-color-scheme: dark) {
@@ -66,7 +65,7 @@
 
   /* Buttons */
   .btn { display: inline-flex; align-items: center; gap: 7px; background: var(--surface); border: 0; box-shadow: var(--ring); border-radius: 10px;
-    padding: 7px 12px; font-size: 13.5px; font-weight: 500; transition: transform 0.18s var(--ease), background 0.18s, color 0.18s; }
+    padding: 7px 12px; font: var(--t-ui); transition: transform 0.18s var(--ease), background 0.18s, color 0.18s; }
   .btn:hover { background: var(--panel); }
   .btn:active { transform: scale(0.97); }
   .btn:disabled { opacity: 0.5; cursor: default; transform: none; }
@@ -75,13 +74,14 @@
   aside { background: var(--panel); border-right: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
   .brand { display: flex; align-items: center; gap: 10px; padding: 20px 20px 4px; }
   .brand svg { width: 28px; height: 28px; }
-  h1 { margin: 0; font-size: 19px; font-weight: 600; letter-spacing: -0.035em; }
-  .tagline { margin: 0; padding: 0 20px; color: var(--muted); font-size: 13px; }
+  h1 { margin: 0; font: var(--t-title); letter-spacing: -0.01em; }
+  .tagline { margin: 0; padding: 0 20px; color: var(--text-2); font: var(--t-small); }
+  .note { font: var(--t-small); color: var(--text-3); text-wrap: pretty; }
 
   /* Day scrubber: 14 days, bar height = exchanges that day. */
   .scrub { margin: 18px 14px 6px; padding: 12px 10px 8px; background: var(--surface); box-shadow: var(--ring); border-radius: 14px; }
   .scrub header { display: flex; justify-content: space-between; align-items: baseline; padding: 0 4px 10px; }
-  .scrub header b { font-size: 12.5px; font-weight: 500; }
+  .scrub header b { font: var(--t-small); font-weight: 500; }
   #days { display: grid; grid-template-columns: repeat(14, 1fr); gap: 3px; align-items: end; height: 64px; }
   #days button { all: unset; display: grid; grid-template-rows: 1fr auto; justify-items: center; gap: 5px; height: 100%; cursor: pointer; }
   #days button:disabled { cursor: default; }
@@ -89,7 +89,7 @@
     height: calc(4px + var(--h, 0) * 36px); transition: height 0.5s var(--spring), background 0.2s; }
   #days button:not(:disabled) i { background: color-mix(in oklab, var(--accent) 70%, var(--surface)); }
   #days button:not(:disabled):hover i, #days button.on i { background: var(--accent); }
-  #days span { font: 500 10px/1 var(--mono); color: var(--faint); }
+  #days span { font: var(--t-readout); font-family: var(--sans); line-height: 1; color: var(--text-3); }
   #days button.today span { color: var(--signal-text); }
   #days button:focus-visible i { outline: 2px solid var(--signal-text); outline-offset: 2px; }
 
@@ -99,22 +99,22 @@
   #days { touch-action: none; user-select: none; }
   .day { position: relative; padding-left: 16px; margin-top: 16px; }
   .day::before { content: ""; position: absolute; left: 4px; top: 22px; bottom: 6px; width: 1px; background: var(--line); }
-  .day h2 { margin: 0 0 4px -16px; font-size: 12px; font-weight: 500; color: var(--muted); display: flex; align-items: center; gap: 8px; scroll-margin-top: 8px; }
+  .day h2 { margin: 0 0 4px -16px; font: var(--t-small); font-weight: 500; color: var(--text-2); display: flex; align-items: center; gap: 8px; scroll-margin-top: 8px; }
   .day h2::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--panel); box-shadow: inset 0 0 0 2px var(--faint); }
   .day.flash h2::before { background: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
   .day.flash h2 { color: var(--ink); }
   #timeline details { border-radius: 10px; padding: 6px 8px; margin: 0 -8px; transition: background 0.2s; }
   #timeline details:hover { background: color-mix(in oklab, var(--surface) 60%, transparent); }
   #timeline details[open] { background: var(--surface); box-shadow: var(--ring); margin-block: 6px; }
-  #timeline summary { cursor: pointer; list-style: none; display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: baseline; font-size: 13.5px; }
+  #timeline summary { cursor: pointer; list-style: none; display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: baseline; font: var(--t-ui); }
   #timeline summary::-webkit-details-marker { display: none; }
-  #timeline summary b { font-weight: 450; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  #timeline details[open] summary b { white-space: normal; font-weight: 500; }
-  #timeline .stored { font-size: 13px; margin-top: 8px; color: var(--muted); }
-  .empty-memory { margin: 20px 4px; padding: 16px; border: 1px dashed var(--line); border-radius: 12px; color: var(--muted); font-size: 13px; text-wrap: pretty; }
+  #timeline summary b { font-weight: inherit; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #timeline details[open] summary b { white-space: normal; }
+  #timeline .stored { font: var(--t-small); margin-top: 8px; color: var(--text-2); }
+  .empty-memory { margin: 20px 4px; padding: 16px; border: 1px dashed var(--line); border-radius: 12px; color: var(--text-2); font: var(--t-small); text-wrap: pretty; }
   aside footer { padding: 14px; border-top: 1px solid var(--line); display: grid; gap: 8px; }
   aside footer .btn { justify-content: center; width: 100%; padding: 9px 12px; }
-  aside footer .mono { text-align: center; font-size: 11px; color: var(--faint); }
+  aside footer .note { text-align: center; }
 
   /* ---------- Chat ---------- */
   main { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
@@ -125,23 +125,22 @@
   #chat > * { max-width: 720px; margin-inline: auto; }
 
   .welcome { position: relative; padding-top: 9vh; }
-  .eyebrow { display: inline-flex; align-items: center; gap: 8px; font: 500 12px var(--mono); color: var(--muted); padding: 4px 10px 4px 6px; border-radius: 999px; background: var(--surface); box-shadow: var(--ring); }
+  .eyebrow { display: inline-flex; align-items: center; gap: 8px; font: var(--t-small); font-weight: 500; color: var(--text-2); padding: 4px 10px 4px 6px; border-radius: 999px; background: var(--surface); box-shadow: var(--ring); }
   .eyebrow b { font-weight: 500; color: var(--accent-ink); background: var(--accent); border-radius: 999px; padding: 1px 7px; }
-  .welcome h2 { font-size: clamp(36px, 5.4vw, 56px); line-height: 1.02; letter-spacing: -0.045em; font-weight: 600; margin: 22px 0 16px; text-wrap: balance; }
-  .welcome h2 em { font-family: var(--serif); font-weight: 400; letter-spacing: -0.02em; color: var(--muted); }
-  .welcome p { color: var(--muted); margin: 0 0 30px; max-width: 54ch; font-size: 16px; text-wrap: pretty; }
+  .welcome h2 { font: var(--t-display); letter-spacing: -0.03em; margin: 22px 0 16px; text-wrap: balance; overflow-wrap: break-word; min-width: 0; }
+  .welcome p { color: var(--text-2); margin: 0 0 30px; max-width: 54ch; font: var(--t-body); text-wrap: pretty; }
   .examples { display: grid; gap: 10px; margin-bottom: 26px; }
   .examples button { all: unset; cursor: pointer; display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; align-items: center; padding: 14px 16px 14px 18px;
     background: var(--surface); box-shadow: var(--ring); border-radius: 14px; transition: transform 0.25s var(--ease), box-shadow 0.25s; }
   .examples button:hover { transform: translateY(-2px); box-shadow: var(--ring), 0 14px 30px -12px var(--accent-soft); }
   .examples button:active { transform: translateY(0) scale(0.99); }
   .examples button:focus-visible { outline: 2px solid var(--signal-text); outline-offset: 2px; }
-  .examples .tag { font: 500 11px var(--mono); color: var(--signal-text); text-transform: lowercase; }
-  .examples .q { grid-column: 1; font-size: 14.5px; text-wrap: pretty; }
+  .examples .tag { font: var(--t-small); color: var(--text-3); }
+  .examples .q { grid-column: 1; font: var(--t-ui); text-wrap: pretty; }
   .examples .go { grid-row: 1 / span 2; grid-column: 2; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; background: var(--panel);
     color: var(--muted); transition: background 0.2s, color 0.2s, transform 0.3s var(--spring); }
   .examples button:hover .go { background: var(--ink); color: var(--bg); transform: rotate(-45deg); }
-  .hint { font: 12px/1.6 var(--mono); color: var(--muted); display: flex; gap: 8px; align-items: flex-start; }
+  .hint { font: var(--t-small); color: var(--text-2); display: flex; gap: 8px; align-items: flex-start; }
   .hint svg { margin-top: 2px; color: var(--signal-text); }
 
   /* Staggered entry */
@@ -151,41 +150,40 @@
   .msg { margin-bottom: 30px; animation: rise 0.45s var(--ease) both; }
   .msg.user { display: flex; flex-direction: column; align-items: flex-end; }
   .msg.user .body { background: var(--ink); color: var(--bg); border-radius: 20px 20px 6px 20px; padding: 10px 16px; max-width: 80%; white-space: pre-wrap; text-wrap: pretty; }
-  .msg.agent .body { font-size: 15.5px; line-height: 1.7; }
+  .msg.agent .body { font: var(--t-body); max-width: 68ch; }
   .msg.agent .body:empty { display: none; }
   .body p { margin: 0 0 12px; text-wrap: pretty; } .body p:last-child, .body ul:last-child { margin-bottom: 0; }
   .body ul { margin: 0 0 12px; padding-left: 20px; } .body li { margin-bottom: 6px; } .body li::marker { color: var(--faint); }
   .body strong { font-weight: 600; }
-  .body code { font: 13px var(--mono); background: var(--panel); padding: 1px 6px; border-radius: 6px; box-shadow: 0 0 0 1px var(--line); }
+  .body code { font: var(--t-readout); background: var(--panel); padding: 1px 6px; border-radius: 6px; box-shadow: 0 0 0 1px var(--line); }
   .body a:not(.cite) { color: inherit; text-decoration-color: var(--signal-text); text-underline-offset: 3px; }
   a.cite { position: relative; display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 4px; margin: 0 1px; vertical-align: 2px;
-    font: 600 10.5px/1 var(--mono); color: var(--signal-text); background: var(--accent-soft); border-radius: 6px; text-decoration: none; transition: background 0.15s, color 0.15s; }
+    font: var(--t-readout); font-weight: 500; line-height: 1; font-variant-numeric: tabular-nums; color: var(--signal-text); background: var(--accent-soft); border-radius: 6px; text-decoration: none; transition: background 0.15s, color 0.15s; }
   a.cite:hover, a.cite:focus-visible { background: var(--accent); color: var(--accent-ink); }
   a.cite[data-tip]:hover::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); z-index: 5;
     width: max-content; max-width: 280px; padding: 7px 10px; border-radius: 10px; background: var(--ink); color: var(--bg);
-    font: 500 12px/1.4 var(--sans); white-space: normal; text-align: left; pointer-events: none; animation: rise 0.2s var(--ease); }
+    font: var(--t-small); font-weight: 500; white-space: pre-line; text-align: left; pointer-events: none; animation: rise 0.2s var(--ease); }
 
   /* Trace: what the agent did, before the answer. */
   .trace { margin: 0 0 12px; padding: 0; list-style: none; display: grid; gap: 6px; }
   .trace:empty { display: none; }
-  .trace li { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); animation: rise 0.35s var(--ease) both; }
+  .trace li { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font: var(--t-small); color: var(--text-2); animation: rise 0.35s var(--ease) both; }
   .trace li svg { color: var(--faint); }
   .trace li.memory svg { color: var(--signal-text); }
   .trace li.wait svg { color: var(--text-3); }
-  .chip { font: 12px var(--mono); padding: 2px 8px; border-radius: 7px; background: var(--panel); box-shadow: 0 0 0 1px var(--line); color: var(--ink);
+  .chip { font: var(--t-small); padding: 2px 8px; border-radius: 7px; background: var(--panel); box-shadow: 0 0 0 1px var(--line); color: var(--text-2);
     max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   .sources { margin: 14px 0 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
   .sources:empty { display: none; }
-  .sources a { display: flex; align-items: center; gap: 7px; max-width: 280px; font-size: 12.5px; color: var(--muted); background: var(--surface); box-shadow: var(--ring);
+  .sources a { display: flex; align-items: center; gap: 7px; max-width: 280px; font: var(--t-small); color: var(--text-2); background: var(--surface); box-shadow: var(--ring);
     border-radius: 10px; padding: 5px 10px 5px 6px; text-decoration: none; transition: color 0.15s, transform 0.2s var(--ease); }
   .sources a:hover { color: var(--ink); transform: translateY(-1px); }
-  .sources b { font: 600 10.5px var(--mono); color: var(--signal-text); min-width: 18px; height: 18px; display: grid; place-items: center; border-radius: 6px; background: var(--accent-soft); }
+  .sources b { font: var(--t-readout); font-weight: 500; font-variant-numeric: tabular-nums; color: var(--signal-text); min-width: 18px; height: 18px; display: grid; place-items: center; border-radius: 6px; background: var(--accent-soft); }
   .sources img { width: 14px; height: 14px; border-radius: 3px; }
   .sources span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .meta { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 4px 12px; }
+  .meta { margin-top: 10px; display: flex; flex-wrap: wrap; gap: var(--s1) var(--s4); }
   .meta:empty { display: none; }
-  .meta span + span::before { content: "·"; margin-right: 12px; color: var(--faint); }
   .error { color: var(--danger); }
   .cursor::after { content: ""; display: inline-block; width: 8px; height: 8px; margin-left: 6px; border-radius: 50%; background: var(--accent); vertical-align: 1px;
     animation: pulse 1s var(--ease) infinite; }
@@ -207,7 +205,7 @@
     animation: fill 0.8s var(--ease) both; }
   @keyframes fill { from { width: 0; } }
   #island { position: absolute; left: 50%; top: -46px; display: flex; align-items: center; gap: 9px; max-width: calc(100% - 48px); padding: 7px 14px 7px 10px;
-    border-radius: 999px; background: var(--ink); color: var(--bg); font-size: 13px; font-weight: 500; white-space: nowrap; box-shadow: var(--shadow-float);
+    border-radius: 999px; background: var(--ink); color: var(--bg); font: var(--t-small); font-weight: 500; white-space: nowrap; box-shadow: var(--shadow-float);
     opacity: 0; transform: translate(-50%, 12px) scale(0.92); pointer-events: none; transition: opacity 0.25s var(--ease), transform 0.45s var(--spring); }
   #island.on { opacity: 1; transform: translate(-50%, 0) scale(1); }
   #island span { overflow: hidden; text-overflow: ellipsis; }
@@ -217,7 +215,7 @@
   .composer { max-width: 720px; margin-inline: auto; display: flex; gap: 8px; align-items: flex-end; background: var(--surface); box-shadow: var(--ring);
     border-radius: 22px; padding: 10px 10px 10px 18px; transition: box-shadow 0.2s; }
   .composer:focus-within { box-shadow: 0 0 0 1px var(--signal-text); }
-  textarea { flex: 1; border: 0; outline: 0; resize: none; background: none; color: inherit; font: inherit; font-size: 15px; max-height: 180px; padding: 7px 0;
+  textarea { flex: 1; border: 0; outline: 0; resize: none; background: none; color: inherit; font: var(--t-body); max-height: 180px; padding: 7px 0;
     caret-color: var(--signal-text); } /* Skiper's free "smooth caret input", the part CSS can do */
   textarea::placeholder { color: var(--faint); }
   textarea:focus-visible { outline: none; } /* the composer ring shows focus */
@@ -228,7 +226,7 @@
   #send:disabled { opacity: 0.25; transform: none; cursor: default; }
   #send.stop { background: var(--accent); color: var(--accent-ink); }
   #send svg { width: 17px; height: 17px; stroke-width: 2.2; }
-  .under { max-width: 720px; margin: 8px auto 0; display: flex; justify-content: space-between; font: 11px var(--mono); color: var(--faint); }
+  .under { max-width: 720px; margin: 8px auto 0; display: flex; justify-content: space-between; font: var(--t-small); color: var(--text-3); }
   kbd { font: inherit; padding: 0 5px; border-radius: 5px; box-shadow: 0 0 0 1px var(--line); }
 
   @media (max-width: 820px) {
@@ -274,7 +272,7 @@
   <div id="timeline"></div>
   <footer>
     <button class="btn" id="demo" type="button" title="Replays three real questions through the agent with the clock set to past days"><svg class="i"><use href="#i-rewind"/></svg><span>Load demo memory</span></button>
-    <span class="mono">3 replayed questions · about 30 s</span>
+    <span class="note">Replays 3 questions, takes about 30 s</span>
   </footer>
 </aside>
 
@@ -292,7 +290,7 @@
       <textarea id="input" rows="1" placeholder="Ask anything. Ask again next week." maxlength="2000" autofocus></textarea>
       <button id="send" type="submit" aria-label="Send" disabled><svg class="i"><use href="#i-arrow"/></svg></button>
     </div>
-    <div class="under"><span><kbd>Enter</kbd> to send · <kbd>Shift</kbd>+<kbd>Enter</kbd> for a new line</span><span>One tool: web search</span></div>
+    <div class="under"><span><kbd>Enter</kbd> to send, <kbd>Shift</kbd>+<kbd>Enter</kbd> for a new line</span><span>One tool: web search</span></div>
   </form>
 </main>
 
@@ -333,7 +331,7 @@ function markdown(text, sources) {
     .replace(/(^|[^*\w])\*([^*\n]+?)\*(?![*\w])/g, '$1<em>$2</em>')
     .replace(/`([^`]+)`/g, '<code>$1</code>')
     .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (_, label, url) => link(url, label))
-    .replace(/\[(\d+)\]/g, (_, n) => { const s = sources[n - 1]; return s ? link(safeUrl(s.url), n, `class="cite" data-tip="${esc(s.title)} · ${esc(host(s.url))}"`) : '' })
+    .replace(/\[(\d+)\]/g, (_, n) => { const s = sources[n - 1]; return s ? link(safeUrl(s.url), n, `class="cite" data-tip="${esc(s.title)}&#10;${esc(host(s.url))}"`) : '' })
   const out = []
   let items = []
   const flush = () => { if (items.length) out.push(`<ul>${items.join('')}</ul>`); items = [] }
@@ -363,7 +361,7 @@ function addMessage(role, text = '') {
 function welcome() {
   chat.innerHTML = `<section class="welcome">
     <span class="eyebrow rise"><b>memory</b> every answer is a dated snapshot</span>
-    <h2 class="rise" style="--i:1">Ask something.<br><em>Ask again next week.</em></h2>
+    <h2 class="rise" style="--i:1">Ask something. Ask again next week.</h2>
     <p class="rise" style="--i:2">One tool, web search. Every exchange is remembered with the time it happened, so you can ask what you asked, when, and whether the answer still holds.</p>
     <div class="examples">${EXAMPLES.map(([tag, q], i) => `<button type="button" class="rise" style="--i:${i + 3}" data-q="${esc(q)}">
       <span class="tag">${esc(tag)}</span><span class="q">${esc(q)}</span><span class="go">${icon('go')}</span></button>`).join('')}</div>
@@ -393,7 +391,7 @@ function scrubber(turns) {
       <i></i><span>${new Date(ms).toLocaleDateString([], { weekday: 'narrow' })}</span></button>`
   }).join('')
   const days = new Set(Object.keys(counts)).size
-  $('count').textContent = turns.length ? `${turns.length} asked · ${days} day${days === 1 ? '' : 's'}` : ''
+  $('count').textContent = turns.length ? `${turns.length} asked over ${days} day${days === 1 ? '' : 's'}` : ''
 }
 
 async function loadTimeline() {
@@ -547,7 +545,7 @@ $('days').addEventListener('pointermove', (e) => { const b = scrubbing && dayAt(
 addEventListener('pointerup', () => { scrubbing = false })
 $('days').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); jumpTo(e.target.closest('button')) } })
 demoBtn.addEventListener('click', loadDemo)
-const tick = () => { $('clock').textContent = `${dayOf(Date.now())} · ${timeOf(Date.now())}` }
+const tick = () => { $('clock').textContent = `${dayOf(Date.now())}, ${timeOf(Date.now())}` }
 tick(); setInterval(tick, 30_000)
 welcome()
 loadTimeline()
