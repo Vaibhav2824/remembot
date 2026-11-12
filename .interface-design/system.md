@@ -83,15 +83,19 @@ Rules: hierarchy from size + weight + text colour together. Headings `text-wrap:
 
 Rules: animate `transform` and `opacity` only; name properties, never `transition: all`. Press is `scale(0.97)`. Nothing appears from `scale(0)`; start at 0.96 + opacity 0. Exits are faster than entrances (the island leaves in `--d-press`, arrives in `--d-detent`).
 
+Libraries (CDN, pinned, optional: the page works the same if any fails to load): Lenis 1.3.27 for scrolling, GSAP 3.15.1 with SplitText for choreography, three.js r134 + Vanta 0.5.24 (NET) for the welcome ambient. GSAP's ticker drives Lenis.
+
 What moves, and what does not:
-- **Welcome screen**: one entrance, 4px rise + fade, `--d-drawer`, 40ms stagger. It shows on load and on New chat only.
-- **Messages**: no entrance. They appear on Enter, a keyboard action, and animating them would make sending feel slow.
-- **Scrolling**: never smooth. The chat scrolls on every streamed token and the timeline follows a dragging pointer.
+- **Welcome screen**: the headline reveals word by word from a mask (SplitText, `expo.out`, 0.9s, 50ms stagger, after fonts load); the sentence, example rows and hint follow with a 10px rise, 60ms apart. On load and on New chat only.
+- **Welcome ambient**: Vanta NET, amber points and links on the canvas colour, at 0.6 opacity, masked to the top-right corner so it never sits behind text. Desktop only (820px and up), never with reduced motion or data saver, loaded lazily, and faded out and destroyed on the first question.
+- **Messages**: your question settles in from the right (10px, 0.98 scale, 0.45s `expo.out`). Answers are not animated while they stream; when one finishes, its sources stagger in, the readout fades in and the used meter cells fill left to right.
+- **Scrolling**: Lenis (lerp 0.12) on the chat and the timeline. The chat follows the stream only while the reader is at the bottom; an upward scroll stops following and shows **Jump to latest**. The scrubber glides the timeline to a day.
+- **First load**: scrubber bars grow from zero (30ms apart) and timeline days fade up, once per page load.
 - **Tooltip**: fade + 2px rise + 0.97 scale from its trigger (bottom centre), `--d-quick`.
 - **Live state** (typing cursor, working island): an opacity breathe, 1.2s, `--ease-move`. Never a scale pulse. Waiting and error states hold still.
 - **Meter cells** light one at a time, 40ms apart, by opacity. **Scrubber bars** grow with `transform: scaleY()` from the bottom.
 
-`prefers-reduced-motion: reduce` keeps fades and colour changes and drops every transform: entrances become plain fades, the island and tooltip stop moving, the drawer and chevron switch instantly, and press scaling is off. Content is visible with scripting off; anything hidden at rest is hidden under a `.js` class the script adds.
+`prefers-reduced-motion: reduce` keeps fades and colour changes and drops every transform: no GSAP choreography or Vanta, Lenis scrolls instantly, the island and tooltip stop moving, the drawer and chevron switch instantly, and press scaling is off. Content is visible with scripting off; anything hidden at rest is hidden under a `.js` class the script adds.
 
 ## Layout
 

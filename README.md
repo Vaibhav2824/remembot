@@ -32,7 +32,8 @@ Any OpenAI-compatible endpoint works: set `LLM_BASE_URL` and `LLM_MODEL` in `.en
 - **The readout line** under each answer gives the time, how long the first word and the whole answer took, and a six-cell meter of the searches used out of the 6 a message allows ("Answered from memory" when none).
 - **Memory is the left panel.** The 14-day bars show how many questions you asked each day: drag across them, or focus them and use the arrow keys, to jump the timeline to that day. Open a timeline row to read the stored answer and its sources.
 - **On a phone** the panel becomes a drawer behind the **Memory** button (Escape or a tap outside closes it).
-- Light and dark follow your system setting, and reduced-motion settings are respected.
+- **Scrolling is smoothed (Lenis).** A streaming answer is followed while you are at the bottom; scroll up to read and it stops, showing **Jump to latest**. Each finished answer has **Copy answer**.
+- Light and dark follow your system setting. With reduced motion on, the animations, smooth scrolling and the welcome background are switched off.
 
 ## Try the questions from the brief
 

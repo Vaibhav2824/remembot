@@ -148,8 +148,13 @@
     width: 100%; max-width: calc(var(--col) + 2 * var(--s6)); margin-inline: auto; }
   .clock { color: var(--text-3); } /* a readout, not a control: no container */
   #menu { display: none; }
-  #chat { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: var(--s3) var(--s6) var(--s10); } /* no smooth scroll: it runs on every streamed token */
-  #chat > * { max-width: var(--col); margin-inline: auto; }
+  #chat { position: relative; z-index: 1; flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: var(--s3) var(--s6) var(--s10); } /* Lenis smooths it; see the motion layer */
+  #thread > * { max-width: var(--col); margin-inline: auto; }
+  [hidden] { display: none !important; }
+  /* Vanta ambient behind the welcome screen: faded toward the text so it never competes with reading. */
+  #ambient { position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0;
+    -webkit-mask-image: radial-gradient(55% 70% at 100% 0%, var(--mask) 0%, transparent 100%); mask-image: radial-gradient(55% 70% at 100% 0%, var(--mask) 0%, transparent 100%); }
+  .still i { transition: none !important; }
 
   /* Welcome: a heading, one sentence, then the example questions as a ruled list. No badges, no cards. */
   .welcome { padding-top: 9vh; }
@@ -169,10 +174,7 @@
   .hint svg { margin-top: 2px; }
   @media (max-width: 480px) { .examples button { grid-template-columns: minmax(0, 1fr); } }
 
-  /* Staggered entry */
-  /* One entrance, for the welcome screen only: it shows on load and on New chat, not on every keystroke. */
-  .rise { animation: rise var(--d-drawer) var(--ease-out) both; animation-delay: calc(var(--i, 0) * 40ms); }
-  @keyframes rise { from { opacity: 0; transform: translateY(4px); } }
+  /* Entrances are choreographed with GSAP in the motion layer; without it everything is simply visible. */
   @keyframes fade { from { opacity: 0; } }
 
   .msg { margin-bottom: var(--s10); } /* messages appear on Enter: no entrance animation */
@@ -222,6 +224,12 @@
   .meta { margin-top: var(--s3); display: flex; flex-wrap: wrap; gap: var(--s1) var(--s4); }
   .meta:empty { display: none; }
   .error { color: var(--danger); }
+  .meta .copy { margin-left: auto; padding: 0 var(--s1); border: 0; border-radius: var(--r-xs); background: none; font: var(--t-small); color: var(--text-3);
+    transition: color var(--d-quick) var(--ease-out); }
+  @media (hover: hover) and (pointer: fine) { .meta .copy:hover { color: var(--text-1); } }
+  /* Jump to latest: shown only when the reader has scrolled up while new text arrives. */
+  .latest { position: absolute; top: calc(-1 * var(--s12)); right: max(var(--s6), calc((100% - var(--col)) / 2)); z-index: var(--z-island); box-shadow: var(--shadow-float); }
+  .latest svg { transform: rotate(180deg); }
   .meta .error { font: var(--t-small); } /* an error is a sentence, not a readout */
   .cursor::after { content: ""; display: inline-block; width: 8px; height: 8px; margin-left: var(--s2); border-radius: 50%; background: var(--signal); vertical-align: 1px;
     animation: breathe 1.2s var(--ease-move) infinite; }
@@ -229,7 +237,7 @@
   @keyframes breathe { 50% { opacity: 0.35; } } /* live state: opacity only, no scaling */
 
   /* Status island: one live line for what the agent is doing right now. */
-  .dock { position: relative; padding: 0 var(--s6) max(var(--s5), env(safe-area-inset-bottom)); }
+  .dock { position: relative; z-index: 1; padding: 0 var(--s6) max(var(--s5), env(safe-area-inset-bottom)); }
   /* Progressive blur (after Skiper's free "progressive blur"): text sinks under the composer. */
   .dock::before { content: ""; position: absolute; inset: calc(-1 * var(--s10)) 0 100%; pointer-events: none; background: linear-gradient(transparent, var(--canvas));
     backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); mask-image: linear-gradient(transparent, var(--mask) 70%); }
@@ -239,8 +247,7 @@
   /* Search meter (after Bencho's free "context meter"): six cells, one per search a message may use. */
   .meter { display: inline-flex; align-items: center; gap: var(--s1); margin-right: var(--s2); vertical-align: 1px; }
   .meter b { width: 14px; height: 6px; border-radius: var(--r-xs); background: var(--hairline-strong); }
-  .meter b.on { background: var(--signal); animation: cell var(--d-detent) var(--ease-out) both; animation-delay: calc(var(--n) * 40ms); }
-  @keyframes cell { from { opacity: 0; } }
+  .meter b.on { background: var(--signal); }
   #island { position: absolute; left: 50%; top: calc(-1 * var(--s12)); display: flex; align-items: center; gap: var(--s2); max-width: calc(100% - var(--s12)); padding: var(--s2) var(--s4) var(--s2) var(--s3);
     border-radius: var(--r-pill); background: var(--raised-2); color: var(--text-1); font: var(--t-small); font-weight: 500; white-space: nowrap; box-shadow: var(--shadow-float);
     z-index: var(--z-island); transform: translate(-50%, 0); pointer-events: none;
@@ -292,7 +299,6 @@
   }
   /* Reduced motion: keep fades and colour changes, drop anything that moves or scales. */
   @media (prefers-reduced-motion: reduce) {
-    .rise { animation-name: fade; }
     a.cite[data-tip]:is(:hover, :focus-visible)::after { animation-name: fade; transform: translateX(-50%); }
     #island, #island.on { transform: translate(-50%, 0); }
     #days i { transition: background-color var(--d-quick) var(--ease-out); }
@@ -324,7 +330,7 @@
     <div id="days" role="slider" aria-label="Jump to a day" aria-valuemin="1" aria-valuemax="14"></div>
     <p class="note scrub-empty" id="scrub-empty" hidden>Your questions will show here, one bar per day.</p>
   </section>
-  <div id="timeline" aria-busy="true"><p class="memory-note">Loading memory…</p></div>
+  <div id="timeline"><div id="timeline-list" aria-busy="true"><p class="memory-note">Loading memory…</p></div></div>
   <footer>
     <button class="btn" id="demo" type="button" title="Replays three real questions through the agent with the clock set to past days"><svg class="i" aria-hidden="true"><use href="#i-rewind"/></svg><span>Load demo memory</span></button>
     <span class="note">Replays 3 questions, takes about 30 s</span>
@@ -333,14 +339,16 @@
 
 <main>
   <h1 class="sr-only">Remembot, a chat agent that remembers what you asked and when</h1>
+  <div id="ambient" aria-hidden="true"></div>
   <div class="bar">
     <button class="btn" id="menu" type="button" aria-controls="memory" aria-expanded="false"><svg class="i" aria-hidden="true"><use href="#i-menu"/></svg>Memory</button>
     <span class="clock mono" id="clock"></span>
     <button class="btn" id="new" type="button" title="Starts an empty conversation. Memory is kept."><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>New chat</button>
   </div>
-  <div id="chat" aria-live="polite"></div>
+  <div id="chat"><div id="thread" aria-live="polite"></div></div>
   <form id="form" class="dock">
     <div id="island" role="status"><i></i><span></span></div>
+    <button class="btn latest" id="latest" type="button" hidden><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg>Jump to latest</button>
     <div class="composer">
       <label for="input" hidden>Message</label>
       <textarea id="input" rows="1" enterkeyhint="send" placeholder="Ask anything. Ask again next week." maxlength="2000" autofocus></textarea>
@@ -350,9 +358,13 @@
   </form>
 </main>
 
+<!-- Motion libraries, pinned. The page works without them if a CDN fails. -->
+<script src="https://unpkg.com/lenis@1.3.27/dist/lenis.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.1/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.1/dist/SplitText.min.js"></script>
 <script>
 const $ = (id) => document.getElementById(id)
-const chat = $('chat'), input = $('input'), sendBtn = $('send'), demoBtn = $('demo'), island = $('island')
+const chat = $('thread'), scroller = $('chat'), input = $('input'), sendBtn = $('send'), demoBtn = $('demo'), island = $('island')
 
 // Identity is a random id kept in this browser. Memory belongs to it, across every chat.
 let userId = null
@@ -400,7 +412,88 @@ function markdown(text, sources) {
   return out.join('')
 }
 
-const scrollDown = () => { chat.scrollTop = chat.scrollHeight }
+// ---------- motion layer: Lenis (scroll), GSAP (choreography), Vanta (welcome ambient) ----------
+// Every effect is optional: if a library fails to load, or the reader prefers reduced motion, the page works the same without it.
+const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches
+const G = () => (window.gsap && !calm() ? gsap : null)
+if (window.gsap && window.SplitText) gsap.registerPlugin(SplitText)
+const smooth = (wrapper, content) => (window.Lenis ? new Lenis({ wrapper, content, lerp: 0.12, autoRaf: !window.gsap }) : null)
+const chatScroll = smooth(scroller, chat), timeScroll = smooth($('timeline'), $('timeline-list'))
+if (window.gsap) { gsap.ticker.add((t) => { chatScroll?.raf(t * 1000); timeScroll?.raf(t * 1000) }); gsap.ticker.lagSmoothing(0) }
+
+// Follow the stream only while the reader is at the bottom; if they scroll up, offer a way back instead of yanking them down.
+let pinned = true
+const latest = $('latest')
+const atBottom = () => (chatScroll ? chatScroll.targetScroll >= chatScroll.limit - 80 : scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight < 80)
+// Only an upward scroll unpins: following the stream only ever scrolls down, so up means the reader moved.
+const syncPin = () => {
+  if (atBottom()) { pinned = true; latest.hidden = true }
+  else if (!chatScroll || chatScroll.direction === -1) pinned = false
+}
+chatScroll ? chatScroll.on('scroll', syncPin) : scroller.addEventListener('scroll', syncPin, { passive: true })
+function scrollDown(force = false) {
+  chatScroll?.resize() // streamed text grows the thread faster than Lenis's ResizeObserver reports it
+  if (force) pinned = true
+  if (!pinned) { latest.hidden = false; return }
+  chatScroll ? chatScroll.scrollTo('bottom', { lerp: 0.18 }) : (scroller.scrollTop = scroller.scrollHeight)
+}
+latest.addEventListener('click', () => { latest.hidden = true; scrollDown(true) })
+
+const motion = {
+  welcome(section) {
+    const g = G()
+    if (!g || !section) return
+    const head = section.querySelector('h2'), rest = section.querySelectorAll('.lede, .examples li, .hint')
+    g.set(head, { autoAlpha: 0 })
+    document.fonts.ready.then(() => {
+      if (!section.isConnected) return
+      const tl = g.timeline({ defaults: { ease: 'expo.out' } }).set(head, { autoAlpha: 1 })
+      if (window.SplitText) tl.from(SplitText.create(head, { type: 'words', mask: 'words' }).words, { yPercent: 110, duration: 0.9, stagger: 0.05 })
+      else tl.from(head, { opacity: 0, y: 12, duration: 0.6 })
+      tl.from(rest, { opacity: 0, y: 10, duration: 0.6, stagger: 0.06 }, '-=0.65')
+    })
+  },
+  message(el) { G()?.from(el.querySelector('.body'), { opacity: 0, y: 10, scale: 0.98, transformOrigin: '100% 100%', duration: 0.45, ease: 'expo.out' }) },
+  trace(el) { G()?.from(el, { opacity: 0, y: 4, duration: 0.35, ease: 'power2.out' }) },
+  answer(el) {
+    const g = G()
+    if (!g) return
+    g.timeline({ defaults: { ease: 'expo.out' } })
+      .from(el.querySelectorAll('.sources li'), { opacity: 0, y: 6, duration: 0.45, stagger: 0.05 })
+      .from(el.querySelector('.meta'), { opacity: 0, duration: 0.4 }, '<')
+      .from(el.querySelectorAll('.meter b.on'), { scaleX: 0, transformOrigin: '0 50%', duration: 0.35, stagger: 0.06 }, '<0.1')
+  },
+  bars() {
+    const g = G(), days = $('days')
+    if (!g) return
+    days.classList.add('still') // CSS transitions would fight the tween
+    g.from('#days i', { scaleY: 0, duration: 0.8, ease: 'expo.out', stagger: 0.03, clearProps: 'transform', onComplete: () => days.classList.remove('still') })
+  },
+  rows(box) { G()?.from(box.querySelectorAll('.day'), { opacity: 0, y: 8, duration: 0.5, ease: 'expo.out', stagger: 0.05 }) },
+}
+
+// Vanta ambient: a slow field of linked points (memories) behind the empty welcome screen only.
+// Loaded lazily, never on phones, data-saver or reduced motion, and destroyed as soon as the first question is asked.
+const AMBIENT = ['https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js', 'https://cdn.jsdelivr.net/npm/vanta@0.5.24/dist/vanta.net.min.js']
+const loading = {}
+const load = (src) => (loading[src] ||= new Promise((ok, fail) => { const el = document.createElement('script'); el.src = src; el.onload = ok; el.onerror = fail; document.head.append(el) }))
+const hex = (name) => parseInt(getComputedStyle(document.documentElement).getPropertyValue(name).trim().slice(1), 16)
+let vanta = null
+async function ambient(on) {
+  const el = $('ambient')
+  if (!on) {
+    const v = vanta
+    vanta = null
+    if (v) window.gsap ? gsap.to(el, { opacity: 0, duration: 0.5, onComplete: () => v.destroy() }) : v.destroy()
+    return
+  }
+  if (vanta || !G() || innerWidth < 820 || navigator.connection?.saveData) return
+  try { for (const src of AMBIENT) await load(src) } catch { return }
+  if (vanta || !chat.querySelector('.welcome') || !window.VANTA) return
+  vanta = VANTA.NET({ el, mouseControls: true, touchControls: false, gyroControls: false, color: hex('--signal'), backgroundColor: hex('--canvas'),
+    points: 8, maxDistance: 21, spacing: 19, showDots: true })
+  gsap.fromTo(el, { opacity: 0 }, { opacity: 0.6, duration: 1.6, ease: 'power2.out' })
+}
 
 function addMessage(role, text = '') {
   const el = document.createElement('article')
@@ -410,19 +503,22 @@ function addMessage(role, text = '') {
     : `<details class="trace" hidden><summary></summary><ol></ol></details><div class="body"></div><ul class="sources"></ul><div class="meta mono"></div>`
   el.querySelector('.body').textContent = text
   chat.append(el)
+  if (role === 'user') motion.message(el)
   scrollDown()
   return el
 }
 
 function welcome() {
   chat.innerHTML = `<section class="welcome">
-    <h2 class="rise"><span>Ask something.</span> <span>Ask again next week.</span></h2>
-    <p class="lede rise" style="--i:1">One tool, web search. Every exchange is remembered with the time it happened, so you can ask what you asked, when, and whether the answer still holds.</p>
-    <ul class="examples" aria-label="Try one">${EXAMPLES.map(([tag, q], i) => `<li class="rise" style="--i:${i + 2}"><button type="button" data-q="${esc(q)}">
+    <h2><span>Ask something.</span> <span>Ask again next week.</span></h2>
+    <p class="lede">One tool, web search. Every exchange is remembered with the time it happened, so you can ask what you asked, when, and whether the answer still holds.</p>
+    <ul class="examples" aria-label="Try one">${EXAMPLES.map(([tag, q], i) => `<li><button type="button" data-q="${esc(q)}">
       <span class="tag">${esc(tag)}</span><span class="q">${esc(q)}</span></button></li>`).join('')}</ul>
-    <p class="hint rise" style="--i:5">${icon('rewind')}<span>New here? “Load demo memory” replays three real questions as if asked on 3 November, last Monday and last Tuesday.</span></p>
+    <p class="hint">${icon('rewind')}<span>New here? “Load demo memory” replays three real questions as if asked on 3 November, last Monday and last Tuesday.</span></p>
   </section>`
   chat.querySelectorAll('.examples button').forEach((b) => b.addEventListener('click', () => send(b.dataset.q)))
+  motion.welcome(chat.querySelector('.welcome'))
+  ambient(true)
 }
 
 let islandTimer = 0
@@ -454,10 +550,11 @@ function scrubber(turns) {
   slider.toggleAttribute('aria-disabled', !turns.length)
   slider.setAttribute('aria-valuenow', '14')
   slider.setAttribute('aria-valuetext', turns.length ? `${turns.length} asked over ${days} day${days === 1 ? '' : 's'}; use the arrow keys to pick a day` : 'No questions yet')
+  if (turns.length && !scrubber.shown) { scrubber.shown = true; motion.bars() }
 }
 
 async function loadTimeline() {
-  const box = $('timeline')
+  const box = $('timeline-list')
   let turns
   try {
     const r = await fetch(`/api/turns?userId=${userId}`)
@@ -485,6 +582,7 @@ async function loadTimeline() {
       <div class="stored body">${markdown(t.answer, t.sources)}</div></details>`
   }
   box.innerHTML = html + '</div>'
+  if (!loadTimeline.shown) { loadTimeline.shown = true; motion.rows(box) }
 }
 
 // ---------- streaming ----------
@@ -515,7 +613,8 @@ function setBusy(controller) {
 async function send(text) {
   text = text.trim()
   if (!text || busy) return
-  if (chat.querySelector('.welcome')) chat.innerHTML = ''
+  if (chat.querySelector('.welcome')) { chat.innerHTML = ''; ambient(false) }
+  pinned = true
   input.value = ''; input.style.height = 'auto'
   addMessage('user', text)
   const el = addMessage('agent')
@@ -534,7 +633,7 @@ async function send(text) {
   const step = (kind, html) => {
     trace.querySelector('ol').insertAdjacentHTML('beforeend', `<li class="${kind}">${icon(kind)}${html}</li>`)
     trace.querySelector('summary').textContent = summary()
-    trace.hidden = false
+    if (trace.hidden) { trace.hidden = false; motion.trace(trace) }
     scrollDown()
   }
   let answer = '', sources = [], firstTokenMs = 0
@@ -578,6 +677,11 @@ async function send(text) {
         meta.innerHTML = [timeOf(e.askedAt), `first word ${secs(firstTokenMs)}`, `done ${secs(performance.now() - started)}`,
           e.searches ? `<span class="meter" aria-hidden="true">${Array.from({ length: 6 }, (_, i) => `<b class="${i < e.searches ? 'on' : ''}" style="--n:${i}"></b>`).join('')}</span>${e.searches} of 6 searches`
             : 'Answered from memory'].map((s) => `<span>${s}</span>`).join('')
+        meta.insertAdjacentHTML('beforeend', '<button type="button" class="copy">Copy answer</button>')
+        const copy = meta.querySelector('.copy'), copied = answer
+        copy.addEventListener('click', () => navigator.clipboard?.writeText(copied).then(() => { copy.textContent = 'Copied'; setTimeout(() => { copy.textContent = 'Copy answer' }, 1500) }))
+        motion.answer(el)
+        scrollDown() // the sources and readout line land after the last token
         loadTimeline()
       } else if (e.type === 'error') {
         throw new Error(e.message)
@@ -646,7 +750,8 @@ function jumpTo(c) {
   group.classList.add('flash')
   $('days').setAttribute('aria-valuenow', String(cols().indexOf(c) + 1))
   $('days').setAttribute('aria-valuetext', c.title)
-  group.querySelector('h2').scrollIntoView({ block: 'start' })
+  const head = group.querySelector('h2')
+  timeScroll ? timeScroll.scrollTo(head, { offset: -8, lerp: 0.2 }) : head.scrollIntoView({ block: 'start' })
 }
 let scrubbing = false
 const dayAt = (e) => document.elementFromPoint(e.clientX, e.clientY)?.closest('#days .col')

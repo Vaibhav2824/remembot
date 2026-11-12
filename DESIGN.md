@@ -26,10 +26,11 @@ Measured on the default model: a memory-only answer starts in 0.3 s, small talk 
 - **A turn has a budget: 6 queries, 4 model calls.** After each search the model is told what is left; the last call has no tool, so every turn ends. This bounds latency and cost, and keeps one question inside free-tier rate limits.
 - **Failure is said out loud.** A failed search goes to the model as "Search failed", so the answer says "unverified" instead of filling the gap. Rate-limit waits are shown in the UI.
 - **The clock is injected** (`Deps.now`). Tests pin it, a request can carry `now` to replay a dated conversation, and the demo button replays three real questions at past dates. Time logic can be checked today instead of next week.
-- **The interface shows the time model.** Memory is on screen, not hidden: 14 day bars and a dated timeline. Each answer leads; what was recalled and searched folds into one line above it, and a six-cell meter shows the search budget the turn spent. Messages and scrolling never animate: they happen on every send and every streamed token, where motion would only read as lag.
+- **The interface shows the time model.** Memory is on screen, not hidden: 14 day bars and a dated timeline. Each answer leads; what was recalled and searched folds into one line above it, and a six-cell meter shows the search budget the turn spent. The chat follows a streaming answer only while you are at the bottom; scroll up and it stops, offering Jump to latest.
+- **Motion is optional, never load-bearing.** Lenis smooths scrolling, GSAP stages the entrances, and a Vanta field of linked points sits behind the empty welcome screen only (desktop, faded out on the first question). All three load from pinned CDNs; if one fails, or the reader prefers reduced motion, the page works the same without it.
 - **One file, one system.** The UI is plain HTML, CSS and JS with no build. Every colour, size, gap and duration is a token from `.interface-design/system.md`; it was checked with Hallmark's linter and axe-core (WCAG 2.2 AA, both themes, phone and desktop).
 - **One codebase, two runtimes.** `app.ts` is a plain `Request -> Response` handler. `node.ts` (node:sqlite) and `worker.ts` (Cloudflare D1) are about 40 lines each and run the same SQL from one `schema.sql`.
-- **Small on purpose.** About 900 lines of TypeScript and one HTML file for the UI, one runtime dependency (chrono-node, to spot date phrases), no framework, no build step.
+- **Small on purpose.** About 900 lines of TypeScript and one HTML file for the UI, one server dependency (chrono-node, to spot date phrases), three optional browser libraries for motion, no framework, no build step.
 
 ## Considered and rejected
 
