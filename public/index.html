@@ -2,128 +2,290 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Asof</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%23c2410c' stroke-width='3'/%3E%3Cpath d='M16 9v7l5 3' fill='none' stroke='%23c2410c' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+<meta name="description" content="A chat agent with one tool, web search, that remembers what you asked and when.">
+<meta property="og:title" content="Asof">
+<meta property="og:description" content="Ask something. Ask again next week. A chat agent that remembers what you asked, and when.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23111113'/%3E%3Ccircle cx='16' cy='16' r='8.5' fill='none' stroke='%23ff7a50' stroke-width='2.5'/%3E%3Cpath d='M16 11.5V16l3 2' fill='none' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #faf8f5; --panel: #f1ede6; --ink: #1c1917; --muted: #6b635a; --line: #e2dcd2;
-    --accent: #c2410c; --accent-ink: #fff; --bubble: #fff; --mine: #1c1917; --mine-ink: #faf8f5;
-    color-scheme: light dark;
+    --bg: #fbfbfa; --surface: #fff; --panel: #f4f4f2; --sunk: #ececea;
+    --ink: #111113; --muted: #6b6b70; --faint: #a3a3a8; --line: rgb(17 17 19 / 0.08);
+    --accent: #e4572e; --accent-ink: #fff; --accent-soft: rgb(228 87 46 / 0.12);
+    --ring: 0 0 0 1px rgb(17 17 19 / 0.07), 0 1px 2px rgb(17 17 19 / 0.05), 0 8px 24px -8px rgb(17 17 19 / 0.08);
+    --spring: cubic-bezier(0.34, 1.56, 0.64, 1); --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --sans: Geist, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --serif: "Instrument Serif", ui-serif, Georgia, serif;
+    color-scheme: light;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #151311; --panel: #1d1a17; --ink: #efe9e1; --muted: #a39a8f; --line: #2e2a25;
-      --accent: #fb923c; --accent-ink: #1c1917; --bubble: #211e1a; --mine: #efe9e1; --mine-ink: #151311;
+      --bg: #0b0b0c; --surface: #151517; --panel: #101012; --sunk: #1c1c1f;
+      --ink: #ededef; --muted: #9a9aa1; --faint: #5f5f66; --line: rgb(255 255 255 / 0.08);
+      --accent: #ff7a50; --accent-ink: #111113; --accent-soft: rgb(255 122 80 / 0.14);
+      --ring: 0 0 0 1px rgb(255 255 255 / 0.07), 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -8px rgb(0 0 0 / 0.6);
+      color-scheme: dark;
     }
   }
   * { box-sizing: border-box; }
-  body { margin: 0; height: 100dvh; display: grid; grid-template-columns: 300px 1fr; background: var(--bg); color: var(--ink);
-    font: 15px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  body { margin: 0; height: 100dvh; display: grid; grid-template-columns: 320px 1fr; background: var(--bg); color: var(--ink);
+    font: 15px/1.6 var(--sans); letter-spacing: -0.006em; overflow: hidden; }
+  /* Grain: breaks digital flatness, never intercepts clicks. */
+  body::after { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 10; opacity: 0.035; mix-blend-mode: multiply;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+  @media (prefers-color-scheme: dark) { body::after { mix-blend-mode: screen; opacity: 0.025; } }
   button { font: inherit; color: inherit; cursor: pointer; }
-  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .mono { font: 12px/1.4 ui-monospace, "SF Mono", Menlo, Consolas, monospace; color: var(--muted); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 8px; }
+  svg.i { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+  .mono { font-family: var(--mono); font-size: 12px; letter-spacing: 0; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .skip { position: absolute; left: 12px; top: -40px; z-index: 20; background: var(--ink); color: var(--bg); padding: 6px 12px; border-radius: 8px; }
+  .skip:focus { top: 12px; }
 
-  /* Memory sidebar */
+  /* Buttons */
+  .btn { display: inline-flex; align-items: center; gap: 7px; background: var(--surface); border: 0; box-shadow: var(--ring); border-radius: 10px;
+    padding: 7px 12px; font-size: 13.5px; font-weight: 500; transition: transform 0.18s var(--ease), background 0.18s, color 0.18s; }
+  .btn:hover { background: var(--panel); }
+  .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.5; cursor: default; transform: none; }
+
+  /* ---------- Memory panel ---------- */
   aside { background: var(--panel); border-right: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
-  aside header { padding: 18px 18px 12px; }
-  h1 { margin: 0; font-size: 20px; letter-spacing: -0.02em; }
-  h1 span { color: var(--accent); }
-  aside header p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
-  #timeline { overflow-y: auto; padding: 0 10px 12px; flex: 1; }
-  #timeline h2 { margin: 14px 8px 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
-  #timeline details { border-radius: 8px; padding: 6px 8px; }
-  #timeline details[open] { background: var(--bubble); }
-  #timeline summary { cursor: pointer; list-style: none; display: flex; gap: 8px; align-items: baseline; }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 20px 20px 4px; }
+  .brand svg { width: 28px; height: 28px; }
+  h1 { margin: 0; font-size: 19px; font-weight: 600; letter-spacing: -0.035em; }
+  .tagline { margin: 0; padding: 0 20px; color: var(--muted); font-size: 13px; }
+
+  /* Day scrubber: 14 days, bar height = exchanges that day. */
+  .scrub { margin: 18px 14px 6px; padding: 12px 10px 8px; background: var(--surface); box-shadow: var(--ring); border-radius: 14px; }
+  .scrub header { display: flex; justify-content: space-between; align-items: baseline; padding: 0 4px 10px; }
+  .scrub header b { font-size: 12.5px; font-weight: 500; }
+  #days { display: grid; grid-template-columns: repeat(14, 1fr); gap: 3px; align-items: end; height: 64px; }
+  #days button { all: unset; display: grid; grid-template-rows: 1fr auto; justify-items: center; gap: 5px; height: 100%; cursor: pointer; }
+  #days button:disabled { cursor: default; }
+  #days i { align-self: end; width: 100%; max-width: 12px; border-radius: 4px; background: var(--sunk);
+    height: calc(4px + var(--h, 0) * 36px); transition: height 0.5s var(--spring), background 0.2s; }
+  #days button:not(:disabled) i { background: color-mix(in oklab, var(--accent) 70%, var(--surface)); }
+  #days button:not(:disabled):hover i, #days button.on i { background: var(--accent); }
+  #days span { font: 500 10px/1 var(--mono); color: var(--faint); }
+  #days button.today span { color: var(--accent); }
+  #days button:focus-visible i { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* Scroll fade (after Skiper's free "scroll with fade"): edges dissolve instead of cutting off. */
+  #timeline { overflow-y: auto; padding: 4px 14px 16px; flex: 1; scroll-behavior: smooth; overscroll-behavior: contain;
+    mask-image: linear-gradient(transparent, #000 14px, #000 calc(100% - 24px), transparent); }
+  #days { touch-action: none; user-select: none; }
+  .day { position: relative; padding-left: 16px; margin-top: 16px; }
+  .day::before { content: ""; position: absolute; left: 4px; top: 22px; bottom: 6px; width: 1px; background: var(--line); }
+  .day h2 { margin: 0 0 4px -16px; font-size: 12px; font-weight: 500; color: var(--muted); display: flex; align-items: center; gap: 8px; scroll-margin-top: 8px; }
+  .day h2::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--panel); box-shadow: inset 0 0 0 2px var(--faint); }
+  .day.flash h2::before { background: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+  .day.flash h2 { color: var(--ink); }
+  #timeline details { border-radius: 10px; padding: 6px 8px; margin: 0 -8px; transition: background 0.2s; }
+  #timeline details:hover { background: color-mix(in oklab, var(--surface) 60%, transparent); }
+  #timeline details[open] { background: var(--surface); box-shadow: var(--ring); margin-block: 6px; }
+  #timeline summary { cursor: pointer; list-style: none; display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: baseline; font-size: 13.5px; }
   #timeline summary::-webkit-details-marker { display: none; }
-  #timeline summary b { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  #timeline details[open] summary b { white-space: normal; }
-  #timeline .stored { font-size: 13.5px; margin-top: 4px; }
-  .empty-memory { margin: 14px 8px; color: var(--muted); font-size: 13.5px; }
-  aside footer { padding: 12px 18px; border-top: 1px solid var(--line); }
+  #timeline summary b { font-weight: 450; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #timeline details[open] summary b { white-space: normal; font-weight: 500; }
+  #timeline .stored { font-size: 13px; margin-top: 8px; color: var(--muted); }
+  .empty-memory { margin: 20px 4px; padding: 16px; border: 1px dashed var(--line); border-radius: 12px; color: var(--muted); font-size: 13px; text-wrap: pretty; }
+  aside footer { padding: 14px; border-top: 1px solid var(--line); display: grid; gap: 8px; }
+  aside footer .btn { justify-content: center; width: 100%; padding: 9px 12px; }
+  aside footer .mono { text-align: center; font-size: 11px; color: var(--faint); }
 
-  /* Chat */
-  main { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
-  .bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; border-bottom: 1px solid var(--line); }
-  .btn { background: none; border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; }
-  .btn:hover { border-color: var(--muted); }
-  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
-  .btn:disabled { opacity: 0.55; cursor: default; }
+  /* ---------- Chat ---------- */
+  main { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+  .bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 20px; }
+  .clock { display: inline-flex; align-items: center; gap: 8px; padding: 5px 11px; border-radius: 999px; background: var(--surface); box-shadow: var(--ring); }
+  .clock::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #22a06b; box-shadow: 0 0 0 3px rgb(34 160 107 / 0.18); }
   #menu { display: none; }
-  #chat { flex: 1; overflow-y: auto; padding: 24px 20px; }
-  #chat > * { max-width: 760px; margin-inline: auto; }
-  .welcome h2 { font-size: 26px; letter-spacing: -0.02em; margin: 8vh 0 6px; }
-  .welcome p { color: var(--muted); margin: 0 0 18px; max-width: 56ch; }
-  .examples { display: grid; gap: 8px; margin-bottom: 22px; }
-  .examples button { text-align: left; background: var(--bubble); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; }
-  .examples button:hover { border-color: var(--accent); }
-  .msg { margin-bottom: 22px; }
+  #chat { flex: 1; overflow-y: auto; padding: 12px 24px 40px; scroll-behavior: smooth; }
+  #chat > * { max-width: 720px; margin-inline: auto; }
+
+  .welcome { position: relative; padding-top: 9vh; }
+  .welcome::before { content: ""; position: absolute; inset: -10vh -20% auto; height: 60vh; z-index: -1; pointer-events: none;
+    background: radial-gradient(40% 50% at 30% 30%, var(--accent-soft), transparent 70%), radial-gradient(35% 40% at 75% 20%, rgb(120 120 140 / 0.08), transparent 70%); filter: blur(20px); }
+  .eyebrow { display: inline-flex; align-items: center; gap: 8px; font: 500 12px var(--mono); color: var(--muted); padding: 4px 10px 4px 6px; border-radius: 999px; background: var(--surface); box-shadow: var(--ring); }
+  .eyebrow b { font-weight: 500; color: var(--accent-ink); background: var(--accent); border-radius: 999px; padding: 1px 7px; }
+  .welcome h2 { font-size: clamp(36px, 5.4vw, 56px); line-height: 1.02; letter-spacing: -0.045em; font-weight: 600; margin: 22px 0 16px; text-wrap: balance; }
+  .welcome h2 em { font-family: var(--serif); font-weight: 400; letter-spacing: -0.02em; color: var(--muted); }
+  .welcome p { color: var(--muted); margin: 0 0 30px; max-width: 54ch; font-size: 16px; text-wrap: pretty; }
+  .examples { display: grid; gap: 10px; margin-bottom: 26px; }
+  .examples button { all: unset; cursor: pointer; display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; align-items: center; padding: 14px 16px 14px 18px;
+    background: var(--surface); box-shadow: var(--ring); border-radius: 14px; transition: transform 0.25s var(--ease), box-shadow 0.25s; }
+  .examples button:hover { transform: translateY(-2px); box-shadow: var(--ring), 0 14px 30px -12px var(--accent-soft); }
+  .examples button:active { transform: translateY(0) scale(0.99); }
+  .examples button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .examples .tag { font: 500 11px var(--mono); color: var(--accent); text-transform: lowercase; }
+  .examples .q { grid-column: 1; font-size: 14.5px; text-wrap: pretty; }
+  .examples .go { grid-row: 1 / span 2; grid-column: 2; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; background: var(--panel);
+    color: var(--muted); transition: background 0.2s, color 0.2s, transform 0.3s var(--spring); }
+  .examples button:hover .go { background: var(--ink); color: var(--bg); transform: rotate(-45deg); }
+  .hint { font: 12px/1.6 var(--mono); color: var(--muted); display: flex; gap: 8px; align-items: flex-start; }
+  .hint svg { margin-top: 2px; color: var(--accent); }
+
+  /* Staggered entry */
+  .rise { animation: rise 0.6s var(--ease) both; animation-delay: calc(var(--i, 0) * 70ms); }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); filter: blur(4px); } }
+
+  .msg { margin-bottom: 30px; animation: rise 0.45s var(--ease) both; }
   .msg.user { display: flex; flex-direction: column; align-items: flex-end; }
-  .msg.user .body { background: var(--mine); color: var(--mine-ink); border-radius: 14px 14px 4px 14px; padding: 9px 14px; max-width: 85%; white-space: pre-wrap; }
-  .msg.agent .body { background: var(--bubble); border: 1px solid var(--line); border-radius: 4px 14px 14px 14px; padding: 12px 16px; }
+  .msg.user .body { background: var(--ink); color: var(--bg); border-radius: 20px 20px 6px 20px; padding: 10px 16px; max-width: 80%; white-space: pre-wrap; text-wrap: pretty; }
+  .msg.agent .body { font-size: 15.5px; line-height: 1.7; }
   .msg.agent .body:empty { display: none; }
-  .body p { margin: 0 0 10px; } .body p:last-child, .body ul:last-child { margin-bottom: 0; }
-  .body ul { margin: 0 0 10px; padding-left: 20px; } .body li { margin-bottom: 4px; }
-  .body code { font: 13px ui-monospace, Menlo, Consolas, monospace; background: var(--panel); padding: 1px 5px; border-radius: 4px; }
-  .body a { color: var(--accent); }
-  a.cite { display: inline-block; min-width: 17px; text-align: center; font: 600 11px/17px ui-monospace, Menlo, Consolas, monospace; background: var(--panel);
-    border: 1px solid var(--line); border-radius: 5px; text-decoration: none; margin: 0 1px; vertical-align: 1px; padding: 0 3px; }
-  a.cite:hover { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
-  .steps { margin: 0 0 8px; padding: 0; list-style: none; display: grid; gap: 3px; }
-  .steps li::before { content: "› "; color: var(--accent); }
-  .msg .meta { margin-top: 6px; }
-  .sources { margin: 8px 0 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
-  .sources a { display: block; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px; color: var(--muted);
-    border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; text-decoration: none; }
-  .sources a:hover { color: var(--ink); border-color: var(--muted); }
-  .error { color: #b91c1c; }
-  @media (prefers-color-scheme: dark) { .error { color: #fca5a5; } }
-  .cursor::after { content: "▍"; color: var(--accent); animation: blink 1s steps(2) infinite; }
-  @keyframes blink { 50% { opacity: 0; } }
-  @media (prefers-reduced-motion: reduce) { .cursor::after { animation: none; } }
+  .body p { margin: 0 0 12px; text-wrap: pretty; } .body p:last-child, .body ul:last-child { margin-bottom: 0; }
+  .body ul { margin: 0 0 12px; padding-left: 20px; } .body li { margin-bottom: 6px; } .body li::marker { color: var(--faint); }
+  .body strong { font-weight: 600; }
+  .body code { font: 13px var(--mono); background: var(--panel); padding: 1px 6px; border-radius: 6px; box-shadow: 0 0 0 1px var(--line); }
+  .body a:not(.cite) { color: inherit; text-decoration-color: var(--accent); text-underline-offset: 3px; }
+  a.cite { position: relative; display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 4px; margin: 0 1px; vertical-align: 2px;
+    font: 600 10.5px/1 var(--mono); color: var(--accent); background: var(--accent-soft); border-radius: 6px; text-decoration: none; transition: background 0.15s, color 0.15s; }
+  a.cite:hover, a.cite:focus-visible { background: var(--accent); color: var(--accent-ink); }
+  a.cite[data-tip]:hover::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); z-index: 5;
+    width: max-content; max-width: 280px; padding: 7px 10px; border-radius: 10px; background: var(--ink); color: var(--bg);
+    font: 500 12px/1.4 var(--sans); white-space: normal; text-align: left; pointer-events: none; animation: rise 0.2s var(--ease); }
 
-  form { padding: 12px 20px 18px; }
-  .composer { max-width: 760px; margin-inline: auto; display: flex; gap: 8px; align-items: flex-end; background: var(--bubble); border: 1px solid var(--line); border-radius: 14px; padding: 8px 8px 8px 14px; }
-  .composer:focus-within { border-color: var(--accent); }
-  textarea { flex: 1; border: 0; outline: 0; resize: none; background: none; color: inherit; font: inherit; max-height: 160px; padding: 6px 0; }
+  /* Trace: what the agent did, before the answer. */
+  .trace { margin: 0 0 12px; padding: 0; list-style: none; display: grid; gap: 6px; }
+  .trace:empty { display: none; }
+  .trace li { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); animation: rise 0.35s var(--ease) both; }
+  .trace li svg { color: var(--faint); }
+  .trace li.memory svg { color: var(--accent); }
+  .trace li.wait svg { color: #c88a12; }
+  .chip { font: 12px var(--mono); padding: 2px 8px; border-radius: 7px; background: var(--panel); box-shadow: 0 0 0 1px var(--line); color: var(--ink);
+    max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-  @media (max-width: 760px) {
+  .sources { margin: 14px 0 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
+  .sources:empty { display: none; }
+  .sources a { display: flex; align-items: center; gap: 7px; max-width: 280px; font-size: 12.5px; color: var(--muted); background: var(--surface); box-shadow: var(--ring);
+    border-radius: 10px; padding: 5px 10px 5px 6px; text-decoration: none; transition: color 0.15s, transform 0.2s var(--ease); }
+  .sources a:hover { color: var(--ink); transform: translateY(-1px); }
+  .sources b { font: 600 10.5px var(--mono); color: var(--accent); min-width: 18px; height: 18px; display: grid; place-items: center; border-radius: 6px; background: var(--accent-soft); }
+  .sources img { width: 14px; height: 14px; border-radius: 3px; }
+  .sources span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .meta { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 4px 12px; }
+  .meta:empty { display: none; }
+  .meta span + span::before { content: "·"; margin-right: 12px; color: var(--faint); }
+  .error { color: #c2362b; }
+  @media (prefers-color-scheme: dark) { .error { color: #ff8f86; } }
+  .cursor::after { content: ""; display: inline-block; width: 8px; height: 8px; margin-left: 6px; border-radius: 50%; background: var(--accent); vertical-align: 1px;
+    animation: pulse 1s var(--ease) infinite; }
+  .msg.agent .body.cursor:empty { display: block; }
+  @keyframes pulse { 50% { transform: scale(0.55); opacity: 0.4; } }
+
+  /* Status island: one live line for what the agent is doing right now. */
+  .dock { position: relative; padding: 0 24px max(20px, env(safe-area-inset-bottom)); }
+  /* Progressive blur (after Skiper's free "progressive blur"): text sinks under the composer. */
+  .dock::before { content: ""; position: absolute; inset: -40px 0 100%; pointer-events: none; background: linear-gradient(transparent, var(--bg));
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); mask-image: linear-gradient(transparent, #000 70%); }
+  .bar { position: relative; z-index: 1; }
+  .bar::after { content: ""; position: absolute; inset: 100% 0 -20px; pointer-events: none; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    mask-image: linear-gradient(#000, transparent); }
+  /* Budget meter (after Bencho's free "context meter"): searches used of the 6 a turn allows. */
+  .budget { display: inline-flex; align-items: center; gap: 6px; }
+  .budget i { width: 42px; height: 4px; border-radius: 4px; background: var(--sunk); overflow: hidden; }
+  .budget i::before { content: ""; display: block; height: 100%; width: calc(var(--used) / 6 * 100%); background: var(--accent); border-radius: inherit;
+    animation: fill 0.8s var(--ease) both; }
+  @keyframes fill { from { width: 0; } }
+  #island { position: absolute; left: 50%; top: -46px; display: flex; align-items: center; gap: 9px; max-width: calc(100% - 48px); padding: 7px 14px 7px 10px;
+    border-radius: 999px; background: var(--ink); color: var(--bg); font-size: 13px; font-weight: 500; white-space: nowrap; box-shadow: 0 10px 30px -10px rgb(0 0 0 / 0.45);
+    opacity: 0; transform: translate(-50%, 12px) scale(0.92); pointer-events: none; transition: opacity 0.25s var(--ease), transform 0.45s var(--spring); }
+  #island.on { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  #island span { overflow: hidden; text-overflow: ellipsis; }
+  #island i { width: 8px; height: 8px; border-radius: 50%; flex: none; background: var(--accent); animation: pulse 1s var(--ease) infinite; }
+  #island.wait i { background: #e0a526; }
+  #island.error i { background: #ff5f57; animation: none; }
+  .composer { max-width: 720px; margin-inline: auto; display: flex; gap: 8px; align-items: flex-end; background: var(--surface); box-shadow: var(--ring);
+    border-radius: 22px; padding: 10px 10px 10px 18px; transition: box-shadow 0.2s; }
+  .composer:focus-within { box-shadow: 0 0 0 1px var(--accent), 0 0 0 5px var(--accent-soft), 0 8px 24px -8px rgb(17 17 19 / 0.12); }
+  textarea { flex: 1; border: 0; outline: 0; resize: none; background: none; color: inherit; font: inherit; font-size: 15px; max-height: 180px; padding: 7px 0;
+    caret-color: var(--accent); } /* Skiper's free "smooth caret input", the part CSS can do */
+  textarea::placeholder { color: var(--faint); }
+  textarea:focus-visible { outline: none; } /* the composer ring shows focus */
+  #send { width: 38px; height: 38px; flex: none; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--ink); color: var(--bg);
+    transition: transform 0.3s var(--spring), opacity 0.2s, background 0.2s; }
+  #send:hover { transform: scale(1.06); }
+  #send:active { transform: scale(0.94); }
+  #send:disabled { opacity: 0.25; transform: none; cursor: default; }
+  #send.stop { background: var(--accent); color: var(--accent-ink); }
+  #send svg { width: 17px; height: 17px; stroke-width: 2.2; }
+  .under { max-width: 720px; margin: 8px auto 0; display: flex; justify-content: space-between; font: 11px var(--mono); color: var(--faint); }
+  kbd { font: inherit; padding: 0 5px; border-radius: 5px; box-shadow: 0 0 0 1px var(--line); }
+
+  @media (max-width: 820px) {
     body { grid-template-columns: 1fr; }
-    aside { position: fixed; inset: 0 20% 0 0; z-index: 2; transform: translateX(-100%); transition: transform 0.2s; }
-    body.menu-open aside { transform: none; box-shadow: 0 0 0 100vmax rgb(0 0 0 / 0.4); }
-    #menu { display: inline-block; }
+    aside { position: fixed; inset: 0 auto 0 0; width: min(340px, 86vw); z-index: 12; transform: translateX(-100%); transition: transform 0.35s var(--ease); }
+    body.menu-open aside { transform: none; box-shadow: 0 0 0 100vmax rgb(0 0 0 / 0.35); }
+    #menu { display: inline-flex; }
+    .bar { padding: 10px 16px; } #chat { padding: 8px 16px 32px; } .dock { padding-inline: 16px; }
+    .under span:first-child { display: none; }
+    .btn { white-space: nowrap; }
+  }
+  @media (max-width: 480px) {
+    .clock { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
   }
 </style>
 </head>
 <body>
+<a class="skip" href="#input">Skip to message box</a>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></symbol>
+  <symbol id="i-stop" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="2" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h16"/></symbol>
+  <symbol id="i-rewind" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></symbol>
+  <symbol id="i-memory" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+  <symbol id="i-wait" viewBox="0 0 24 24"><path d="M7 3h10M7 21h10M8 3c0 5 8 6 8 9s-8 4-8 9M16 3c0 5-8 6-8 9"/></symbol>
+  <symbol id="i-go" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+</svg>
 <aside aria-label="Memory">
-  <header>
-    <h1>As<span>of</span></h1>
-    <p>Remembers what you asked, and when.</p>
-  </header>
+  <div class="brand">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="var(--ink)"/><circle cx="16" cy="16" r="8.5" fill="none" stroke="var(--accent)" stroke-width="2.5"/><path d="M16 11.5V16l3 2" fill="none" stroke="var(--bg)" stroke-width="2.5" stroke-linecap="round"/></svg>
+    <h1>Asof</h1>
+  </div>
+  <p class="tagline">Remembers what you asked, and when.</p>
+  <section class="scrub" aria-label="Last 14 days">
+    <header><b>Last 14 days</b><span class="mono" id="count"></span></header>
+    <div id="days"></div>
+  </section>
   <div id="timeline"></div>
-  <footer><button class="btn" id="demo" type="button" title="Replays three real questions through the agent with the clock set to past days">Load demo memory</button></footer>
+  <footer>
+    <button class="btn" id="demo" type="button" title="Replays three real questions through the agent with the clock set to past days"><svg class="i"><use href="#i-rewind"/></svg><span>Load demo memory</span></button>
+    <span class="mono">3 replayed questions · about 30 s</span>
+  </footer>
 </aside>
 
 <main>
   <div class="bar">
-    <button class="btn" id="menu" type="button">Memory</button>
-    <span class="mono" id="clock"></span>
-    <button class="btn" id="new" type="button" title="Starts an empty conversation. Memory is kept.">New chat</button>
+    <button class="btn" id="menu" type="button" aria-label="Show memory"><svg class="i"><use href="#i-menu"/></svg>Memory</button>
+    <span class="clock mono" id="clock"></span>
+    <button class="btn" id="new" type="button" title="Starts an empty conversation. Memory is kept."><svg class="i"><use href="#i-plus"/></svg>New chat</button>
   </div>
   <div id="chat" aria-live="polite"></div>
-  <form id="form">
+  <form id="form" class="dock">
+    <div id="island" role="status"><i></i><span></span></div>
     <div class="composer">
       <label for="input" hidden>Message</label>
       <textarea id="input" rows="1" placeholder="Ask anything. Ask again next week." maxlength="2000" autofocus></textarea>
-      <button class="btn primary" id="send" type="submit">Send</button>
+      <button id="send" type="submit" aria-label="Send" disabled><svg class="i"><use href="#i-arrow"/></svg></button>
     </div>
+    <div class="under"><span><kbd>Enter</kbd> to send · <kbd>Shift</kbd>+<kbd>Enter</kbd> for a new line</span><span>One tool: web search</span></div>
   </form>
 </main>
 
 <script>
 const $ = (id) => document.getElementById(id)
-const chat = $('chat'), input = $('input'), sendBtn = $('send'), demoBtn = $('demo')
+const chat = $('chat'), input = $('input'), sendBtn = $('send'), demoBtn = $('demo'), island = $('island')
 
 // Identity is a random id kept in this browser. Memory belongs to it, across every chat.
 let userId = null
@@ -134,26 +296,31 @@ const tz = -new Date().getTimezoneOffset()
 let busy = null // AbortController while a reply is streaming
 
 const EXAMPLES = [
-  'Last Tuesday I asked you about Postgres hosting. Has any pricing changed since then?',
-  'What did I ask you on 3 November? Is your answer still correct today?',
-  'On Monday we shortlisted 5 CRM tools for a 20-person sales team. Has any of them changed pricing or shipped something big since?',
+  ['recall + recheck', 'Last Tuesday I asked you about Postgres hosting. Has any pricing changed since then?'],
+  ['exact date', 'What did I ask you on 3 November? Is your answer still correct today?'],
+  ['diff since monday', 'On Monday we shortlisted 5 CRM tools for a 20-person sales team. Has any of them changed pricing or shipped something big since?'],
 ]
 
 // ---------- rendering ----------
-const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
 const safeUrl = (u) => (/^https?:\/\//i.test(u) ? esc(u) : '#')
-const link = (href, text, cls = '') => `<a ${cls && `class="${cls}"`} href="${href}" target="_blank" rel="noopener noreferrer">${text}</a>`
+const host = (u) => { try { return new URL(u).hostname.replace(/^www\./, '') } catch { return '' } }
+const icon = (name) => `<svg class="i"><use href="#i-${name}"/></svg>`
+const link = (href, inner, attrs = '') => `<a ${attrs} href="${href}" target="_blank" rel="noopener noreferrer">${inner}</a>`
 const timeOf = (ms) => new Date(ms).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 const dayOf = (ms) => new Date(ms).toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
+const dayKey = (ms) => new Date(ms).toLocaleDateString('en-CA') // YYYY-MM-DD, local
+const DAY = 86_400_000
 
 // Minimal, escape-first markdown: everything is escaped, then a few safe patterns are turned back into tags.
 function markdown(text, sources) {
   text = text.replace(/【(\d+)[^】]*】/g, '[$1]').replace(/(\[\d+\])(?:\s*\1)+/g, '$1') // some models cite as 【1†L2-L5】, twice
   const inline = (s) => esc(s)
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/(^|[^*\w])\*([^*\n]+?)\*(?![*\w])/g, '$1<em>$2</em>')
     .replace(/`([^`]+)`/g, '<code>$1</code>')
     .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (_, label, url) => link(url, label))
-    .replace(/\[(\d+)\]/g, (_, n) => { const s = sources[n - 1]; return s ? link(safeUrl(s.url), n, 'cite').replace('<a ', `<a title="${esc(s.title)}" `) : '' })
+    .replace(/\[(\d+)\]/g, (_, n) => { const s = sources[n - 1]; return s ? link(safeUrl(s.url), n, `class="cite" data-tip="${esc(s.title)} · ${esc(host(s.url))}"`) : '' })
   const out = []
   let items = []
   const flush = () => { if (items.length) out.push(`<ul>${items.join('')}</ul>`); items = [] }
@@ -166,39 +333,73 @@ function markdown(text, sources) {
   return out.join('')
 }
 
+const scrollDown = () => { chat.scrollTop = chat.scrollHeight }
+
 function addMessage(role, text = '') {
-  const el = document.createElement('div')
+  const el = document.createElement('article')
   el.className = `msg ${role}`
   el.innerHTML = role === 'user'
-    ? `<div class="body"></div><div class="meta mono">${timeOf(Date.now())}</div>`
-    : `<ul class="steps mono"></ul><div class="body"></div><ul class="sources"></ul><div class="meta mono"></div>`
+    ? `<div class="body"></div>`
+    : `<ol class="trace"></ol><div class="body"></div><ul class="sources"></ul><div class="meta mono"></div>`
   el.querySelector('.body').textContent = text
   chat.append(el)
-  chat.scrollTop = chat.scrollHeight
+  scrollDown()
   return el
 }
 
 function welcome() {
-  chat.innerHTML = `<div class="welcome">
-    <h2>Ask something. Ask again next week.</h2>
-    <p>One tool, web search. Every exchange is remembered with the time it happened, so you can ask what you asked, when, and whether the answer still holds.</p>
-    <div class="examples">${EXAMPLES.map((q) => `<button type="button">${esc(q)}</button>`).join('')}</div>
-    <p class="mono">New here? "Load demo memory" replays three real questions as if asked on 3 November, last Monday and last Tuesday.</p>
-  </div>`
-  chat.querySelectorAll('.examples button').forEach((b) => b.addEventListener('click', () => send(b.textContent)))
+  chat.innerHTML = `<section class="welcome">
+    <span class="eyebrow rise"><b>memory</b> every answer is a dated snapshot</span>
+    <h2 class="rise" style="--i:1">Ask something.<br><em>Ask again next week.</em></h2>
+    <p class="rise" style="--i:2">One tool, web search. Every exchange is remembered with the time it happened, so you can ask what you asked, when, and whether the answer still holds.</p>
+    <div class="examples">${EXAMPLES.map(([tag, q], i) => `<button type="button" class="rise" style="--i:${i + 3}" data-q="${esc(q)}">
+      <span class="tag">${esc(tag)}</span><span class="q">${esc(q)}</span><span class="go">${icon('go')}</span></button>`).join('')}</div>
+    <p class="hint rise" style="--i:6">${icon('rewind')}<span>New here? "Load demo memory" replays three real questions as if asked on 3 November, last Monday and last Tuesday.</span></p>
+  </section>`
+  chat.querySelectorAll('.examples button').forEach((b) => b.addEventListener('click', () => send(b.dataset.q)))
+}
+
+let islandTimer = 0
+function status(text, kind = '') {
+  clearTimeout(islandTimer)
+  if (!text) { island.classList.remove('on'); return }
+  island.className = `on ${kind}`
+  island.querySelector('span').textContent = text
+  if (kind === 'error') islandTimer = setTimeout(() => status(''), 6000)
+}
+
+function scrubber(turns) {
+  const counts = {}
+  for (const t of turns) counts[dayKey(t.askedAt)] = (counts[dayKey(t.askedAt)] || 0) + 1
+  const max = Math.max(1, ...Object.values(counts))
+  const today = dayKey(Date.now())
+  $('days').innerHTML = Array.from({ length: 14 }, (_, i) => {
+    const ms = Date.now() - (13 - i) * DAY, k = dayKey(ms), n = counts[k] || 0
+    const label = `${dayOf(ms)}: ${n || 'no'} exchange${n === 1 ? '' : 's'}`
+    return `<button type="button" data-day="${k}" class="${k === today ? 'today' : ''}" ${n ? '' : 'disabled'} title="${label}" aria-label="${label}" style="--h:${n / max}">
+      <i></i><span>${new Date(ms).toLocaleDateString([], { weekday: 'narrow' })}</span></button>`
+  }).join('')
+  const days = new Set(Object.keys(counts)).size
+  $('count').textContent = turns.length ? `${turns.length} asked · ${days} day${days === 1 ? '' : 's'}` : ''
 }
 
 async function loadTimeline() {
   const turns = await fetch(`/api/turns?userId=${userId}`).then((r) => (r.ok ? r.json() : [])).catch(() => [])
+  scrubber(turns)
   const box = $('timeline')
-  if (!turns.length) { box.innerHTML = '<p class="empty-memory">Nothing remembered yet. Everything you ask will show up here, by day.</p>'; return }
+  if (!turns.length) { box.innerHTML = '<p class="empty-memory">Nothing remembered yet. Everything you ask lands here, grouped by day, with the sources the answer cited.</p>'; return }
+  const name = (ms) => { const k = dayKey(ms); return k === dayKey(Date.now()) ? 'Today' : k === dayKey(Date.now() - DAY) ? 'Yesterday' : dayOf(ms) }
   let html = '', day = ''
   for (const t of turns) {
-    if (dayOf(t.askedAt) !== day) html += `<h2>${(day = dayOf(t.askedAt))}</h2>`
+    if (dayKey(t.askedAt) !== day) {
+      if (day) html += '</div>'
+      day = dayKey(t.askedAt)
+      html += `<div class="day" id="d-${day}"><h2>${esc(name(t.askedAt))}</h2>`
+    }
     html += `<details><summary><span class="mono">${timeOf(t.askedAt)}</span><b>${esc(t.question)}</b></summary>
       <div class="stored body">${markdown(t.answer, t.sources)}</div></details>`
   }
-  box.innerHTML = html
+  box.innerHTML = html + '</div>'
 }
 
 // ---------- streaming ----------
@@ -219,7 +420,10 @@ async function* stream(path, body, signal) {
 
 function setBusy(controller) {
   busy = controller
-  sendBtn.textContent = busy ? 'Stop' : 'Send'
+  sendBtn.classList.toggle('stop', !!busy)
+  sendBtn.setAttribute('aria-label', busy ? 'Stop' : 'Send')
+  sendBtn.innerHTML = icon(busy ? 'stop' : 'arrow')
+  sendBtn.disabled = !busy && !input.value.trim()
   demoBtn.disabled = !!busy
 }
 
@@ -230,44 +434,54 @@ async function send(text) {
   input.value = ''; input.style.height = 'auto'
   addMessage('user', text)
   const el = addMessage('agent')
-  const steps = el.querySelector('.steps'), body = el.querySelector('.body'), meta = el.querySelector('.meta')
-  const step = (s) => { steps.insertAdjacentHTML('beforeend', `<li>${esc(s)}</li>`); chat.scrollTop = chat.scrollHeight }
+  const trace = el.querySelector('.trace'), body = el.querySelector('.body'), meta = el.querySelector('.meta')
+  const step = (kind, html) => { trace.insertAdjacentHTML('beforeend', `<li class="${kind}">${icon(kind)}${html}</li>`); scrollDown() }
   let answer = '', sources = [], firstTokenMs = 0
   const started = performance.now()
-  const paint = () => { body.innerHTML = markdown(answer, sources); chat.scrollTop = chat.scrollHeight }
+  const paint = () => { body.innerHTML = markdown(answer, sources); scrollDown() }
 
   setBusy(new AbortController())
   body.classList.add('cursor')
+  status('Recalling')
   try {
     for await (const e of stream('/api/chat', { userId, threadId, message: text, tz }, busy.signal)) {
       if (e.type === 'memory') {
         const found = e.windows.filter((w) => w.count)
-        if (found.length) step(`Remembered ${found.map((w) => `${w.count} from ${w.label}`).join(', ')}`)
-        else if (e.windows.length) step(`Nothing remembered for ${e.windows.map((w) => w.label).join(' or ')}`)
-        if (e.related) step(`Remembered ${e.related} related exchange${e.related > 1 ? 's' : ''}`)
+        if (found.length) step('memory', `Remembered ${found.map((w) => `${w.count} from <b>${esc(w.label)}</b>`).join(', ')}`)
+        else if (e.windows.length) step('memory', `Nothing remembered for ${e.windows.map((w) => `<b>${esc(w.label)}</b>`).join(' or ')}`)
+        if (e.related) step('memory', `Remembered ${e.related} related exchange${e.related > 1 ? 's' : ''}`)
+        status('Thinking')
       } else if (e.type === 'search') {
         answer = ''; paint() // anything said before a search was a preamble, not the answer
-        step(`Searching: ${e.queries.join(' · ')}`)
+        step('search', `Searched ${e.queries.map((q) => `<span class="chip">${esc(q)}</span>`).join('')}`)
+        status(e.queries.length > 1 ? `Searching ${e.queries.length} queries in parallel` : 'Searching the web')
       } else if (e.type === 'wait') {
-        step(`Model rate limit reached, retrying in ${e.seconds} s`)
+        step('wait', `Model rate limit reached, retrying in ${e.seconds} s`)
+        status(`Rate limited, retrying in ${e.seconds} s`, 'wait')
       } else if (e.type === 'sources') {
         sources = e.sources
       } else if (e.type === 'text') {
-        firstTokenMs ||= performance.now() - started
+        if (!firstTokenMs) { firstTokenMs = performance.now() - started; status('Writing') }
         answer += e.delta; paint()
       } else if (e.type === 'done') {
-        const cited = sources.filter((s) => answer.includes(`[${s.n}]`))
-        el.querySelector('.sources').innerHTML = cited.map((s) => `<li>${link(safeUrl(s.url), `${s.n} · ${esc(s.title)}`)}</li>`).join('')
+        const shown = body.innerHTML // rendered, so 【n†…】 citations are already normalised to [n] links
+        const cited = sources.filter((s) => shown.includes(`>${s.n}</a>`))
+        el.querySelector('.sources').innerHTML = cited.map((s) => `<li>${link(safeUrl(s.url),
+          `<b>${s.n}</b><img src="https://icons.duckduckgo.com/ip3/${esc(host(s.url))}.ico" alt="" loading="lazy" onerror="this.remove()"><span>${esc(s.title)}</span>`,
+          `title="${esc(s.title)}"`)}</li>`).join('')
         const secs = (ms) => (ms / 1000).toFixed(1) + ' s'
-        meta.textContent = `${timeOf(e.askedAt)} · first word ${secs(firstTokenMs)} · done ${secs(performance.now() - started)}` + (e.searches ? ` · ${e.searches} search${e.searches > 1 ? 'es' : ''}` : ' · from memory, no search')
+        meta.innerHTML = [timeOf(e.askedAt), `first word ${secs(firstTokenMs)}`, `done ${secs(performance.now() - started)}`,
+          e.searches ? `<span class="budget" title="Searches used of the 6 allowed per message"><i style="--used:${Math.min(e.searches, 6)}"></i>${e.searches} of 6 searches</span>`
+            : 'from memory, no search'].map((s) => `<span>${s}</span>`).join('')
         loadTimeline()
       } else if (e.type === 'error') {
         throw new Error(e.message)
       }
     }
+    status('')
   } catch (err) {
-    if (err.name === 'AbortError') meta.textContent = 'Stopped. Not saved to memory.'
-    else meta.innerHTML = `<span class="error">${esc(err.message)}</span>`
+    if (err.name === 'AbortError') { meta.innerHTML = '<span>Stopped. Not saved to memory.</span>'; status('') }
+    else { meta.innerHTML = `<span class="error">${esc(err.message)}</span>`; status('Something went wrong', 'error') }
   }
   body.classList.remove('cursor')
   setBusy(null)
@@ -277,17 +491,19 @@ async function send(text) {
 async function loadDemo() {
   if (busy) return
   setBusy(new AbortController())
-  const label = demoBtn.textContent
+  const label = demoBtn.querySelector('span'), original = label.textContent
+  status('Replaying demo memory')
   try {
     for await (const e of stream('/api/demo', { userId, tz }, busy.signal)) {
-      if (e.type === 'demo') demoBtn.textContent = `Replaying ${e.step}/${e.total}: ${e.label}…`
+      if (e.type === 'demo') { label.textContent = `Replaying ${e.step} of ${e.total}`; status(`Replaying ${e.step} of ${e.total}: ${e.label}`) }
       if (e.type === 'error') throw new Error(e.message)
       await loadTimeline()
     }
+    status('')
   } catch (err) {
-    if (err.name !== 'AbortError') alert(`Could not load demo memory: ${err.message}`)
+    if (err.name !== 'AbortError') status(`Could not load demo memory: ${err.message}`, 'error')
   }
-  demoBtn.textContent = label
+  label.textContent = original
   setBusy(null)
   await loadTimeline()
 }
@@ -295,10 +511,28 @@ async function loadDemo() {
 // ---------- wiring ----------
 $('form').addEventListener('submit', (e) => { e.preventDefault(); busy ? busy.abort() : send(input.value) })
 input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); send(input.value) } })
-input.addEventListener('input', () => { input.style.height = 'auto'; input.style.height = input.scrollHeight + 'px' })
+input.addEventListener('input', () => {
+  input.style.height = 'auto'; input.style.height = input.scrollHeight + 'px'
+  if (!busy) sendBtn.disabled = !input.value.trim()
+})
 $('new').addEventListener('click', () => { if (busy) return; threadId = crypto.randomUUID(); welcome(); input.focus() })
 $('menu').addEventListener('click', (e) => { e.stopPropagation(); document.body.classList.toggle('menu-open') })
-$('chat').addEventListener('click', () => document.body.classList.remove('menu-open'))
+chat.addEventListener('click', () => document.body.classList.remove('menu-open'))
+// Time scrubber (after Bencho's free block): click a day, or press and drag across the bars.
+function jumpTo(b) {
+  const group = b && !b.disabled && $(`d-${b.dataset.day}`)
+  if (!group) return
+  document.querySelectorAll('.day.flash').forEach((d) => d.classList.remove('flash'))
+  document.querySelectorAll('#days .on').forEach((d) => d.classList.remove('on'))
+  group.classList.add('flash'); b.classList.add('on')
+  group.querySelector('h2').scrollIntoView({ block: 'start' })
+}
+let scrubbing = false
+const dayAt = (e) => document.elementFromPoint(e.clientX, e.clientY)?.closest('#days button')
+$('days').addEventListener('pointerdown', (e) => { scrubbing = true; jumpTo(dayAt(e)) })
+$('days').addEventListener('pointermove', (e) => { const b = scrubbing && dayAt(e); if (b && !b.classList.contains('on')) jumpTo(b) })
+addEventListener('pointerup', () => { scrubbing = false })
+$('days').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); jumpTo(e.target.closest('button')) } })
 demoBtn.addEventListener('click', loadDemo)
 const tick = () => { $('clock').textContent = `${dayOf(Date.now())} · ${timeOf(Date.now())}` }
 tick(); setInterval(tick, 30_000)
