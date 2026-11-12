@@ -7,7 +7,7 @@ The source of truth for `public/index.html`. Every colour, size, gap, radius, sh
 A precision instrument for questions over time: graphite surfaces, one amber readout, nothing decorative. The person is checking whether something they learned last week still holds. The answer is the focal point of every screen; everything else (memory, searches, timings) is instrument readout, quiet until looked at.
 
 - **Dark first**, light as an equal second theme (`prefers-color-scheme`).
-- **Depth by surface steps**, a few percent of lightness each. Borders only at structural seams (sidebar edge, composer, inputs).
+- **Depth by surface steps**, a few percent of lightness each. Edges only at structural seams (sidebar edge, composer, inputs) and as an inset 1px `--hairline` on raised controls and blocks, which would vanish into the light canvas without one.
 - **One accent, amber**, used for: the send action, citations, today in the scrubber, the search meter, focus. Never for decoration. Under 10% of any screen.
 - **Mono is for readouts only**: times, durations, counts, the search meter. Never for labels, tags or headings.
 - **No texture, no glow, no gradient washes.**
@@ -67,7 +67,7 @@ Rules: hierarchy from size + weight + text colour together. Headings `text-wrap:
 
 ## Radii
 
-`--r-sm` 6 (chips, buttons, scrubber cells' container), `--r-md` 10 (question block, sources, cards), `--r-lg` 14 (composer, drawer edge). Pill (`999px`) only on the island and the round send button. Nested radii are concentric: outer = inner + padding.
+`--r-xs` 2 (meter cells, scrubber bars, keyboard keys, inline code), `--r-sm` 6 (chips, buttons), `--r-md` 10 (question block, sources, cards), `--r-lg` 14 (composer, drawer edge). Pill (`999px`) only on the island and the round send button. Nested radii are concentric: outer = inner + padding.
 
 ## Motion
 
@@ -100,9 +100,9 @@ Rules: animate `transform` and `opacity` only; name properties, never `transitio
 - Sources: `--raised` chips, `--r-sm`, number in `--t-readout` `--text-3`, title `--t-small` `--text-2`. Favicon optional and 14px.
 - Readout line: `--t-readout` `--text-3`: time, first-word latency, total, then the search meter. Items separated by `--s4` of space, never by middle dots.
 
-**Search meter.** Six cells, 14 × 6px, `--s1` apart, `--r-sm` container. Used cells `--signal`, idle cells `--sunken`. Label "3 of 6 searches" in `--t-readout`. "Answered from memory" when zero.
+**Search meter.** Six cells, 14 × 6px, `--s1` apart, `--r-xs` corners. Used cells `--signal`, idle cells `--hairline-strong` (`--sunken` disappears against the dark canvas). Label "3 of 6 searches" in `--t-readout`. "Answered from memory" when zero.
 
-**Scrubber.** Fourteen columns. Bar height = questions that day, `scaleY` from a 2px idle stub; idle `--sunken`, days with questions `--text-3`, today `--signal`, hovered/selected `--text-1`. Day letters `--t-small` `--text-3` (sans, not mono). Count readout in `--t-readout`. Empty: "Your questions will show here, one bar per day." in `--t-small`.
+**Scrubber.** Fourteen columns. Bar height = questions that day, `scaleY` from a 4px idle stub; idle `--hairline-strong`, days with questions `--text-3`, today `--signal`, hovered/selected `--text-1`. Day letters `--t-small` `--text-3` (sans, not mono). Count readout in `--t-readout`. Empty: "Your questions will show here, one bar per day." in `--t-small`.
 
 **Composer.** `--raised`, `--hairline-strong` edge, `--r-lg`. Focus: edge becomes 1px `--signal-text`, no glow, no second ring. Placeholder `--text-3`. Send: 36px round `--signal` button with `--signal-ink` arrow; stop state swaps the icon.
 

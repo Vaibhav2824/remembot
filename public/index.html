@@ -29,14 +29,14 @@
 
     --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 20px; --s6: 24px; --s8: 32px; --s10: 40px; --s12: 48px; --s16: 64px;
     --side: 288px; --col: 720px; --measure: 68ch;
-    --r-sm: 6px; --r-md: 10px; --r-lg: 14px; --r-pill: 999px;
+    --r-xs: 2px; --r-sm: 6px; --r-md: 10px; --r-lg: 14px; --r-pill: 999px;
     --d-press: 120ms; --d-quick: 160ms; --d-detent: 200ms; --d-drawer: 280ms;
     --ease-out: cubic-bezier(0.23, 1, 0.32, 1); --ease-move: cubic-bezier(0.77, 0, 0.175, 1);
     --z-bar: 10; --z-drawer: 20; --z-island: 30; --z-tooltip: 40;
 
     /* Transitional aliases: old names point at the system until each area is migrated, then go. */
-    --bg: var(--canvas); --surface: var(--raised); --panel: var(--canvas); --sunk: var(--sunken);
-    --ink: var(--text-1); --muted: var(--text-2); --faint: var(--text-3); --line: var(--hairline);
+    --bg: var(--canvas); --surface: var(--raised); --panel: var(--canvas);
+    --ink: var(--text-1); --muted: var(--text-2); --line: var(--hairline);
     --accent: var(--signal); --accent-ink: var(--signal-ink); --accent-soft: var(--signal-wash);
     --ring: 0 0 0 1px var(--hairline); --spring: var(--ease-out); --ease: var(--ease-out);
     color-scheme: light;
@@ -65,15 +65,17 @@
     padding: var(--s2) var(--s3); border-radius: var(--r-sm); }
   .skip:focus { top: var(--s3); }
 
-  /* Buttons */
-  .btn { display: inline-flex; align-items: center; gap: var(--s2); background: var(--surface); border: 0; box-shadow: var(--ring); border-radius: 10px;
-    padding: var(--s2) var(--s3); font: var(--t-ui); transition: transform 0.18s var(--ease), background 0.18s, color 0.18s; }
-  .btn:hover { background: var(--panel); }
+  /* Buttons: secondary controls. The send button is the only primary. */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--s2); min-height: 36px; padding: var(--s2) var(--s3);
+    background: var(--raised); color: var(--text-1); border: 0; box-shadow: inset 0 0 0 1px var(--hairline); border-radius: var(--r-sm); font: var(--t-ui);
+    transition: transform var(--d-press) var(--ease-out), background-color var(--d-quick) var(--ease-out), color var(--d-quick) var(--ease-out); }
+  @media (hover: hover) { .btn:not(:disabled):hover { background: var(--raised-2); } }
   .btn:active { transform: scale(0.97); }
-  .btn:disabled { opacity: 0.5; cursor: default; transform: none; }
+  .btn:disabled { background: var(--sunken); color: var(--text-off); box-shadow: none; cursor: not-allowed; transform: none; }
+  @media (pointer: coarse) { .btn { min-height: 44px; } }
 
   /* ---------- Memory panel ---------- */
-  aside { background: var(--panel); border-right: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
+  aside { background: var(--canvas); border-right: 1px solid var(--hairline); display: flex; flex-direction: column; min-height: 0; }
   .brand { display: flex; align-items: center; gap: var(--s3); padding: var(--s5) var(--s4) var(--s1); }
   .brand svg { width: 28px; height: 28px; }
   h1 { margin: 0; font: var(--t-title); letter-spacing: -0.01em; }
@@ -81,16 +83,20 @@
   .note { font: var(--t-small); color: var(--text-3); text-wrap: pretty; }
 
   /* Day scrubber: 14 days, bar height = exchanges that day. */
-  .scrub { margin: var(--s4) var(--s4) var(--s2); padding: var(--s3) var(--s3) var(--s2); background: var(--surface); box-shadow: var(--ring); border-radius: 14px; }
+  .scrub { margin: var(--s4) var(--s4) var(--s2); padding: var(--s3) var(--s3) var(--s2); background: var(--raised); box-shadow: inset 0 0 0 1px var(--hairline); border-radius: var(--r-md); }
   .scrub header { display: flex; justify-content: space-between; align-items: baseline; padding: 0 var(--s1) var(--s3); }
   .scrub header b { font: var(--t-small); font-weight: 500; }
   #days { display: grid; grid-template-columns: repeat(14, 1fr); gap: var(--s1); align-items: end; height: 64px; }
   #days button { all: unset; display: grid; grid-template-rows: 1fr auto; justify-items: center; gap: var(--s1); height: 100%; cursor: pointer; }
   #days button:disabled { cursor: default; }
-  #days i { align-self: end; width: 100%; max-width: 12px; border-radius: 4px; background: var(--sunk);
-    height: calc(4px + var(--h, 0) * 36px); transition: height 0.5s var(--spring), background 0.2s; }
-  #days button:not(:disabled) i { background: color-mix(in oklab, var(--accent) 70%, var(--surface)); }
-  #days button:not(:disabled):hover i, #days button.on i { background: var(--accent); }
+  /* Bars grow by scaleY from a 4px stub to 40px, so only transform animates. */
+  #days i { align-self: end; width: 100%; max-width: 12px; height: 40px; border-radius: var(--r-xs); background: var(--hairline-strong);
+    transform: scaleY(calc((4 + var(--h, 0) * 36) / 40)); transform-origin: bottom;
+    transition: transform var(--d-detent) var(--ease-out), background-color var(--d-quick) var(--ease-out); }
+  #days button:not(:disabled) i { background: var(--text-3); }
+  #days button.today i { background: var(--signal); }
+  @media (hover: hover) { #days button:not(:disabled):hover i { background: var(--text-1); } }
+  #days button.on i { background: var(--text-1); }
   #days span { font: var(--t-readout); font-family: var(--sans); line-height: 1; color: var(--text-3); }
   #days button.today span { color: var(--signal-text); }
   #days button:focus-visible i { outline: 2px solid var(--signal-text); outline-offset: 2px; }
@@ -100,28 +106,28 @@
     mask-image: linear-gradient(transparent, var(--mask) 14px, var(--mask) calc(100% - 24px), transparent); }
   #days { touch-action: none; user-select: none; }
   .day { position: relative; padding-left: var(--s4); margin-top: var(--s4); }
-  .day::before { content: ""; position: absolute; left: 4px; top: 22px; bottom: 6px; width: 1px; background: var(--line); }
+  .day::before { content: ""; position: absolute; left: 4px; top: 22px; bottom: 6px; width: 1px; background: var(--hairline); }
   .day h2 { margin: 0 0 var(--s1) calc(-1 * var(--s4)); font: var(--t-small); font-weight: 500; color: var(--text-2); display: flex; align-items: center; gap: var(--s2); scroll-margin-top: var(--s2); }
-  .day h2::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--panel); box-shadow: inset 0 0 0 2px var(--faint); }
-  .day.flash h2::before { background: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
-  .day.flash h2 { color: var(--ink); }
-  #timeline details { border-radius: 10px; padding: var(--s2); margin: 0 calc(-1 * var(--s2)); transition: background 0.2s; }
-  #timeline details:hover { background: color-mix(in oklab, var(--surface) 60%, transparent); }
-  #timeline details[open] { background: var(--surface); box-shadow: var(--ring); margin-block: var(--s2); }
+  .day h2::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--canvas); box-shadow: inset 0 0 0 2px var(--text-3); }
+  .day.flash h2::before { background: var(--signal); box-shadow: 0 0 0 4px var(--signal-wash); }
+  .day.flash h2 { color: var(--text-1); }
+  #timeline details { border-radius: var(--r-md); padding: var(--s2); margin: 0 calc(-1 * var(--s2)); transition: background-color var(--d-quick) var(--ease-out); }
+  @media (hover: hover) { #timeline details:hover { background: var(--raised); } }
+  #timeline details[open] { background: var(--raised); box-shadow: inset 0 0 0 1px var(--hairline); margin-block: var(--s2); }
   #timeline summary { cursor: pointer; list-style: none; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--s3); align-items: baseline; font: var(--t-ui); }
   #timeline summary::-webkit-details-marker { display: none; }
   #timeline summary b { font-weight: inherit; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   #timeline details[open] summary b { white-space: normal; }
   #timeline .stored { font: var(--t-small); margin-top: var(--s2); color: var(--text-2); }
   .empty-memory { margin: var(--s5) 0; padding: var(--s4); border: 1px dashed var(--line); border-radius: 12px; color: var(--text-2); font: var(--t-small); text-wrap: pretty; }
-  aside footer { padding: var(--s4); border-top: 1px solid var(--line); display: grid; gap: var(--s2); }
+  aside footer { padding: var(--s4); border-top: 1px solid var(--hairline); display: grid; gap: var(--s2); }
   aside footer .btn { justify-content: center; width: 100%; }
   aside footer .note { text-align: center; }
 
   /* ---------- Chat ---------- */
   main { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
   .bar { display: flex; justify-content: space-between; align-items: center; gap: var(--s3); padding: var(--s3) var(--s6); }
-  .clock { display: inline-flex; align-items: center; gap: var(--s2); padding: var(--s1) var(--s3); border-radius: 999px; background: var(--surface); box-shadow: var(--ring); }
+  .clock { color: var(--text-3); } /* a readout, not a control: no container */
   #menu { display: none; }
   #chat { flex: 1; overflow-y: auto; padding: var(--s3) var(--s6) var(--s10); scroll-behavior: smooth; }
   #chat > * { max-width: var(--col); margin-inline: auto; }
@@ -151,43 +157,51 @@
 
   .msg { margin-bottom: var(--s10); animation: rise 0.45s var(--ease) both; }
   .msg.user { display: flex; flex-direction: column; align-items: flex-end; }
-  .msg.user .body { background: var(--ink); color: var(--bg); border-radius: 20px 20px 6px 20px; padding: var(--s3) var(--s4); max-width: 80%; white-space: pre-wrap; text-wrap: pretty; }
+  .msg.user .body { background: var(--raised); color: var(--text-1); box-shadow: inset 0 0 0 1px var(--hairline); border-radius: var(--r-md);
+    padding: var(--s3) var(--s4); max-width: 80%; white-space: pre-wrap; text-wrap: pretty; }
   .msg.agent .body { font: var(--t-body); max-width: var(--measure); }
   .msg.agent .body:empty { display: none; }
   .body p { margin: 0 0 var(--s3); text-wrap: pretty; } .body p:last-child, .body ul:last-child { margin-bottom: 0; }
-  .body ul { margin: 0 0 var(--s3); padding-left: var(--s5); } .body li { margin-bottom: var(--s2); } .body li::marker { color: var(--faint); }
+  .body ul { margin: 0 0 var(--s3); padding-left: var(--s5); } .body li { margin-bottom: var(--s2); } .body li::marker { color: var(--text-3); }
   .body strong { font-weight: 600; }
-  .body code { font: var(--t-readout); background: var(--panel); padding: 0 var(--s1); border-radius: 6px; box-shadow: 0 0 0 1px var(--line); }
+  .body code { font: var(--t-readout); background: var(--raised-2); padding: 0 var(--s1); border-radius: var(--r-xs); }
   .body a:not(.cite) { color: inherit; text-decoration-color: var(--signal-text); text-underline-offset: 3px; }
   a.cite { position: relative; display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 var(--s1); margin: 0 2px; vertical-align: 2px;
-    font: var(--t-readout); font-weight: 500; line-height: 1; font-variant-numeric: tabular-nums; color: var(--signal-text); background: var(--accent-soft); border-radius: 6px; text-decoration: none; transition: background 0.15s, color 0.15s; }
-  a.cite:hover, a.cite:focus-visible { background: var(--accent); color: var(--accent-ink); }
-  a.cite[data-tip]:hover::after { content: attr(data-tip); position: absolute; bottom: calc(100% + var(--s2)); left: 50%; transform: translateX(-50%); z-index: 5;
-    width: max-content; max-width: 280px; padding: var(--s2) var(--s3); border-radius: 10px; background: var(--ink); color: var(--bg);
+    font: var(--t-readout); font-weight: 500; line-height: 1; font-variant-numeric: tabular-nums; color: var(--signal-text); background: var(--signal-wash); border-radius: var(--r-sm); text-decoration: none;
+    transition: background-color var(--d-quick) var(--ease-out), color var(--d-quick) var(--ease-out); }
+  a.cite:hover, a.cite:focus-visible { background: var(--signal); color: var(--signal-ink); }
+  a.cite[data-tip]:is(:hover, :focus-visible)::after { content: attr(data-tip); position: absolute; bottom: calc(100% + var(--s2)); left: 50%; transform: translateX(-50%); z-index: var(--z-tooltip);
+    width: max-content; max-width: 280px; padding: var(--s2) var(--s3); border-radius: var(--r-md); background: var(--raised-2); color: var(--text-1); box-shadow: var(--shadow-float);
     font: var(--t-small); font-weight: 500; white-space: pre-line; text-align: left; pointer-events: none; animation: rise 0.2s var(--ease); }
 
-  /* Trace: what the agent did, before the answer. */
-  .trace { margin: 0 0 var(--s3); padding: 0; list-style: none; display: grid; gap: var(--s2); }
-  .trace:empty { display: none; }
-  .trace li { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); font: var(--t-small); color: var(--text-2); animation: rise 0.35s var(--ease) both; }
-  .trace li svg { color: var(--faint); }
-  .trace li.memory svg { color: var(--signal-text); }
-  .trace li.wait svg { color: var(--text-3); }
-  .chip { font: var(--t-small); padding: 2px var(--s2); border-radius: 7px; background: var(--panel); box-shadow: 0 0 0 1px var(--line); color: var(--text-2);
+  /* Trace: what the agent did, folded into one quiet line above the answer. */
+  .trace { margin: 0 0 var(--s3); }
+  .trace summary { display: inline-flex; align-items: center; gap: var(--s2); font: var(--t-small); color: var(--text-3); cursor: pointer; list-style: none; border-radius: var(--r-xs);
+    transition: color var(--d-quick) var(--ease-out); }
+  .trace summary::-webkit-details-marker { display: none; }
+  .trace summary::after { content: ""; width: 5px; height: 5px; border: solid currentColor; border-width: 0 1.5px 1.5px 0; transform: translateY(-2px) rotate(45deg);
+    transition: transform var(--d-quick) var(--ease-out); }
+  .trace[open] summary::after { transform: translateY(1px) rotate(225deg); }
+  @media (hover: hover) { .trace summary:hover { color: var(--text-2); } }
+  .trace ol { margin: var(--s2) 0 0; padding: 0; list-style: none; display: grid; gap: var(--s2); }
+  .trace li { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); font: var(--t-small); color: var(--text-2); }
+  .trace li svg { color: var(--text-3); }
+  .chip { font: var(--t-small); padding: 2px var(--s2); border-radius: var(--r-sm); background: var(--raised); box-shadow: inset 0 0 0 1px var(--hairline); color: var(--text-2);
     max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   .sources { margin: var(--s3) 0 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: var(--s2); }
   .sources:empty { display: none; }
-  .sources a { display: flex; align-items: center; gap: var(--s2); max-width: 280px; font: var(--t-small); color: var(--text-2); background: var(--surface); box-shadow: var(--ring);
-    border-radius: 10px; padding: var(--s1) var(--s3) var(--s1) var(--s1); text-decoration: none; transition: color 0.15s, transform 0.2s var(--ease); }
-  .sources a:hover { color: var(--ink); transform: translateY(-1px); }
-  .sources b { font: var(--t-readout); font-weight: 500; font-variant-numeric: tabular-nums; color: var(--signal-text); min-width: 18px; height: 18px; display: grid; place-items: center; border-radius: 6px; background: var(--accent-soft); }
-  .sources img { width: 14px; height: 14px; border-radius: 3px; }
+  .sources a { display: flex; align-items: center; gap: var(--s2); max-width: 280px; font: var(--t-small); color: var(--text-2); background: var(--raised);
+    box-shadow: inset 0 0 0 1px var(--hairline); border-radius: var(--r-sm); padding: var(--s1) var(--s3) var(--s1) var(--s2); text-decoration: none;
+    transition: background-color var(--d-quick) var(--ease-out), color var(--d-quick) var(--ease-out); }
+  @media (hover: hover) { .sources a:hover { background: var(--raised-2); color: var(--text-1); } }
+  .sources b { font: var(--t-readout); font-variant-numeric: tabular-nums; color: var(--text-3); }
+  .sources img { width: 14px; height: 14px; }
   .sources span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .meta { margin-top: var(--s3); display: flex; flex-wrap: wrap; gap: var(--s1) var(--s4); }
   .meta:empty { display: none; }
   .error { color: var(--danger); }
-  .cursor::after { content: ""; display: inline-block; width: 8px; height: 8px; margin-left: var(--s2); border-radius: 50%; background: var(--accent); vertical-align: 1px;
+  .cursor::after { content: ""; display: inline-block; width: 8px; height: 8px; margin-left: var(--s2); border-radius: 50%; background: var(--signal); vertical-align: 1px;
     animation: pulse 1s var(--ease) infinite; }
   .msg.agent .body.cursor:empty { display: block; }
   @keyframes pulse { 50% { transform: scale(0.55); opacity: 0.4; } }
@@ -195,41 +209,42 @@
   /* Status island: one live line for what the agent is doing right now. */
   .dock { position: relative; padding: 0 var(--s6) max(var(--s5), env(safe-area-inset-bottom)); }
   /* Progressive blur (after Skiper's free "progressive blur"): text sinks under the composer. */
-  .dock::before { content: ""; position: absolute; inset: calc(-1 * var(--s10)) 0 100%; pointer-events: none; background: linear-gradient(transparent, var(--bg));
+  .dock::before { content: ""; position: absolute; inset: calc(-1 * var(--s10)) 0 100%; pointer-events: none; background: linear-gradient(transparent, var(--canvas));
     backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); mask-image: linear-gradient(transparent, var(--mask) 70%); }
   .bar { position: relative; z-index: 1; }
   .bar::after { content: ""; position: absolute; inset: 100% 0 -20px; pointer-events: none; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
     mask-image: linear-gradient(var(--mask), transparent); }
-  /* Budget meter (after Bencho's free "context meter"): searches used of the 6 a turn allows. */
-  .budget { display: inline-flex; align-items: center; gap: var(--s2); }
-  .budget i { width: 42px; height: 4px; border-radius: 4px; background: var(--sunk); overflow: hidden; }
-  .budget i::before { content: ""; display: block; height: 100%; width: calc(var(--used) / 6 * 100%); background: var(--accent); border-radius: inherit;
-    animation: fill 0.8s var(--ease) both; }
-  @keyframes fill { from { width: 0; } }
+  /* Search meter (after Bencho's free "context meter"): six cells, one per search a message may use. */
+  .meter { display: inline-flex; align-items: center; gap: var(--s1); margin-right: var(--s2); vertical-align: 1px; }
+  .meter b { width: 14px; height: 6px; border-radius: var(--r-xs); background: var(--hairline-strong); }
+  .meter b.on { background: var(--signal); animation: cell var(--d-detent) var(--ease-out) both; animation-delay: calc(var(--n) * 40ms); }
+  @keyframes cell { from { opacity: 0; } }
   #island { position: absolute; left: 50%; top: calc(-1 * var(--s12)); display: flex; align-items: center; gap: var(--s2); max-width: calc(100% - var(--s12)); padding: var(--s2) var(--s4) var(--s2) var(--s3);
-    border-radius: 999px; background: var(--ink); color: var(--bg); font: var(--t-small); font-weight: 500; white-space: nowrap; box-shadow: var(--shadow-float);
-    opacity: 0; transform: translate(-50%, 12px) scale(0.92); pointer-events: none; transition: opacity 0.25s var(--ease), transform 0.45s var(--spring); }
+    border-radius: var(--r-pill); background: var(--raised-2); color: var(--text-1); font: var(--t-small); font-weight: 500; white-space: nowrap; box-shadow: var(--shadow-float);
+    z-index: var(--z-island); opacity: 0; transform: translate(-50%, var(--s2)) scale(0.96); pointer-events: none;
+    transition: opacity var(--d-detent) var(--ease-out), transform var(--d-detent) var(--ease-out); }
   #island.on { opacity: 1; transform: translate(-50%, 0) scale(1); }
   #island span { overflow: hidden; text-overflow: ellipsis; }
-  #island i { width: 8px; height: 8px; border-radius: 50%; flex: none; background: var(--accent); animation: pulse 1s var(--ease) infinite; }
+  #island i { width: 6px; height: 6px; border-radius: var(--r-xs); flex: none; background: var(--signal); animation: pulse 1s var(--ease) infinite; }
   #island.wait i { background: var(--text-3); }
   #island.error i { background: var(--danger); animation: none; }
-  .composer { max-width: var(--col); margin-inline: auto; display: flex; gap: var(--s2); align-items: flex-end; background: var(--surface); box-shadow: var(--ring);
-    border-radius: 22px; padding: var(--s2) var(--s2) var(--s2) var(--s4); transition: box-shadow 0.2s; }
-  .composer:focus-within { box-shadow: 0 0 0 1px var(--signal-text); }
+  .composer { max-width: var(--col); margin-inline: auto; display: flex; gap: var(--s2); align-items: flex-end; background: var(--raised);
+    box-shadow: inset 0 0 0 1px var(--hairline-strong); border-radius: var(--r-lg); padding: var(--s2) var(--s2) var(--s2) var(--s4); }
+  .composer:focus-within { box-shadow: inset 0 0 0 1px var(--signal-text); }
   textarea { flex: 1; border: 0; outline: 0; resize: none; background: none; color: inherit; font: var(--t-body); max-height: 180px; padding: var(--s2) 0;
     caret-color: var(--signal-text); } /* Skiper's free "smooth caret input", the part CSS can do */
-  textarea::placeholder { color: var(--faint); }
-  textarea:focus-visible { outline: none; } /* the composer ring shows focus */
-  #send { width: 38px; height: 38px; flex: none; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--ink); color: var(--bg);
-    transition: transform 0.3s var(--spring), opacity 0.2s, background 0.2s; }
-  #send:hover { transform: scale(1.06); }
-  #send:active { transform: scale(0.94); }
-  #send:disabled { opacity: 0.25; transform: none; cursor: default; }
-  #send.stop { background: var(--accent); color: var(--accent-ink); }
+  textarea::placeholder { color: var(--text-3); }
+  textarea:focus-visible { outline: none; } /* the composer edge shows focus */
+  /* Send: the one primary action. Stop reuses it with a square icon. */
+  #send { width: 36px; height: 36px; flex: none; display: grid; place-items: center; border: 0; border-radius: var(--r-pill); background: var(--signal); color: var(--signal-ink);
+    transition: transform var(--d-press) var(--ease-out), background-color var(--d-quick) var(--ease-out), color var(--d-quick) var(--ease-out); }
+  @media (hover: hover) { #send:not(:disabled):hover { background: color-mix(in oklab, var(--signal) 86%, var(--text-1)); } }
+  #send:active { transform: scale(0.97); }
+  #send:disabled { background: var(--hairline-strong); color: var(--text-off); cursor: not-allowed; transform: none; }
   #send svg { width: 17px; height: 17px; stroke-width: 2.2; }
+  @media (pointer: coarse) { #send { width: 44px; height: 44px; } }
   .under { max-width: var(--col); margin: var(--s2) auto 0; display: flex; justify-content: space-between; font: var(--t-small); color: var(--text-3); }
-  kbd { font: inherit; padding: 0 var(--s1); border-radius: 5px; box-shadow: 0 0 0 1px var(--line); }
+  kbd { font: inherit; padding: 0 var(--s1); border-radius: var(--r-xs); box-shadow: inset 0 0 0 1px var(--hairline-strong); }
 
   @media (max-width: 820px) {
     body { grid-template-columns: 1fr; }
@@ -263,9 +278,9 @@
   <symbol id="i-wait" viewBox="0 0 24 24"><path d="M7 3h10M7 21h10M8 3c0 5 8 6 8 9s-8 4-8 9M16 3c0 5-8 6-8 9"/></symbol>
   <symbol id="i-go" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
 </svg>
-<aside aria-label="Memory">
+<aside id="memory" aria-label="Memory">
   <div class="brand">
-    <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="var(--ink)"/><circle cx="16" cy="16" r="8.5" fill="none" stroke="var(--accent)" stroke-width="2.5"/><path d="M16 11.5V16l3 2" fill="none" stroke="var(--bg)" stroke-width="2.5" stroke-linecap="round"/></svg>
+    <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--signal)"/><circle cx="16" cy="16" r="8.5" fill="none" stroke="var(--signal-ink)" stroke-width="2.5"/><path d="M16 11.5V16l3 2" fill="none" stroke="var(--signal-ink)" stroke-width="2.5" stroke-linecap="round"/></svg>
     <h1>Asof</h1>
   </div>
   <p class="tagline">Remembers what you asked, and when.</p>
@@ -275,16 +290,16 @@
   </section>
   <div id="timeline"></div>
   <footer>
-    <button class="btn" id="demo" type="button" title="Replays three real questions through the agent with the clock set to past days"><svg class="i"><use href="#i-rewind"/></svg><span>Load demo memory</span></button>
+    <button class="btn" id="demo" type="button" title="Replays three real questions through the agent with the clock set to past days"><svg class="i" aria-hidden="true"><use href="#i-rewind"/></svg><span>Load demo memory</span></button>
     <span class="note">Replays 3 questions, takes about 30 s</span>
   </footer>
 </aside>
 
 <main>
   <div class="bar">
-    <button class="btn" id="menu" type="button" aria-label="Show memory"><svg class="i"><use href="#i-menu"/></svg>Memory</button>
+    <button class="btn" id="menu" type="button" aria-controls="memory" aria-expanded="false"><svg class="i" aria-hidden="true"><use href="#i-menu"/></svg>Memory</button>
     <span class="clock mono" id="clock"></span>
-    <button class="btn" id="new" type="button" title="Starts an empty conversation. Memory is kept."><svg class="i"><use href="#i-plus"/></svg>New chat</button>
+    <button class="btn" id="new" type="button" title="Starts an empty conversation. Memory is kept."><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>New chat</button>
   </div>
   <div id="chat" aria-live="polite"></div>
   <form id="form" class="dock">
@@ -292,7 +307,7 @@
     <div class="composer">
       <label for="input" hidden>Message</label>
       <textarea id="input" rows="1" placeholder="Ask anything. Ask again next week." maxlength="2000" autofocus></textarea>
-      <button id="send" type="submit" aria-label="Send" disabled><svg class="i"><use href="#i-arrow"/></svg></button>
+      <button id="send" type="submit" aria-label="Send" disabled><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></button>
     </div>
     <div class="under"><span><kbd>Enter</kbd> to send, <kbd>Shift</kbd>+<kbd>Enter</kbd> for a new line</span><span>One tool: web search</span></div>
   </form>
@@ -320,7 +335,7 @@ const EXAMPLES = [
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
 const safeUrl = (u) => (/^https?:\/\//i.test(u) ? esc(u) : '#')
 const host = (u) => { try { return new URL(u).hostname.replace(/^www\./, '') } catch { return '' } }
-const icon = (name) => `<svg class="i"><use href="#i-${name}"/></svg>`
+const icon = (name) => `<svg class="i" aria-hidden="true"><use href="#i-${name}"/></svg>`
 const link = (href, inner, attrs = '') => `<a ${attrs} href="${href}" target="_blank" rel="noopener noreferrer">${inner}</a>`
 const timeOf = (ms) => new Date(ms).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 const dayOf = (ms) => new Date(ms).toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
@@ -355,7 +370,7 @@ function addMessage(role, text = '') {
   el.className = `msg ${role}`
   el.innerHTML = role === 'user'
     ? `<div class="body"></div>`
-    : `<ol class="trace"></ol><div class="body"></div><ul class="sources"></ul><div class="meta mono"></div>`
+    : `<details class="trace" hidden><summary></summary><ol></ol></details><div class="body"></div><ul class="sources"></ul><div class="meta mono"></div>`
   el.querySelector('.body').textContent = text
   chat.append(el)
   scrollDown()
@@ -450,7 +465,23 @@ async function send(text) {
   addMessage('user', text)
   const el = addMessage('agent')
   const trace = el.querySelector('.trace'), body = el.querySelector('.body'), meta = el.querySelector('.meta')
-  const step = (kind, html) => { trace.insertAdjacentHTML('beforeend', `<li class="${kind}">${icon(kind)}${html}</li>`); scrollDown() }
+  // The trace folds into one line ("Recalled 3 exchanges, searched 2 times"); the steps open beneath it.
+  const did = { recalled: 0, missing: false, searched: 0, waited: 0 }
+  const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`
+  const summary = () => {
+    const parts = [
+      did.recalled ? `recalled ${plural(did.recalled, 'exchange')}` : did.missing ? 'nothing remembered for that day' : '',
+      did.searched ? `searched ${plural(did.searched, 'time')}` : '',
+      did.waited ? `waited ${did.waited} s for the model` : '',
+    ].filter(Boolean).join(', ')
+    return parts.charAt(0).toUpperCase() + parts.slice(1)
+  }
+  const step = (kind, html) => {
+    trace.querySelector('ol').insertAdjacentHTML('beforeend', `<li class="${kind}">${icon(kind)}${html}</li>`)
+    trace.querySelector('summary').textContent = summary()
+    trace.hidden = false
+    scrollDown()
+  }
   let answer = '', sources = [], firstTokenMs = 0
   const started = performance.now()
   const paint = () => { body.innerHTML = markdown(answer, sources); scrollDown() }
@@ -462,15 +493,19 @@ async function send(text) {
     for await (const e of stream('/api/chat', { userId, threadId, message: text, tz }, busy.signal)) {
       if (e.type === 'memory') {
         const found = e.windows.filter((w) => w.count)
+        did.recalled += found.reduce((n, w) => n + w.count, 0) + (e.related || 0)
+        did.missing = !found.length && e.windows.length > 0
         if (found.length) step('memory', `Remembered ${found.map((w) => `${w.count} from <b>${esc(w.label)}</b>`).join(', ')}`)
         else if (e.windows.length) step('memory', `Nothing remembered for ${e.windows.map((w) => `<b>${esc(w.label)}</b>`).join(' or ')}`)
         if (e.related) step('memory', `Remembered ${e.related} related exchange${e.related > 1 ? 's' : ''}`)
         status('Thinking')
       } else if (e.type === 'search') {
         answer = ''; paint() // anything said before a search was a preamble, not the answer
+        did.searched += e.queries.length
         step('search', `Searched ${e.queries.map((q) => `<span class="chip">${esc(q)}</span>`).join('')}`)
         status(e.queries.length > 1 ? `Searching ${e.queries.length} queries in parallel` : 'Searching the web')
       } else if (e.type === 'wait') {
+        did.waited += e.seconds
         step('wait', `Model rate limit reached, retrying in ${e.seconds} s`)
         status(`Rate limited, retrying in ${e.seconds} s`, 'wait')
       } else if (e.type === 'sources') {
@@ -486,8 +521,8 @@ async function send(text) {
           `title="${esc(s.title)}"`)}</li>`).join('')
         const secs = (ms) => (ms / 1000).toFixed(1) + ' s'
         meta.innerHTML = [timeOf(e.askedAt), `first word ${secs(firstTokenMs)}`, `done ${secs(performance.now() - started)}`,
-          e.searches ? `<span class="budget" title="Searches used of the 6 allowed per message"><i style="--used:${Math.min(e.searches, 6)}"></i>${e.searches} of 6 searches</span>`
-            : 'from memory, no search'].map((s) => `<span>${s}</span>`).join('')
+          e.searches ? `<span class="meter" aria-hidden="true">${Array.from({ length: 6 }, (_, i) => `<b class="${i < e.searches ? 'on' : ''}" style="--n:${i}"></b>`).join('')}</span>${e.searches} of 6 searches`
+            : 'Answered from memory'].map((s) => `<span>${s}</span>`).join('')
         loadTimeline()
       } else if (e.type === 'error') {
         throw new Error(e.message)
@@ -531,8 +566,18 @@ input.addEventListener('input', () => {
   if (!busy) sendBtn.disabled = !input.value.trim()
 })
 $('new').addEventListener('click', () => { if (busy) return; threadId = crypto.randomUUID(); welcome(); input.focus() })
-$('menu').addEventListener('click', (e) => { e.stopPropagation(); document.body.classList.toggle('menu-open') })
-chat.addEventListener('click', () => document.body.classList.remove('menu-open'))
+// Phone drawer: the button reports its state, Escape or a tap outside closes it, focus moves in and comes back.
+const menuBtn = $('menu'), memory = $('memory')
+function setMenu(open) {
+  if (document.body.classList.contains('menu-open') === open) return
+  document.body.classList.toggle('menu-open', open)
+  menuBtn.setAttribute('aria-expanded', String(open))
+  if (open) memory.querySelector('button:not(:disabled), summary')?.focus()
+  else if (memory.contains(document.activeElement)) menuBtn.focus()
+}
+menuBtn.addEventListener('click', (e) => { e.stopPropagation(); setMenu(!document.body.classList.contains('menu-open')) })
+document.querySelector('main').addEventListener('click', () => setMenu(false))
+addEventListener('keydown', (e) => { if (e.key === 'Escape') setMenu(false) })
 // Time scrubber (after Bencho's free block): click a day, or press and drag across the bars.
 function jumpTo(b) {
   const group = b && !b.disabled && $(`d-${b.dataset.day}`)
