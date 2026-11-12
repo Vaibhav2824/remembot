@@ -10,7 +10,10 @@
 <meta name="description" content="A chat agent with one tool, web search, that remembers what you asked and when.">
 <meta property="og:title" content="Remembot">
 <meta property="og:description" content="Ask something. Ask again next week. A chat agent that remembers what you asked, and when.">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
@@ -19,7 +22,7 @@
   try { if (localStorage.getItem('remembot-sidebar') === 'closed') document.documentElement.classList.add('collapsed') } catch {} // before paint: no flash of the open sidebar
 </script>
 <style>
-  /* Tokens. Brand: warm paper, ink, and one accent (Ribbon, the bookmark in the mark). Light and dark. */
+  /* Tokens from the brand kit (brand/README.md): Paper, Linen, Ink, Stone and one accent, Now (the dot in the mark). Light and dark. */
   :root {
     --canvas: #faf8f4; --side-bg: #f3f0ea; --raised: #ffffff; --raised-2: #efebe3; --sunken: #e9e5dc;
     --hairline: rgb(27 26 23 / 0.1); --hairline-strong: rgb(27 26 23 / 0.18);
@@ -64,7 +67,7 @@
   button, summary { touch-action: manipulation; -webkit-user-select: none; user-select: none; }
   :focus-visible { outline: 2px solid var(--signal-text); outline-offset: 2px; }
   svg.i { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
-  .mark { width: 24px; height: 24px; flex: none; fill: var(--signal); }
+  .mark { width: 22px; height: 22px; flex: none; color: var(--text-1); }
   .mono { font: var(--t-readout); color: var(--text-3); font-variant-numeric: tabular-nums; }
   .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .skip { position: absolute; left: var(--s3); top: calc(-1 * var(--s16)); z-index: var(--z-tooltip); background: var(--text-1); color: var(--canvas); padding: var(--s2) var(--s3); border-radius: var(--r-sm); }
@@ -147,7 +150,7 @@
   main.empty .bar { position: absolute; inset: 0 0 auto; }
   main.empty #chat { flex: 0 0 auto; overflow: visible; padding-bottom: var(--s6); }
   .welcome { display: flex; align-items: center; justify-content: center; gap: var(--s3); }
-  .welcome .mark { width: 34px; height: 34px; }
+  .welcome .mark { width: 30px; height: 30px; }
   .welcome h2 { margin: 0; font: var(--t-greet); letter-spacing: -0.015em; text-wrap: balance; text-align: center; }
   .tries { display: none; list-style: none; max-width: var(--col); margin: var(--s4) auto 0; padding: 0; flex-wrap: wrap; justify-content: center; gap: var(--s2); }
   main.empty .tries { display: flex; }
@@ -254,7 +257,8 @@
 <body>
 <a class="skip" href="#input">Skip to message box</a>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <symbol id="i-mark" viewBox="0 0 256 256"><path d="M58 40H98V216L78 200L58 216Z M98 40H134A56 56 0 0 1 134 152H98Z M98 80V112H134A16 16 0 0 0 134 80Z M120 140H160L198 216H158Z"/></symbol>
+  <!-- Strata, the Remembot mark (small-size cut): three layers of dated answers in ink, the dot is now. -->
+  <symbol id="i-mark" viewBox="0 0 256 256"><path fill="currentColor" d="M48 24H208A28 28 0 0 1 208 80H48A28 28 0 0 1 48 24Z M48 100H160A28 28 0 0 1 160 156H48A28 28 0 0 1 48 100Z M48 176H88A28 28 0 0 1 88 232H48A28 28 0 0 1 48 176Z"/><path fill="var(--signal)" d="M178 204A29 29 0 1 1 236 204A29 29 0 1 1 178 204Z"/></symbol>
   <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></symbol>
   <symbol id="i-stop" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="2" fill="currentColor" stroke="none"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>

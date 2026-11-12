@@ -39,6 +39,12 @@ createServer(async (req, res) => {
 const STATIC: Record<string, [string, string]> = {
   '/': ['index.html', 'text/html; charset=utf-8'],
   '/favicon.svg': ['favicon.svg', 'image/svg+xml'],
+  '/favicon.ico': ['favicon.ico', 'image/x-icon'],
+  '/apple-touch-icon.png': ['apple-touch-icon.png', 'image/png'],
+  '/icon-192.png': ['icon-192.png', 'image/png'],
+  '/icon-512.png': ['icon-512.png', 'image/png'],
+  '/maskable-512.png': ['maskable-512.png', 'image/png'],
+  '/site.webmanifest': ['site.webmanifest', 'application/manifest+json'],
 }
 async function page(req: Request): Promise<Response> {
   const file = STATIC[new URL(req.url).pathname]

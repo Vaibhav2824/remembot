@@ -1,0 +1,28 @@
+{
+  "brand": "Remembot",
+  "tagline": "Ask again next week",
+  "brief": "A chat agent with one tool, web search, that remembers every answer with the date you asked, so you can come back and check whether it still holds.",
+  "adjectives": ["calm", "trustworthy", "precise", "warm"],
+  "criteria": "Distinct from AI clichés (sparkles, brains, robots, purple gradients), clear at 16 px, works in one colour, says memory over time without a clock.",
+  "industry": "software",
+  "mockups": ["website", "favicon-tab", "app-icon", "readme", "social", "sticker"],
+  "nav": ["Ask", "Memory", "GitHub"],
+  "brand_color": "#b42d43",
+  "greyscale": false,
+  "designer": "Vaibhav2824",
+  "round": 2,
+  "concepts": [
+    {
+      "name": "Strata",
+      "symbol": "remembot-symbol.svg",
+      "lockup": "remembot-horizontal.svg",
+      "idea": "Three layers of dated answers, newest shortest; the crimson dot is now.",
+      "rationale": [
+        "Memory as layers in time, not a clock or a brain",
+        "One accent only: the dot marks the present answer",
+        "Built on a 20-unit grid: 40-unit bars, one radius, small-size cut for 16 px"
+      ]
+    }
+  ],
+  "recommendation": "Strata: memory as layers in time, readable at 16 px, and the dot gives the UI one meaningful accent."
+}
