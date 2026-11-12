@@ -30,14 +30,20 @@ Any OpenAI-compatible endpoint works: set `LLM_BASE_URL` and `LLM_MODEL` in `.en
 
 - **Each answer leads.** Above it, one quiet line says what the agent did ("Recalled 3 exchanges, searched 3 times"); click it to see the memory windows and the exact queries. Citations like `1` link to the source, show its title on hover or focus, and the cited sources sit under the answer.
 - **The readout line** under each answer gives the time, how long the first word and the whole answer took, and a six-cell meter of the searches used out of the 6 a message allows ("Answered from memory" when none).
-- **Memory is the left panel.** The 14-day bars show how many questions you asked each day: drag across them, or focus them and use the arrow keys, to jump the timeline to that day. Open a timeline row to read the stored answer and its sources.
-- **On a phone** the panel becomes a drawer behind the **Memory** button (Escape or a tap outside closes it).
-- **Scrolling is smoothed (Lenis).** A streaming answer is followed while you are at the bottom; scroll up to read and it stops, showing **Jump to latest**. Each finished answer has **Copy answer**.
+- **Memory is the left panel.** The 14-day bars show how many questions you asked each day: drag across them, or focus them and use the arrow keys, to jump the timeline to that day. As you scroll the timeline, the bar for the day in view lights up and day headings stay pinned. Open a timeline row to read the stored answer and its sources.
+- **Collapse the panel** with the button beside the name, or **Ctrl+B** (**Cmd+B** on a Mac); **Memory** in the top bar brings it back. The choice is remembered. On a phone the panel is a drawer behind **Memory** (Escape or a tap outside closes it).
+- **Scrolling is smoothed (Lenis).** On the empty screen, scroll down for a short tour of how Remembot remembers. A streaming answer is followed while you are at the bottom; scroll up to read and it stops, showing **Jump to latest**. A thin line under the top bar shows how far down the chat you are. Each finished answer has **Copy answer**.
 - Light and dark follow your system setting. With reduced motion on, the animations, smooth scrolling and the welcome background are switched off.
 
 ## Try the questions from the brief
 
-A new install has no past. Click **Load demo memory**: it replays three real questions through the agent with the clock set to 3 November, last Monday and last Tuesday (live searches, real answers, backdated timestamps). It takes about half a minute and uses ten searches, so on free keys give it a minute before asking:
+A new install has no past. To give it one, replay three real questions with the clock set to 3 November, last Monday and last Tuesday (live searches, real answers, backdated timestamps). There is no button for this in the UI; call the endpoint with the id your browser uses (run `localStorage.getItem('remembot-user')` in the console) and reload:
+
+```bash
+curl -N localhost:3000/api/demo -H 'content-type: application/json' -d '{"userId": "<your id>", "tz": 330}'
+```
+
+It takes about half a minute and uses ten searches, so on free keys give it a minute before asking:
 
 - "Last Tuesday I asked you about Postgres hosting. Has any pricing changed since then?"
 - "What did I ask you on 3 November? Is your answer still correct today?"
@@ -81,7 +87,6 @@ npm run typecheck
 | `src/worker.ts` | Cloudflare Workers entry point and D1 adapter |
 | `src/demo.ts` | Demo memory replay |
 | `public/index.html` | The UI: one file of HTML, CSS and JS, no framework, no build |
-| `.interface-design/system.md` | The UI's design system: colour, type, spacing and motion tokens, and the rules for each component |
 | `schema.sql` | The one table and its search index |
 
 ## Deploy to Cloudflare (optional)

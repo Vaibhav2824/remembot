@@ -13,17 +13,23 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23111214'/%3E%3Ccircle cx='16' cy='16' r='8.5' fill='none' stroke='%23f0a43a' stroke-width='2.5'/%3E%3Cpath d='M16 11.5V16l3 2' fill='none' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://unpkg.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script>document.documentElement.classList.add('js')</script>
+<script>
+  document.documentElement.classList.add('js')
+  try { if (localStorage.getItem('remembot-sidebar') === 'closed') document.documentElement.classList.add('collapsed') } catch {} // before paint: no flash of the open sidebar
+</script>
 <style>
   /* Hallmark · shape: app screen · genre: atmospheric · theme: custom
    * paper: oklch(0.182 0.004 264.5) · accent: oklch(0.776 0.146 70.8) · display: Geist · body: Geist
-   * nav: memory sidebar, a drawer under 820px · signature: the six-cell search meter and the 14-day scrubber · states: loading, empty, failed load, streaming, waiting, stopped, answer failed
+   * nav: memory sidebar, collapsible on desktop, a drawer under 820px · signature: the six-cell search meter and the 14-day scrubber · states: loading, empty, failed load, streaming, waiting, stopped, answer failed
    * axes: graphite/Geist/amber · posture: restrained · contrast: pass · v2.0.0 */
   /* Hallmark · pre-emit critique: P4 H5 E4 S4 R5 V3 · weakest: V, the two-pane chat shell is familiar; the meter, scrubber and dated trace carry the identity instead */
+  /* Hallmark · dismissed 40 · .btn:disabled styles inactive buttons; none is disabled in this UI today, and WCAG 1.4.3 exempts inactive controls from contrast */
   /* Hallmark · waive 39b · the three welcome example rows each hold a full question, two lines at 1440 · a row grows with its question; trimming it would hide what each example shows */
-  /* Hallmark · dismissed 40 · .btn:disabled is Load demo memory while an answer streams; WCAG 1.4.3 exempts inactive controls from contrast */
-  /* Tokens: the Instrument system, .interface-design/system.md. No literal values past this block. */
+  /* Tokens: every colour, size, gap and duration. No literal values past this block. */
   :root {
     --canvas: #f6f6f7; --raised: #ffffff; --raised-2: #efeff1; --sunken: #ececee;
     --hairline: rgb(20 20 22 / 0.09); --hairline-strong: rgb(20 20 22 / 0.16);
@@ -35,16 +41,16 @@
     --sans: Geist, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
     --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
     --t-display: 600 32px/1.1 var(--sans); --t-title: 600 18px/1.35 var(--sans); --t-body: 400 15px/1.65 var(--sans);
-    --t-ui: 500 14px/1.4 var(--sans); --t-small: 400 13px/1.45 var(--sans); --t-readout: 400 12px/1.4 var(--mono);
+    --t-headline: 600 24px/1.2 var(--sans); --t-ui: 500 14px/1.4 var(--sans); --t-small: 400 13px/1.45 var(--sans); --t-readout: 400 12px/1.4 var(--mono);
 
     --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 20px; --s6: 24px; --s8: 32px; --s10: 40px; --s12: 48px; --s16: 64px;
     --side: 288px; --col: 720px; --measure: 68ch;
     --r-xs: 2px; --r-sm: 6px; --r-md: 10px; --r-lg: 14px; --r-pill: 999px;
-    --d-press: 120ms; --d-quick: 160ms; --d-detent: 200ms; --d-drawer: 280ms;
+    --d-press: 120ms; --d-quick: 160ms; --d-detent: 200ms; --d-drawer: 280ms; --d-panel: 480ms;
     --ease-out: cubic-bezier(0.23, 1, 0.32, 1); --ease-move: cubic-bezier(0.77, 0, 0.175, 1); --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
     --z-bar: 10; --z-drawer: 20; --z-island: 30; --z-tooltip: 40;
 
-    /* Transitional aliases: old names point at the system until each area is migrated, then go. */    color-scheme: light;
+    color-scheme: light;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -137,9 +143,6 @@
   .memory-note b { display: block; margin-bottom: var(--s1); font-weight: 500; color: var(--text-2); }
   .memory-note.error { color: var(--danger); }
   .scrub-empty { margin: var(--s2) var(--s1) 0; }
-  aside footer { padding: var(--s4); border-top: 1px solid var(--hairline); display: grid; gap: var(--s2); }
-  aside footer .btn { justify-content: center; width: 100%; }
-  aside footer .note { text-align: center; }
 
   /* ---------- Chat ---------- */
   main { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
@@ -170,8 +173,6 @@
   .examples button:focus-visible { outline: 2px solid var(--signal-text); outline-offset: -2px; }
   .examples .tag { font: var(--t-small); color: var(--text-3); }
   .examples .q { font: var(--t-ui); color: var(--text-1); text-wrap: pretty; }
-  .hint { margin: 0; max-width: 54ch; font: var(--t-small); color: var(--text-3); display: flex; gap: var(--s2); align-items: flex-start; text-wrap: pretty; }
-  .hint svg { margin-top: 2px; }
   @media (max-width: 480px) { .examples button { grid-template-columns: minmax(0, 1fr); } }
 
   /* Entrances are choreographed with GSAP in the motion layer; without it everything is simply visible. */
@@ -237,7 +238,7 @@
   @keyframes breathe { 50% { opacity: 0.35; } } /* live state: opacity only, no scaling */
 
   /* Status island: one live line for what the agent is doing right now. */
-  .dock { position: relative; z-index: 1; padding: 0 var(--s6) max(var(--s5), env(safe-area-inset-bottom)); }
+  .dock { position: relative; z-index: 1; background: var(--canvas); padding: 0 var(--s6) max(var(--s5), env(safe-area-inset-bottom)); }
   /* Progressive blur (after Skiper's free "progressive blur"): text sinks under the composer. */
   .dock::before { content: ""; position: absolute; inset: calc(-1 * var(--s10)) 0 100%; pointer-events: none; background: linear-gradient(transparent, var(--canvas));
     backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); mask-image: linear-gradient(transparent, var(--mask) 70%); }
@@ -290,19 +291,76 @@
     /* Landscape phones: keep content clear of the notch on either side. */
     .bar, #chat, .dock { padding-left: max(var(--s4), env(safe-area-inset-left, 0px)); padding-right: max(var(--s4), env(safe-area-inset-right, 0px)); }
     aside { padding-top: env(safe-area-inset-top, 0px); }
-    aside footer { padding-bottom: max(var(--s4), env(safe-area-inset-bottom, 0px)); }
+    #timeline { padding-bottom: max(var(--s4), env(safe-area-inset-bottom, 0px)); }
+    #collapse { display: none; }
     .under span:first-child { display: none; }
     .btn { white-space: nowrap; }
   }
   @media (max-width: 480px) {
     .clock { display: none; }
   }
+
+  /* ---------- Collapsible sidebar (desktop). The inner panel keeps its width so text never reflows while the column slides. ---------- */
+  .aside-inner { width: var(--side); height: 100%; display: flex; flex-direction: column; min-height: 0; }
+  .brand { position: relative; }
+  .icon-btn { margin-left: auto; width: 32px; height: 32px; display: grid; place-items: center; padding: 0; border: 0; border-radius: var(--r-sm); background: none; color: var(--text-3);
+    transition: background-color var(--d-quick) var(--ease-out), color var(--d-quick) var(--ease-out), transform var(--d-press) var(--ease-out); }
+  @media (hover: hover) and (pointer: fine) { .icon-btn:hover { background: var(--raised); color: var(--text-1); } }
+  .icon-btn:active { transform: scale(0.94); }
+  @media (min-width: 821px) {
+    html.ready body { transition: grid-template-columns var(--d-panel) var(--ease-drawer); }
+    aside { overflow: hidden; }
+    html.collapsed body { grid-template-columns: 0px minmax(0, 1fr); }
+    html.collapsed aside { visibility: hidden; border-right-color: transparent; transition: visibility 0s var(--d-panel); }
+    html.collapsed #menu { display: inline-flex; }
+  }
+  @media (pointer: coarse) { .icon-btn { width: 44px; height: 44px; } }
+
+  /* Reading progress: a hairline under the bar, filled by Lenis as the chat scrolls. */
+  .bar { position: relative; }
+  #progress { position: absolute; left: var(--s6); right: var(--s6); bottom: 0; height: 2px; border-radius: var(--r-xs); background: var(--signal);
+    transform: scaleX(0); transform-origin: 0 50%; opacity: 0.85; transition: opacity var(--d-quick) var(--ease-out); pointer-events: none; }
+  .js #progress:not(.on) { opacity: 0; } /* hidden only when a script can fill it */
+  html:not(.js) #progress { display: none; }
+
+  /* Timeline: day headings stick while their rows scroll beneath; the scrubber marks the day in view. */
+  .day h2 { position: sticky; top: 0; z-index: 1; padding-block: var(--s1); background: var(--canvas); }
+  #days .col.spy:not(.on) i { background: var(--text-2); }
+
+  /* ---------- Scroll story on the welcome screen (Lenis + ScrollTrigger) ---------- */
+  .story { position: relative; margin: var(--s16) 0 var(--s12); padding-left: var(--s8); }
+  .story .rail { position: absolute; left: 0; top: var(--s10); bottom: var(--s10); width: 2px; border-radius: var(--r-xs); background: var(--hairline); }
+  .story .rail i { display: block; height: 100%; border-radius: inherit; background: var(--signal); transform-origin: 50% 0; }
+  .story-head { margin: 0 0 var(--s4); font: var(--t-small); color: var(--text-3); }
+  .step { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 280px); gap: var(--s2) var(--s8); align-items: center; padding: var(--s10) 0; border-top: 1px solid var(--hairline); }
+  .step .num { grid-column: 1; color: var(--signal-text); }
+  .step h3 { grid-column: 1; margin: 0; font: var(--t-headline); letter-spacing: -0.02em; text-wrap: balance; }
+  .step p { grid-column: 1; margin: 0; max-width: 46ch; color: var(--text-2); text-wrap: pretty; }
+  .step .vis { grid-column: 2; grid-row: 1 / span 3; }
+  .vis { padding: var(--s4); border-radius: var(--r-lg); background: var(--raised); box-shadow: inset 0 0 0 1px var(--hairline); }
+  .vis .eg { margin: 0 0 var(--s3); font: var(--t-small); color: var(--text-3); }
+  .vis .line { display: block; height: 8px; margin: 0 0 var(--s2); border-radius: var(--r-xs); background: var(--hairline-strong); }
+  .vis .cites { display: flex; gap: var(--s2); margin-top: var(--s3); }
+  .vis .cites span { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 var(--s1); border-radius: var(--r-sm);
+    font: var(--t-readout); font-weight: 500; color: var(--signal-text); background: var(--signal-wash); }
+  .vis-days { display: grid; grid-template-columns: repeat(14, 1fr); gap: var(--s1); align-items: end; height: 72px; }
+  .vis-days i { height: 100%; border-radius: var(--r-xs); background: var(--text-3); transform: scaleY(calc(0.06 + var(--h) * 0.235)); transform-origin: 50% 100%; }
+  .vis-days i:last-child { background: var(--signal); }
+  .vis-diff .row { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s2) var(--s3); font: var(--t-ui); }
+  .vis-diff .was { position: relative; color: var(--text-3); font-weight: 400; }
+  .vis-diff .strike { position: absolute; left: -2px; right: -2px; top: 55%; height: 1.5px; background: var(--danger); }
+  .vis-diff .now { color: var(--text-1); font-weight: 600; }
+  @media (max-width: 640px) {
+    .step { grid-template-columns: minmax(0, 1fr); }
+    .step .vis { grid-column: 1; grid-row: auto; margin-top: var(--s3); }
+  }
+
   /* Reduced motion: keep fades and colour changes, drop anything that moves or scales. */
   @media (prefers-reduced-motion: reduce) {
     a.cite[data-tip]:is(:hover, :focus-visible)::after { animation-name: fade; transform: translateX(-50%); }
     #island, #island.on { transform: translate(-50%, 0); }
     #days i { transition: background-color var(--d-quick) var(--ease-out); }
-    .trace summary::after, aside { transition: none; }
+    .trace summary::after, aside, html.ready body { transition: none; }
     .btn:active, #send:active { transform: none; }
   }
 </style>
@@ -314,15 +372,17 @@
   <symbol id="i-stop" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="2" fill="currentColor" stroke="none"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
   <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h16"/></symbol>
-  <symbol id="i-rewind" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></symbol>
   <symbol id="i-memory" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
   <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+  <symbol id="i-panel" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M9.5 4v16"/></symbol>
   <symbol id="i-wait" viewBox="0 0 24 24"><path d="M7 3h10M7 21h10M8 3c0 5 8 6 8 9s-8 4-8 9M16 3c0 5-8 6-8 9"/></symbol>
 </svg>
-<aside id="memory" aria-label="Memory">
+<aside id="memory" aria-label="Memory" tabindex="-1">
+ <div class="aside-inner">
   <div class="brand">
     <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--signal)"/><circle cx="16" cy="16" r="8.5" fill="none" stroke="var(--signal-ink)" stroke-width="2.5"/><path d="M16 11.5V16l3 2" fill="none" stroke="var(--signal-ink)" stroke-width="2.5" stroke-linecap="round"/></svg>
     <span class="wordmark">Remembot</span>
+    <button class="icon-btn" id="collapse" type="button" aria-controls="memory" aria-expanded="true" aria-label="Collapse sidebar" title="Collapse sidebar (Ctrl+B)"><svg class="i" aria-hidden="true"><use href="#i-panel"/></svg></button>
   </div>
   <p class="tagline">Remembers what you asked, and when.</p>
   <section class="scrub" aria-label="Last 14 days">
@@ -331,10 +391,7 @@
     <p class="note scrub-empty" id="scrub-empty" hidden>Your questions will show here, one bar per day.</p>
   </section>
   <div id="timeline"><div id="timeline-list" aria-busy="true"><p class="memory-note">Loading memory…</p></div></div>
-  <footer>
-    <button class="btn" id="demo" type="button" title="Replays three real questions through the agent with the clock set to past days"><svg class="i" aria-hidden="true"><use href="#i-rewind"/></svg><span>Load demo memory</span></button>
-    <span class="note">Replays 3 questions, takes about 30 s</span>
-  </footer>
+ </div>
 </aside>
 
 <main>
@@ -343,6 +400,7 @@
   <div class="bar">
     <button class="btn" id="menu" type="button" aria-controls="memory" aria-expanded="false"><svg class="i" aria-hidden="true"><use href="#i-menu"/></svg>Memory</button>
     <span class="clock mono" id="clock"></span>
+    <span id="progress" aria-hidden="true"></span>
     <button class="btn" id="new" type="button" title="Starts an empty conversation. Memory is kept."><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>New chat</button>
   </div>
   <div id="chat"><div id="thread" aria-live="polite"></div></div>
@@ -362,9 +420,10 @@
 <script src="https://unpkg.com/lenis@1.3.27/dist/lenis.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.1/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.1/dist/SplitText.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.1/dist/ScrollTrigger.min.js"></script>
 <script>
 const $ = (id) => document.getElementById(id)
-const chat = $('thread'), scroller = $('chat'), input = $('input'), sendBtn = $('send'), demoBtn = $('demo'), island = $('island')
+const chat = $('thread'), scroller = $('chat'), input = $('input'), sendBtn = $('send'), island = $('island')
 
 // Identity is a random id kept in this browser. Memory belongs to it, across every chat.
 let userId = null
@@ -416,10 +475,29 @@ function markdown(text, sources) {
 // Every effect is optional: if a library fails to load, or the reader prefers reduced motion, the page works the same without it.
 const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches
 const G = () => (window.gsap && !calm() ? gsap : null)
-if (window.gsap && window.SplitText) gsap.registerPlugin(SplitText)
+if (window.gsap) gsap.registerPlugin(...[window.SplitText, window.ScrollTrigger].filter(Boolean))
 const smooth = (wrapper, content) => (window.Lenis ? new Lenis({ wrapper, content, lerp: 0.12, autoRaf: !window.gsap }) : null)
 const chatScroll = smooth(scroller, chat), timeScroll = smooth($('timeline'), $('timeline-list'))
 if (window.gsap) { gsap.ticker.add((t) => { chatScroll?.raf(t * 1000); timeScroll?.raf(t * 1000) }); gsap.ticker.lagSmoothing(0) }
+if (chatScroll && window.ScrollTrigger) chatScroll.on('scroll', ScrollTrigger.update)
+
+// Reading progress under the bar, driven by the chat's scroll (Lenis when present).
+const progress = $('progress')
+const showProgress = () => {
+  const max = scroller.scrollHeight - scroller.clientHeight
+  progress.classList.toggle('on', max > 40)
+  progress.style.transform = `scaleX(${max > 0 ? Math.min(1, scroller.scrollTop / max) : 0})`
+}
+chatScroll ? chatScroll.on('scroll', showProgress) : scroller.addEventListener('scroll', showProgress, { passive: true })
+
+// Scroll-spy: as the timeline scrolls, the scrubber marks the day at the top of the list.
+const spy = () => {
+  const top = $('timeline').getBoundingClientRect().top + 24
+  let current = null
+  for (const d of document.querySelectorAll('#timeline-list .day')) { if (d.getBoundingClientRect().top <= top) current = d.id.slice(2); else break }
+  for (const c of $('days').children) c.classList.toggle('spy', c.dataset.day === current)
+}
+timeScroll ? timeScroll.on('scroll', spy) : $('timeline').addEventListener('scroll', spy, { passive: true })
 
 // Follow the stream only while the reader is at the bottom; if they scroll up, offer a way back instead of yanking them down.
 let pinned = true
@@ -470,6 +548,26 @@ const motion = {
     g.from('#days i', { scaleY: 0, duration: 0.8, ease: 'expo.out', stagger: 0.03, clearProps: 'transform', onComplete: () => days.classList.remove('still') })
   },
   rows(box) { G()?.from(box.querySelectorAll('.day'), { opacity: 0, y: 8, duration: 0.5, ease: 'expo.out', stagger: 0.05 }) },
+  // The welcome scroll story: each step, its picture and the rail are tied to scroll position (scrubbed), so Lenis's glide drives them.
+  story(section) {
+    this.unstory()
+    const g = G()
+    if (!g || !window.ScrollTrigger || !section) return
+    this.storyCtx = g.context(() => {
+      // clamp() keeps start and end inside the scrollable range, so the last step can finish even though the page ends below it.
+      const st = (trigger, start, end) => ({ trigger, scroller, start: `clamp(${start})`, end: `clamp(${end})`, scrub: true })
+      g.fromTo(section.querySelector('.rail i'), { scaleY: 0 }, { scaleY: 1, ease: 'none', scrollTrigger: st(section, 'top 70%', 'bottom 60%') })
+      section.querySelectorAll('.step').forEach((step) => g.from(step, { opacity: 0, y: 32, ease: 'none', scrollTrigger: st(step, 'top 95%', 'top 55%') })) // the step moves as one, so its parts never overlap
+      g.from(section.querySelectorAll('.vis-ask .line, .vis-ask .cites span'), { scaleX: 0, transformOrigin: '0 50%', stagger: 0.08, ease: 'none', scrollTrigger: st(section.querySelector('.vis-ask'), 'top 90%', 'top 50%') })
+      g.from(section.querySelectorAll('.vis-days i'), { scaleY: 0, stagger: 0.04, ease: 'none', scrollTrigger: st(section.querySelector('.vis-days'), 'top 92%', 'top 55%') })
+      const diff = section.querySelector('.vis-diff')
+      g.timeline({ scrollTrigger: st(diff, 'top 90%', 'top 50%') })
+        .from(diff.querySelector('.strike'), { scaleX: 0, transformOrigin: '0 50%', ease: 'none' })
+        .from(diff.querySelector('.now'), { opacity: 0, x: -10, ease: 'none' })
+    })
+    document.fonts.ready.then(() => window.ScrollTrigger?.refresh())
+  },
+  unstory() { this.storyCtx?.revert(); this.storyCtx = null },
 }
 
 // Vanta ambient: a slow field of linked points (memories) behind the empty welcome screen only.
@@ -488,6 +586,7 @@ async function ambient(on) {
     return
   }
   if (vanta || !G() || innerWidth < 820 || navigator.connection?.saveData) return
+  await new Promise((ok) => (window.requestIdleCallback ? requestIdleCallback(ok, { timeout: 1500 }) : setTimeout(ok, 300)))
   try { for (const src of AMBIENT) await load(src) } catch { return }
   if (vanta || !chat.querySelector('.welcome') || !window.VANTA) return
   vanta = VANTA.NET({ el, mouseControls: true, touchControls: false, gyroControls: false, color: hex('--signal'), backgroundColor: hex('--canvas'),
@@ -514,10 +613,34 @@ function welcome() {
     <p class="lede">One tool, web search. Every exchange is remembered with the time it happened, so you can ask what you asked, when, and whether the answer still holds.</p>
     <ul class="examples" aria-label="Try one">${EXAMPLES.map(([tag, q], i) => `<li><button type="button" data-q="${esc(q)}">
       <span class="tag">${esc(tag)}</span><span class="q">${esc(q)}</span></button></li>`).join('')}</ul>
-    <p class="hint">${icon('rewind')}<span>New here? “Load demo memory” replays three real questions as if asked on 3 November, last Monday and last Tuesday.</span></p>
-  </section>`
+  </section>
+    <section class="story" aria-labelledby="story-head">
+      <p class="story-head" id="story-head">How Remembot remembers</p>
+      <span class="rail" aria-hidden="true"><i></i></span>
+      <article class="step">
+        <span class="num mono">01</span>
+        <h3>Ask anything</h3>
+        <p>It searches the web, reads what it finds and answers with numbered sources you can open.</p>
+        <div class="vis vis-ask" aria-hidden="true"><p class="eg">Example answer</p><span class="line" style="width: 92%"></span><span class="line" style="width: 78%"></span><span class="line" style="width: 54%"></span><div class="cites"><span>1</span><span>2</span><span>3</span></div></div>
+      </article>
+      <article class="step">
+        <span class="num mono">02</span>
+        <h3>Every answer keeps its date</h3>
+        <p>Each exchange is saved with when you asked and what it cited. The Memory panel shows your last 14 days, one bar per day.</p>
+        <div class="vis" aria-hidden="true"><div class="vis-days">${[1, 0, 2, 0, 0, 3, 1, 0, 4, 2, 0, 1, 0, 3].map((h) => `<i style="--h:${h}"></i>`).join('')}</div></div>
+      </article>
+      <article class="step">
+        <span class="num mono">03</span>
+        <h3>Ask again next week</h3>
+        <p>Name a day or a topic. It finds the old answer, checks it against today and tells you what changed.</p>
+        <div class="vis vis-diff" aria-hidden="true"><p class="eg">Example recheck</p><div class="row"><span>Starter plan</span><span class="was">$15<span class="strike"></span></span><span class="now">$20 a seat</span></div></div>
+      </article>
+    </section>`
   chat.querySelectorAll('.examples button').forEach((b) => b.addEventListener('click', () => send(b.dataset.q)))
   motion.welcome(chat.querySelector('.welcome'))
+  motion.story(chat.querySelector('.story'))
+  chatScroll ? chatScroll.scrollTo(0, { immediate: true }) : (scroller.scrollTop = 0)
+  showProgress()
   ambient(true)
 }
 
@@ -607,13 +730,12 @@ function setBusy(controller) {
   sendBtn.setAttribute('aria-label', busy ? 'Stop' : 'Send')
   sendBtn.innerHTML = icon(busy ? 'stop' : 'arrow')
   sendBtn.disabled = !busy && !input.value.trim()
-  demoBtn.disabled = !!busy
 }
 
 async function send(text) {
   text = text.trim()
   if (!text || busy) return
-  if (chat.querySelector('.welcome')) { chat.innerHTML = ''; ambient(false) }
+  if (chat.querySelector('.welcome')) { motion.unstory(); chat.innerHTML = ''; ambient(false) }
   pinned = true
   input.value = ''; input.style.height = 'auto'
   addMessage('user', text)
@@ -671,7 +793,7 @@ async function send(text) {
         const shown = body.innerHTML // rendered, so 【n†…】 citations are already normalised to [n] links
         const cited = sources.filter((s) => shown.includes(`>${s.n}</a>`))
         el.querySelector('.sources').innerHTML = cited.map((s) => `<li>${link(safeUrl(s.url),
-          `<b>${s.n}</b><img src="https://icons.duckduckgo.com/ip3/${esc(host(s.url))}.ico" alt="" loading="lazy" onerror="this.remove()"><span>${esc(s.title)}</span>`,
+          `<b>${s.n}</b><img src="https://icons.duckduckgo.com/ip3/${esc(host(s.url))}.ico" alt="" loading="lazy" decoding="async" onerror="this.remove()"><span>${esc(s.title)}</span>`,
           `title="${esc(s.title)}"`)}</li>`).join('')
         const secs = (ms) => (ms / 1000).toFixed(1) + ' s'
         meta.innerHTML = [timeOf(e.askedAt), `first word ${secs(firstTokenMs)}`, `done ${secs(performance.now() - started)}`,
@@ -700,26 +822,6 @@ async function send(text) {
   input.focus()
 }
 
-async function loadDemo() {
-  if (busy) return
-  setBusy(new AbortController())
-  const label = demoBtn.querySelector('span'), original = label.textContent
-  status('Replaying demo memory')
-  try {
-    for await (const e of stream('/api/demo', { userId, tz }, busy.signal)) {
-      if (e.type === 'demo') { label.textContent = `Replaying ${e.step} of ${e.total}`; status(`Replaying ${e.step} of ${e.total}: ${e.label}`) }
-      if (e.type === 'error') throw new Error(e.message)
-      await loadTimeline()
-    }
-    status('')
-  } catch (err) {
-    if (err.name !== 'AbortError') status(`Couldn’t load demo memory: ${err.message.replace(/\.$/, '')}`, 'error')
-  }
-  label.textContent = original
-  setBusy(null)
-  await loadTimeline()
-}
-
 // ---------- wiring ----------
 $('form').addEventListener('submit', (e) => { e.preventDefault(); busy ? busy.abort() : send(input.value) })
 input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); send(input.value) } })
@@ -734,10 +836,35 @@ function setMenu(open) {
   if (document.body.classList.contains('menu-open') === open) return
   document.body.classList.toggle('menu-open', open)
   menuBtn.setAttribute('aria-expanded', String(open))
-  if (open) memory.querySelector('button:not(:disabled), summary')?.focus()
+  if (open) ([...memory.querySelectorAll('button:not(:disabled), summary, [tabindex="0"]')].find((el) => el.offsetParent !== null) || memory).focus() // first visible control, or the drawer itself when memory is empty
   else if (memory.contains(document.activeElement)) menuBtn.focus()
 }
-menuBtn.addEventListener('click', (e) => { e.stopPropagation(); setMenu(!document.body.classList.contains('menu-open')) })
+// Desktop sidebar: collapses fully; the Memory button in the bar (or Ctrl/Cmd+B) brings it back. The choice is remembered.
+const desktop = matchMedia('(min-width: 821px)'), collapseBtn = $('collapse'), root = document.documentElement
+function setSidebar(open) {
+  root.classList.toggle('collapsed', !open)
+  memory.inert = !open
+  collapseBtn.setAttribute('aria-expanded', String(open))
+  menuBtn.setAttribute('aria-expanded', String(open))
+  try { localStorage.setItem('remembot-sidebar', open ? 'open' : 'closed') } catch {}
+  if (open) setTimeout(() => { timeScroll?.resize(); collapseBtn.focus({ preventScroll: true }) }, 500)
+  else if (memory.contains(document.activeElement) || document.activeElement === collapseBtn) menuBtn.focus()
+}
+const syncLayout = () => {
+  memory.inert = desktop.matches && root.classList.contains('collapsed')
+  if (desktop.matches) menuBtn.setAttribute('aria-expanded', String(!root.classList.contains('collapsed')))
+}
+desktop.addEventListener('change', syncLayout); syncLayout()
+requestAnimationFrame(() => requestAnimationFrame(() => root.classList.add('ready'))) // animate toggles, not the first paint
+collapseBtn.addEventListener('click', () => setSidebar(false))
+menuBtn.addEventListener('click', (e) => {
+  e.stopPropagation()
+  if (desktop.matches) setSidebar(root.classList.contains('collapsed'))
+  else setMenu(!document.body.classList.contains('menu-open'))
+})
+addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b' && desktop.matches) { e.preventDefault(); setSidebar(root.classList.contains('collapsed')) }
+})
 document.querySelector('main').addEventListener('click', () => setMenu(false))
 addEventListener('keydown', (e) => { if (e.key === 'Escape') setMenu(false) })
 // Time scrubber (after Bencho's free block): click a day, or press and drag across the bars.
@@ -768,7 +895,6 @@ $('days').addEventListener('keydown', (e) => {
   e.preventDefault()
   jumpTo(has[Math.max(0, Math.min(last, next))])
 })
-demoBtn.addEventListener('click', loadDemo)
 const tick = () => { $('clock').textContent = `${dayOf(Date.now())}, ${timeOf(Date.now())}` }
 tick(); setInterval(tick, 30_000)
 welcome()
