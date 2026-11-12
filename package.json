@@ -1,5 +1,5 @@
 {
-  "name": "asof-agent",
+  "name": "remembot",
   "version": "1.0.0",
   "description": "A chat agent with one tool (web search) that remembers what you asked and when.",
   "type": "module",

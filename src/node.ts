@@ -11,7 +11,7 @@ const port = Number(process.env.PORT) || 3000
 
 let app: App
 try {
-  app = createApp(openSqlite(process.env.DB_PATH || 'asof.db'), process.env)
+  app = createApp(openSqlite(process.env.DB_PATH || 'remembot.db'), process.env)
 } catch (err) {
   console.error(`\n  ${err instanceof Error ? err.message : err}\n`)
   process.exit(1)
@@ -33,7 +33,7 @@ createServer(async (req, res) => {
     if ((err as NodeJS.ErrnoException).code !== 'ERR_STREAM_PREMATURE_CLOSE') console.error(err)
     res.destroy()
   }
-}).listen(port, () => console.log(`\n  Asof is running at http://localhost:${port}\n`))
+}).listen(port, () => console.log(`\n  Remembot is running at http://localhost:${port}\n`))
 
 // The whole UI is one static file. (On Cloudflare the platform serves it.)
 async function page(req: Request): Promise<Response> {

@@ -1,4 +1,4 @@
-# Asof: design
+# Remembot: design
 
 The brief: answer fast, get things right, remember what was asked and when. Its three sample questions share one shape: **a time phrase, a past exchange, a fresh look at the web, a diff.** The design follows that shape.
 

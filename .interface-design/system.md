@@ -1,4 +1,4 @@
-# Asof design system: Instrument
+# Remembot design system: Instrument
 
 The source of truth for `public/index.html`. Every colour, size, gap, radius, shadow and duration in the CSS comes from a token below. No literal values past the `:root` token block.
 

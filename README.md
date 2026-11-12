@@ -1,7 +1,7 @@
-# Asof
+# Remembot
 
 A chat agent with one tool, web search, that remembers what you asked and when.
-**Live demo:** https://asof-agent.asof-agent.workers.dev (runs on my free-tier keys, so it can be slow or capped; local is the real thing)
+**Live demo:** https://remembot.asof-agent.workers.dev (runs on my free-tier keys, so it can be slow or capped; local is the real thing)
 
 Built for the [minimi hiring challenge](https://app.notion.com/p/minimi-hiring-challenge-build-a-chat-agent-4100a8b933b181b98277d8ea5a534d6f). The reasoning is in [DESIGN.md](DESIGN.md).
 
@@ -56,7 +56,7 @@ curl -N localhost:3000/api/chat -H 'content-type: application/json' -d '{
 }'
 ```
 
-Send later messages with a later `now` (or none) and the agent treats the first one as having happened on 3 November. To see that user's memory in the UI, run `localStorage.setItem('asof-user', 'reviewer-01')` in the browser console and reload.
+Send later messages with a later `now` (or none) and the agent treats the first one as having happened on 3 November. To see that user's memory in the UI, run `localStorage.setItem('remembot-user', 'reviewer-01')` in the browser console and reload.
 
 ## Tests
 
@@ -86,8 +86,8 @@ npm run typecheck
 ## Deploy to Cloudflare (optional)
 
 ```bash
-npx wrangler d1 create asof                       # put the printed id in wrangler.jsonc
-npx wrangler d1 execute asof --remote --file schema.sql
+npx wrangler d1 create remembot                       # put the printed id in wrangler.jsonc
+npx wrangler d1 execute remembot --remote --file schema.sql
 npx wrangler secret put LLM_API_KEY
 npx wrangler secret put FIRECRAWL_API_KEY
 npm run deploy

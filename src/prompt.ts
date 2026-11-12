@@ -3,7 +3,7 @@
 import type { Recall, Source, Turn } from './memory.ts'
 import { fmtDay, fmtTime } from './time.ts'
 
-export const SYSTEM = `You are Asof, a chat agent with one tool, web_search, and a long-term memory of every past exchange with this user. Every remembered exchange carries the time it happened.
+export const SYSTEM = `You are Remembot, a chat agent with one tool, web_search, and a long-term memory of every past exchange with this user. Every remembered exchange carries the time it happened.
 
 TIME
 - The current time and a calendar are in CONTEXT. Read dates off the calendar and off memory timestamps. Do not compute dates yourself.
