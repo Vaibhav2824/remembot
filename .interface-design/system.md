@@ -78,9 +78,20 @@ Rules: hierarchy from size + weight + text colour together. Headings `text-wrap:
 | `--d-detent` | 200ms | Island, tooltip, meter cells, menu |
 | `--d-drawer` | 280ms | Mobile drawer |
 | `--ease-out` | `cubic-bezier(0.23, 1, 0.32, 1)` | Everything entering or responding |
-| `--ease-move` | `cubic-bezier(0.77, 0, 0.175, 1)` | On-screen movement (drawer) |
+| `--ease-move` | `cubic-bezier(0.77, 0, 0.175, 1)` | On-screen movement and live-state breathing |
+| `--ease-drawer` | `cubic-bezier(0.32, 0.72, 0, 1)` | The phone drawer |
 
-Rules: animate `transform` and `opacity` only; name properties, never `transition: all`. Press is `scale(0.97)`. Nothing appears from `scale(0)`; start at 0.96 + opacity 0. Meter cells light one at a time, 40ms apart, by opacity. Scrubber bars grow with `transform: scaleY()` from the bottom. Typing, sending and scrolling get no motion. `prefers-reduced-motion: reduce` drops every transform and keeps opacity changes under 160ms. Content is visible with scripting off; anything hidden at rest is hidden under a `.js` class the script adds.
+Rules: animate `transform` and `opacity` only; name properties, never `transition: all`. Press is `scale(0.97)`. Nothing appears from `scale(0)`; start at 0.96 + opacity 0. Exits are faster than entrances (the island leaves in `--d-press`, arrives in `--d-detent`).
+
+What moves, and what does not:
+- **Welcome screen**: one entrance, 4px rise + fade, `--d-drawer`, 40ms stagger. It shows on load and on New chat only.
+- **Messages**: no entrance. They appear on Enter, a keyboard action, and animating them would make sending feel slow.
+- **Scrolling**: never smooth. The chat scrolls on every streamed token and the timeline follows a dragging pointer.
+- **Tooltip**: fade + 2px rise + 0.97 scale from its trigger (bottom centre), `--d-quick`.
+- **Live state** (typing cursor, working island): an opacity breathe, 1.2s, `--ease-move`. Never a scale pulse. Waiting and error states hold still.
+- **Meter cells** light one at a time, 40ms apart, by opacity. **Scrubber bars** grow with `transform: scaleY()` from the bottom.
+
+`prefers-reduced-motion: reduce` keeps fades and colour changes and drops every transform: entrances become plain fades, the island and tooltip stop moving, the drawer and chevron switch instantly, and press scaling is off. Content is visible with scripting off; anything hidden at rest is hidden under a `.js` class the script adds.
 
 ## Layout
 

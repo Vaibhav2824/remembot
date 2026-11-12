@@ -31,11 +31,11 @@
     --side: 288px; --col: 720px; --measure: 68ch;
     --r-xs: 2px; --r-sm: 6px; --r-md: 10px; --r-lg: 14px; --r-pill: 999px;
     --d-press: 120ms; --d-quick: 160ms; --d-detent: 200ms; --d-drawer: 280ms;
-    --ease-out: cubic-bezier(0.23, 1, 0.32, 1); --ease-move: cubic-bezier(0.77, 0, 0.175, 1);
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1); --ease-move: cubic-bezier(0.77, 0, 0.175, 1); --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
     --z-bar: 10; --z-drawer: 20; --z-island: 30; --z-tooltip: 40;
 
     /* Transitional aliases: old names point at the system until each area is migrated, then go. */
-    --line: var(--hairline); --ease: var(--ease-out);
+    --line: var(--hairline);
     color-scheme: light;
   }
   @media (prefers-color-scheme: dark) {
@@ -99,7 +99,7 @@
   #days button:focus-visible i { outline: 2px solid var(--signal-text); outline-offset: 2px; }
 
   /* Scroll fade (after Skiper's free "scroll with fade"): edges dissolve instead of cutting off. */
-  #timeline { overflow-y: auto; padding: var(--s1) var(--s4) var(--s4); flex: 1; scroll-behavior: smooth; overscroll-behavior: contain;
+  #timeline { overflow-y: auto; padding: var(--s1) var(--s4) var(--s4); flex: 1; overscroll-behavior: contain;
     mask-image: linear-gradient(transparent, var(--mask) 14px, var(--mask) calc(100% - 24px), transparent); }
   #days { touch-action: none; user-select: none; }
   .day { position: relative; padding-left: var(--s4); margin-top: var(--s4); }
@@ -126,7 +126,7 @@
   .bar { display: flex; justify-content: space-between; align-items: center; gap: var(--s3); padding: var(--s3) var(--s6); }
   .clock { color: var(--text-3); } /* a readout, not a control: no container */
   #menu { display: none; }
-  #chat { flex: 1; overflow-y: auto; padding: var(--s3) var(--s6) var(--s10); scroll-behavior: smooth; }
+  #chat { flex: 1; overflow-y: auto; padding: var(--s3) var(--s6) var(--s10); } /* no smooth scroll: it runs on every streamed token */
   #chat > * { max-width: var(--col); margin-inline: auto; }
 
   /* Welcome: a heading, one sentence, then the example questions as a ruled list. No badges, no cards. */
@@ -148,10 +148,12 @@
   @media (max-width: 480px) { .examples button { grid-template-columns: minmax(0, 1fr); } }
 
   /* Staggered entry */
-  .rise { animation: rise 0.6s var(--ease) both; animation-delay: calc(var(--i, 0) * 70ms); }
-  @keyframes rise { from { opacity: 0; transform: translateY(10px); filter: blur(4px); } }
+  /* One entrance, for the welcome screen only: it shows on load and on New chat, not on every keystroke. */
+  .rise { animation: rise var(--d-drawer) var(--ease-out) both; animation-delay: calc(var(--i, 0) * 40ms); }
+  @keyframes rise { from { opacity: 0; transform: translateY(4px); } }
+  @keyframes fade { from { opacity: 0; } }
 
-  .msg { margin-bottom: var(--s10); animation: rise 0.45s var(--ease) both; }
+  .msg { margin-bottom: var(--s10); } /* messages appear on Enter: no entrance animation */
   .msg.user { display: flex; flex-direction: column; align-items: flex-end; }
   .msg.user .body { background: var(--raised); color: var(--text-1); box-shadow: inset 0 0 0 1px var(--hairline); border-radius: var(--r-md);
     padding: var(--s3) var(--s4); max-width: 80%; white-space: pre-wrap; text-wrap: pretty; }
@@ -168,7 +170,8 @@
   a.cite:hover, a.cite:focus-visible { background: var(--signal); color: var(--signal-ink); }
   a.cite[data-tip]:is(:hover, :focus-visible)::after { content: attr(data-tip); position: absolute; bottom: calc(100% + var(--s2)); left: 50%; transform: translateX(-50%); z-index: var(--z-tooltip);
     width: max-content; max-width: 280px; padding: var(--s2) var(--s3); border-radius: var(--r-md); background: var(--raised-2); color: var(--text-1); box-shadow: var(--shadow-float);
-    font: var(--t-small); font-weight: 500; white-space: pre-line; text-align: left; pointer-events: none; animation: rise 0.2s var(--ease); }
+    font: var(--t-small); font-weight: 500; white-space: pre-line; text-align: left; pointer-events: none; transform-origin: bottom center; animation: tip var(--d-quick) var(--ease-out); }
+  @keyframes tip { from { opacity: 0; transform: translateX(-50%) translateY(2px) scale(0.97); } }
 
   /* Trace: what the agent did, folded into one quiet line above the answer. */
   .trace { margin: 0 0 var(--s3); }
@@ -198,9 +201,9 @@
   .meta:empty { display: none; }
   .error { color: var(--danger); }
   .cursor::after { content: ""; display: inline-block; width: 8px; height: 8px; margin-left: var(--s2); border-radius: 50%; background: var(--signal); vertical-align: 1px;
-    animation: pulse 1s var(--ease) infinite; }
+    animation: breathe 1.2s var(--ease-move) infinite; }
   .msg.agent .body.cursor:empty { display: block; }
-  @keyframes pulse { 50% { transform: scale(0.55); opacity: 0.4; } }
+  @keyframes breathe { 50% { opacity: 0.35; } } /* live state: opacity only, no scaling */
 
   /* Status island: one live line for what the agent is doing right now. */
   .dock { position: relative; padding: 0 var(--s6) max(var(--s5), env(safe-area-inset-bottom)); }
@@ -218,12 +221,13 @@
   #island { position: absolute; left: 50%; top: calc(-1 * var(--s12)); display: flex; align-items: center; gap: var(--s2); max-width: calc(100% - var(--s12)); padding: var(--s2) var(--s4) var(--s2) var(--s3);
     border-radius: var(--r-pill); background: var(--raised-2); color: var(--text-1); font: var(--t-small); font-weight: 500; white-space: nowrap; box-shadow: var(--shadow-float);
     z-index: var(--z-island); opacity: 0; transform: translate(-50%, var(--s2)) scale(0.96); pointer-events: none;
-    transition: opacity var(--d-detent) var(--ease-out), transform var(--d-detent) var(--ease-out); }
-  #island.on { opacity: 1; transform: translate(-50%, 0) scale(1); }
+    transition: opacity var(--d-press) var(--ease-out), transform var(--d-press) var(--ease-out); } /* leaves faster than it arrives */
+  #island.on { opacity: 1; transform: translate(-50%, 0) scale(1); transition-duration: var(--d-detent); }
   #island span { overflow: hidden; text-overflow: ellipsis; }
-  #island i { width: 6px; height: 6px; border-radius: var(--r-xs); flex: none; background: var(--signal); animation: pulse 1s var(--ease) infinite; }
+  #island i { width: 6px; height: 6px; border-radius: var(--r-xs); flex: none; background: var(--signal); animation: breathe 1.2s var(--ease-move) infinite; }
   #island.wait i { background: var(--text-3); }
-  #island.error i { background: var(--danger); animation: none; }
+  #island.wait i, #island.error i { animation: none; }
+  #island.error i { background: var(--danger); }
   .composer { max-width: var(--col); margin-inline: auto; display: flex; gap: var(--s2); align-items: flex-end; background: var(--raised);
     box-shadow: inset 0 0 0 1px var(--hairline-strong); border-radius: var(--r-lg); padding: var(--s2) var(--s2) var(--s2) var(--s4); }
   .composer:focus-within { box-shadow: inset 0 0 0 1px var(--signal-text); }
@@ -245,7 +249,7 @@
   @media (max-width: 820px) {
     body { grid-template-columns: 1fr; }
     aside { position: fixed; inset: 0 auto 0 0; width: min(320px, 86vw); z-index: var(--z-drawer);
-      transition: transform var(--d-drawer) var(--ease-move), visibility 0s var(--d-drawer); }
+      transition: transform var(--d-drawer) var(--ease-drawer), visibility 0s var(--d-drawer); }
     .js aside { transform: translateX(-100%); visibility: hidden; } /* closed drawer: off-screen and out of the tab order */
     .js body.menu-open aside { transform: none; visibility: visible; transition-delay: 0s; box-shadow: 0 0 0 100vmax var(--scrim); }
     #menu { display: inline-flex; }
@@ -256,8 +260,14 @@
   @media (max-width: 480px) {
     .clock { display: none; }
   }
+  /* Reduced motion: keep fades and colour changes, drop anything that moves or scales. */
   @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+    .rise { animation-name: fade; }
+    a.cite[data-tip]:is(:hover, :focus-visible)::after { animation-name: fade; transform: translateX(-50%); }
+    #island, #island.on { transform: translate(-50%, 0); }
+    #days i { transition: background-color var(--d-quick) var(--ease-out); }
+    .trace summary::after, aside { transition: none; }
+    .btn:active, #send:active { transform: none; }
   }
 </style>
 </head>
