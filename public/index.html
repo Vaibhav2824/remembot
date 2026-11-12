@@ -16,6 +16,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script>document.documentElement.classList.add('js')</script>
 <style>
+  /* Hallmark · shape: app screen · genre: atmospheric · theme: custom
+   * paper: oklch(0.182 0.004 264.5) · accent: oklch(0.776 0.146 70.8) · display: Geist · body: Geist
+   * nav: memory sidebar, a drawer under 820px · signature: the six-cell search meter and the 14-day scrubber · states: loading, empty, failed load, streaming, waiting, stopped, answer failed
+   * axes: graphite/Geist/amber · posture: restrained · contrast: pass · v2.0.0 */
+  /* Hallmark · pre-emit critique: P4 H5 E4 S4 R5 V3 · weakest: V, the two-pane chat shell is familiar; the meter, scrubber and dated trace carry the identity instead */
+  /* Hallmark · waive 39b · the three welcome example rows each hold a full question, two lines at 1440 · a row grows with its question; trimming it would hide what each example shows */
+  /* Hallmark · dismissed 40 · .btn:disabled is Load demo memory while an answer streams; WCAG 1.4.3 exempts inactive controls from contrast */
   /* Tokens: the Instrument system, .interface-design/system.md. No literal values past this block. */
   :root {
     --canvas: #f6f6f7; --raised: #ffffff; --raised-2: #efeff1; --sunken: #ececee;
@@ -80,7 +87,8 @@
   aside { background: var(--canvas); border-right: 1px solid var(--hairline); display: flex; flex-direction: column; min-height: 0; }
   .brand { display: flex; align-items: center; gap: var(--s3); padding: var(--s5) var(--s4) var(--s1); }
   .brand svg { width: 28px; height: 28px; }
-  h1 { margin: 0; font: var(--t-title); letter-spacing: -0.01em; }
+  .wordmark { margin: 0; font: var(--t-title); letter-spacing: -0.01em; }
+  .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .tagline { margin: 0; padding: 0 var(--s4); color: var(--text-2); font: var(--t-small); }
   .note { font: var(--t-small); color: var(--text-3); text-wrap: pretty; }
 
@@ -88,32 +96,33 @@
   .scrub { margin: var(--s4) var(--s4) var(--s2); padding: var(--s3) var(--s3) var(--s2); background: var(--raised); box-shadow: inset 0 0 0 1px var(--hairline); border-radius: var(--r-md); }
   .scrub header { display: flex; justify-content: space-between; align-items: baseline; padding: 0 var(--s1) var(--s3); }
   .scrub header b { font: var(--t-small); font-weight: 500; }
-  #days { display: grid; grid-template-columns: repeat(14, 1fr); gap: var(--s1); align-items: end; height: 64px; }
-  #days button { all: unset; display: grid; grid-template-rows: 1fr auto; justify-items: center; gap: var(--s1); height: 100%; cursor: pointer; }
-  #days button:disabled { cursor: default; }
+  /* One slider control, not 14 tiny buttons: drag or arrow keys move between days that have history. */
+  #days { display: grid; grid-template-columns: repeat(14, 1fr); gap: var(--s1); align-items: end; height: 64px; border-radius: var(--r-sm); }
+  #days:focus-visible { outline-offset: 4px; }
+  #days .col { display: grid; grid-template-rows: 1fr auto; justify-items: center; gap: var(--s1); height: 100%; }
+  #days .col.has { cursor: pointer; }
   /* Bars grow by scaleY from a 4px stub to 40px, so only transform animates. */
   #days i { align-self: end; width: 100%; max-width: 12px; height: 40px; border-radius: var(--r-xs); background: var(--hairline-strong);
     transform: scaleY(calc((4 + var(--h, 0) * 36) / 40)); transform-origin: bottom;
     transition: transform var(--d-detent) var(--ease-out), background-color var(--d-quick) var(--ease-out); }
-  #days button:not(:disabled) i { background: var(--text-3); }
-  #days button.today i { background: var(--signal); }
-  @media (hover: hover) and (pointer: fine) { #days button:not(:disabled):hover i { background: var(--text-1); } }
-  #days button.on i { background: var(--text-1); }
-  #days span { font: var(--t-readout); font-family: var(--sans); line-height: 1; color: var(--text-3); }
-  #days button.today span { color: var(--signal-text); }
-  #days button:focus-visible i { outline: 2px solid var(--signal-text); outline-offset: 2px; }
+  #days .col.has i { background: var(--text-3); }
+  #days .col.today i { background: var(--signal); }
+  @media (hover: hover) and (pointer: fine) { #days .col.has:hover i { background: var(--text-1); } }
+  #days .col.on i { background: var(--text-1); }
+  #days b { font: var(--t-readout); font-family: var(--sans); line-height: 1; color: var(--text-3); }
+  #days .col.today b { color: var(--signal-text); }
 
   /* Scroll fade (after Skiper's free "scroll with fade"): edges dissolve instead of cutting off. */
   #timeline { overflow-y: auto; padding: var(--s1) var(--s4) var(--s4); flex: 1; overscroll-behavior: contain;
     mask-image: linear-gradient(transparent, var(--mask) 14px, var(--mask) calc(100% - 24px), transparent); }
   #days { touch-action: pan-y; user-select: none; } /* the scrubber owns horizontal drags; vertical still scrolls the panel */
-  .day { position: relative; padding-left: var(--s4); margin-top: var(--s4); }
+  .day { position: relative; margin-top: var(--s4); } /* rows indent; the heading and its dot sit on the line */
   .day::before { content: ""; position: absolute; left: 4px; top: 22px; bottom: 6px; width: 1px; background: var(--hairline); }
-  .day h2 { margin: 0 0 var(--s1) calc(-1 * var(--s4)); font: var(--t-small); font-weight: 500; color: var(--text-2); display: flex; align-items: center; gap: var(--s2); scroll-margin-top: var(--s2); }
+  .day h2 { margin: 0 0 var(--s1); font: var(--t-small); font-weight: 500; color: var(--text-2); display: flex; align-items: center; gap: var(--s2); scroll-margin-top: var(--s2); }
   .day h2::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--canvas); box-shadow: inset 0 0 0 2px var(--text-3); }
   .day.flash h2::before { background: var(--signal); box-shadow: 0 0 0 4px var(--signal-wash); }
   .day.flash h2 { color: var(--text-1); }
-  #timeline details { border-radius: var(--r-md); padding: var(--s2); margin: 0 calc(-1 * var(--s2)); transition: background-color var(--d-quick) var(--ease-out); }
+  #timeline details { border-radius: var(--r-md); padding: var(--s2); margin: 0 0 0 var(--s2); transition: background-color var(--d-quick) var(--ease-out); }
   @media (hover: hover) and (pointer: fine) { #timeline details:hover { background: var(--raised); } }
   #timeline details[open] { background: var(--raised); box-shadow: inset 0 0 0 1px var(--hairline); margin-block: var(--s2); }
   #timeline summary { cursor: pointer; list-style: none; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--s3); align-items: baseline; font: var(--t-ui); }
@@ -307,12 +316,12 @@
 <aside id="memory" aria-label="Memory">
   <div class="brand">
     <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--signal)"/><circle cx="16" cy="16" r="8.5" fill="none" stroke="var(--signal-ink)" stroke-width="2.5"/><path d="M16 11.5V16l3 2" fill="none" stroke="var(--signal-ink)" stroke-width="2.5" stroke-linecap="round"/></svg>
-    <h1>Asof</h1>
+    <span class="wordmark">Asof</span>
   </div>
   <p class="tagline">Remembers what you asked, and when.</p>
   <section class="scrub" aria-label="Last 14 days">
     <header><b>Last 14 days</b><span class="mono" id="count"></span></header>
-    <div id="days"></div>
+    <div id="days" role="slider" aria-label="Jump to a day" aria-valuemin="1" aria-valuemax="14"></div>
     <p class="note scrub-empty" id="scrub-empty" hidden>Your questions will show here, one bar per day.</p>
   </section>
   <div id="timeline" aria-busy="true"><p class="memory-note">Loading memory…</p></div>
@@ -323,6 +332,7 @@
 </aside>
 
 <main>
+  <h1 class="sr-only">Asof, a chat agent that remembers what you asked and when</h1>
   <div class="bar">
     <button class="btn" id="menu" type="button" aria-controls="memory" aria-expanded="false"><svg class="i" aria-hidden="true"><use href="#i-menu"/></svg>Memory</button>
     <span class="clock mono" id="clock"></span>
@@ -432,12 +442,18 @@ function scrubber(turns) {
   $('days').innerHTML = Array.from({ length: 14 }, (_, i) => {
     const ms = Date.now() - (13 - i) * DAY, k = dayKey(ms), n = counts[k] || 0
     const label = `${dayOf(ms)}: ${n || 'no'} exchange${n === 1 ? '' : 's'}`
-    return `<button type="button" data-day="${k}" class="${k === today ? 'today' : ''}" ${n ? '' : 'disabled'} title="${label}" aria-label="${label}" style="--h:${n / max}">
-      <i></i><span>${new Date(ms).toLocaleDateString([], { weekday: 'narrow' })}</span></button>`
+    return `<span class="col${n ? ' has' : ''}${k === today ? ' today' : ''}" data-day="${k}" title="${label}" style="--h:${n / max}">
+      <i></i><b>${new Date(ms).toLocaleDateString([], { weekday: 'narrow' })}</b></span>`
   }).join('')
   const days = new Set(Object.keys(counts)).size
   $('count').textContent = turns.length ? `${turns.length} asked over ${days} day${days === 1 ? '' : 's'}` : ''
   $('scrub-empty').hidden = turns.length > 0
+  // The slider is only focusable when there is a day to jump to.
+  const slider = $('days')
+  slider.tabIndex = turns.length ? 0 : -1
+  slider.toggleAttribute('aria-disabled', !turns.length)
+  slider.setAttribute('aria-valuenow', '14')
+  slider.setAttribute('aria-valuetext', turns.length ? `${turns.length} asked over ${days} day${days === 1 ? '' : 's'}; use the arrow keys to pick a day` : 'No questions yet')
 }
 
 async function loadTimeline() {
@@ -621,20 +637,32 @@ menuBtn.addEventListener('click', (e) => { e.stopPropagation(); setMenu(!documen
 document.querySelector('main').addEventListener('click', () => setMenu(false))
 addEventListener('keydown', (e) => { if (e.key === 'Escape') setMenu(false) })
 // Time scrubber (after Bencho's free block): click a day, or press and drag across the bars.
-function jumpTo(b) {
-  const group = b && !b.disabled && $(`d-${b.dataset.day}`)
+const cols = () => [...$('days').children]
+function jumpTo(c) {
+  const group = c && c.classList.contains('has') && $(`d-${c.dataset.day}`)
   if (!group) return
   document.querySelectorAll('.day.flash').forEach((d) => d.classList.remove('flash'))
-  document.querySelectorAll('#days .on').forEach((d) => d.classList.remove('on'))
-  group.classList.add('flash'); b.classList.add('on')
+  cols().forEach((x) => x.classList.toggle('on', x === c))
+  group.classList.add('flash')
+  $('days').setAttribute('aria-valuenow', String(cols().indexOf(c) + 1))
+  $('days').setAttribute('aria-valuetext', c.title)
   group.querySelector('h2').scrollIntoView({ block: 'start' })
 }
 let scrubbing = false
-const dayAt = (e) => document.elementFromPoint(e.clientX, e.clientY)?.closest('#days button')
+const dayAt = (e) => document.elementFromPoint(e.clientX, e.clientY)?.closest('#days .col')
 $('days').addEventListener('pointerdown', (e) => { scrubbing = true; jumpTo(dayAt(e)) })
 $('days').addEventListener('pointermove', (e) => { const b = scrubbing && dayAt(e); if (b && !b.classList.contains('on')) jumpTo(b) })
 addEventListener('pointerup', () => { scrubbing = false })
-$('days').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); jumpTo(e.target.closest('button')) } })
+// Keyboard: arrows step between days that have history, Home and End go to the first and last.
+$('days').addEventListener('keydown', (e) => {
+  const has = cols().filter((c) => c.classList.contains('has'))
+  const cur = has.indexOf(document.querySelector('#days .on')), last = has.length - 1
+  const next = { Home: 0, End: last, ArrowLeft: cur < 0 ? last : cur - 1, ArrowDown: cur < 0 ? last : cur - 1,
+    ArrowRight: cur < 0 ? last : cur + 1, ArrowUp: cur < 0 ? last : cur + 1 }[e.key]
+  if (next === undefined || !has.length) return
+  e.preventDefault()
+  jumpTo(has[Math.max(0, Math.min(last, next))])
+})
 demoBtn.addEventListener('click', loadDemo)
 const tick = () => { $('clock').textContent = `${dayOf(Date.now())}, ${timeOf(Date.now())}` }
 tick(); setInterval(tick, 30_000)
