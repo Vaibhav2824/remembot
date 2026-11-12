@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f6f6f7">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#111214">
 <title>Asof</title>
 <meta name="description" content="A chat agent with one tool, web search, that remembers what you asked and when.">
 <meta property="og:title" content="Asof">
@@ -48,11 +51,15 @@
     }
   }
   * { box-sizing: border-box; }
-  html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; overflow-x: clip; scrollbar-color: var(--raised-2) transparent; }
+  html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; overflow-x: clip; scrollbar-color: var(--raised-2) transparent;
+    -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%; overscroll-behavior: none; }
   body { margin: 0; height: 100dvh; display: grid; grid-template-columns: var(--side) minmax(0, 1fr); background: var(--canvas); color: var(--text-1);
     font: var(--t-body); overflow: clip; }
   ::selection { background: var(--signal-wash); }
   button { font: inherit; color: inherit; cursor: pointer; }
+  /* Controls fire on tap without the double-tap wait, and a long press does not select their label. Content text stays selectable. */
+  button, summary { touch-action: manipulation; -webkit-user-select: none; user-select: none; }
+  @media (pointer: coarse) { #input { font-size: 16px; } } /* under 16px, iOS zooms the page into the field */
   :focus-visible { outline: 2px solid var(--signal-text); outline-offset: 2px; }
   svg.i { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
   .mono { font: var(--t-readout); color: var(--text-3); font-variant-numeric: tabular-nums; }
@@ -64,7 +71,7 @@
   .btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--s2); min-height: 36px; padding: var(--s2) var(--s3);
     background: var(--raised); color: var(--text-1); border: 0; box-shadow: inset 0 0 0 1px var(--hairline); border-radius: var(--r-sm); font: var(--t-ui);
     transition: transform var(--d-press) var(--ease-out), background-color var(--d-quick) var(--ease-out), color var(--d-quick) var(--ease-out); }
-  @media (hover: hover) { .btn:not(:disabled):hover { background: var(--raised-2); } }
+  @media (hover: hover) and (pointer: fine) { .btn:not(:disabled):hover { background: var(--raised-2); } }
   .btn:active { transform: scale(0.97); }
   .btn:disabled { background: var(--sunken); color: var(--text-off); box-shadow: none; cursor: not-allowed; transform: none; }
   @media (pointer: coarse) { .btn { min-height: 44px; } }
@@ -90,7 +97,7 @@
     transition: transform var(--d-detent) var(--ease-out), background-color var(--d-quick) var(--ease-out); }
   #days button:not(:disabled) i { background: var(--text-3); }
   #days button.today i { background: var(--signal); }
-  @media (hover: hover) { #days button:not(:disabled):hover i { background: var(--text-1); } }
+  @media (hover: hover) and (pointer: fine) { #days button:not(:disabled):hover i { background: var(--text-1); } }
   #days button.on i { background: var(--text-1); }
   #days span { font: var(--t-readout); font-family: var(--sans); line-height: 1; color: var(--text-3); }
   #days button.today span { color: var(--signal-text); }
@@ -99,7 +106,7 @@
   /* Scroll fade (after Skiper's free "scroll with fade"): edges dissolve instead of cutting off. */
   #timeline { overflow-y: auto; padding: var(--s1) var(--s4) var(--s4); flex: 1; overscroll-behavior: contain;
     mask-image: linear-gradient(transparent, var(--mask) 14px, var(--mask) calc(100% - 24px), transparent); }
-  #days { touch-action: none; user-select: none; }
+  #days { touch-action: pan-y; user-select: none; } /* the scrubber owns horizontal drags; vertical still scrolls the panel */
   .day { position: relative; padding-left: var(--s4); margin-top: var(--s4); }
   .day::before { content: ""; position: absolute; left: 4px; top: 22px; bottom: 6px; width: 1px; background: var(--hairline); }
   .day h2 { margin: 0 0 var(--s1) calc(-1 * var(--s4)); font: var(--t-small); font-weight: 500; color: var(--text-2); display: flex; align-items: center; gap: var(--s2); scroll-margin-top: var(--s2); }
@@ -107,12 +114,14 @@
   .day.flash h2::before { background: var(--signal); box-shadow: 0 0 0 4px var(--signal-wash); }
   .day.flash h2 { color: var(--text-1); }
   #timeline details { border-radius: var(--r-md); padding: var(--s2); margin: 0 calc(-1 * var(--s2)); transition: background-color var(--d-quick) var(--ease-out); }
-  @media (hover: hover) { #timeline details:hover { background: var(--raised); } }
+  @media (hover: hover) and (pointer: fine) { #timeline details:hover { background: var(--raised); } }
   #timeline details[open] { background: var(--raised); box-shadow: inset 0 0 0 1px var(--hairline); margin-block: var(--s2); }
   #timeline summary { cursor: pointer; list-style: none; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--s3); align-items: baseline; font: var(--t-ui); }
   #timeline summary::-webkit-details-marker { display: none; }
-  #timeline summary b { font-weight: inherit; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  #timeline details[open] summary b { white-space: normal; }
+  /* Rows stay quiet next to the answer; they brighten when hovered or opened. */
+  #timeline summary b { font-weight: 400; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: color var(--d-quick) var(--ease-out); }
+  @media (hover: hover) and (pointer: fine) { #timeline details:hover summary b { color: var(--text-1); } }
+  #timeline details[open] summary b { white-space: normal; font-weight: 500; color: var(--text-1); }
   #timeline .stored { font: var(--t-small); margin-top: var(--s2); color: var(--text-2); }
   /* Memory states: loading, empty and failed are quiet notes, not boxes. */
   .memory-note { margin: var(--s4) 0; font: var(--t-small); color: var(--text-3); text-wrap: pretty; }
@@ -125,10 +134,12 @@
 
   /* ---------- Chat ---------- */
   main { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
-  .bar { display: flex; justify-content: space-between; align-items: center; gap: var(--s3); padding: var(--s3) var(--s6); }
+  /* The bar lines up with the chat column, so at 1920 its ends do not drift to the window edges. */
+  .bar { display: flex; justify-content: space-between; align-items: center; gap: var(--s3); padding: var(--s3) var(--s6);
+    width: 100%; max-width: calc(var(--col) + 2 * var(--s6)); margin-inline: auto; }
   .clock { color: var(--text-3); } /* a readout, not a control: no container */
   #menu { display: none; }
-  #chat { flex: 1; overflow-y: auto; padding: var(--s3) var(--s6) var(--s10); } /* no smooth scroll: it runs on every streamed token */
+  #chat { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: var(--s3) var(--s6) var(--s10); } /* no smooth scroll: it runs on every streamed token */
   #chat > * { max-width: var(--col); margin-inline: auto; }
 
   /* Welcome: a heading, one sentence, then the example questions as a ruled list. No badges, no cards. */
@@ -140,7 +151,7 @@
   .examples li { border-bottom: 1px solid var(--hairline); }
   .examples button { all: unset; box-sizing: border-box; width: 100%; cursor: pointer; display: grid; grid-template-columns: 10rem minmax(0, 1fr); gap: var(--s1) var(--s4);
     align-items: baseline; padding: var(--s3) var(--s2); border-radius: var(--r-sm); transition: background-color var(--d-quick) var(--ease-out); }
-  @media (hover: hover) { .examples button:hover { background: var(--raised); } }
+  @media (hover: hover) and (pointer: fine) { .examples button:hover { background: var(--raised); } }
   .examples button:active { background: var(--raised-2); }
   .examples button:focus-visible { outline: 2px solid var(--signal-text); outline-offset: -2px; }
   .examples .tag { font: var(--t-small); color: var(--text-3); }
@@ -183,7 +194,7 @@
   .trace summary::after { content: ""; width: 5px; height: 5px; border: solid currentColor; border-width: 0 1.5px 1.5px 0; transform: translateY(-2px) rotate(45deg);
     transition: transform var(--d-quick) var(--ease-out); }
   .trace[open] summary::after { transform: translateY(1px) rotate(225deg); }
-  @media (hover: hover) { .trace summary:hover { color: var(--text-2); } }
+  @media (hover: hover) and (pointer: fine) { .trace summary:hover { color: var(--text-2); } }
   .trace ol { margin: var(--s2) 0 0; padding: 0; list-style: none; display: grid; gap: var(--s2); }
   .trace li { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); font: var(--t-small); color: var(--text-2); }
   .trace li svg { color: var(--text-3); }
@@ -195,7 +206,7 @@
   .sources a { display: flex; align-items: center; gap: var(--s2); max-width: 280px; font: var(--t-small); color: var(--text-2); background: var(--raised);
     box-shadow: inset 0 0 0 1px var(--hairline); border-radius: var(--r-sm); padding: var(--s1) var(--s3) var(--s1) var(--s2); text-decoration: none;
     transition: background-color var(--d-quick) var(--ease-out), color var(--d-quick) var(--ease-out); }
-  @media (hover: hover) { .sources a:hover { background: var(--raised-2); color: var(--text-1); } }
+  @media (hover: hover) and (pointer: fine) { .sources a:hover { background: var(--raised-2); color: var(--text-1); } }
   .sources b { font: var(--t-readout); font-variant-numeric: tabular-nums; color: var(--text-3); }
   .sources img { width: 14px; height: 14px; }
   .sources span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -243,7 +254,7 @@
   /* Send: the one primary action. Stop reuses it with a square icon. */
   #send { width: 36px; height: 36px; flex: none; display: grid; place-items: center; border: 0; border-radius: var(--r-pill); background: var(--signal); color: var(--signal-ink);
     transition: transform var(--d-press) var(--ease-out), background-color var(--d-quick) var(--ease-out), color var(--d-quick) var(--ease-out); }
-  @media (hover: hover) { #send:not(:disabled):hover { background: color-mix(in oklab, var(--signal) 86%, var(--text-1)); } }
+  @media (hover: hover) and (pointer: fine) { #send:not(:disabled):hover { background: color-mix(in oklab, var(--signal) 86%, var(--text-1)); } }
   #send:active { transform: scale(0.97); }
   #send:disabled { background: var(--hairline-strong); color: var(--text-off); cursor: not-allowed; transform: none; }
   #send svg { width: 17px; height: 17px; stroke-width: 2.2; }
@@ -258,7 +269,12 @@
     .js aside { transform: translateX(-100%); visibility: hidden; } /* closed drawer: off-screen and out of the tab order */
     .js body.menu-open aside { transform: none; visibility: visible; transition-delay: 0s; box-shadow: 0 0 0 100vmax var(--scrim); }
     #menu { display: inline-flex; }
-    .bar { padding: var(--s2) var(--s4); } #chat { padding: var(--s2) var(--s4) var(--s8); } .dock { padding-inline: var(--s4); }
+    .bar { padding: max(var(--s2), env(safe-area-inset-top, 0px)) var(--s4) var(--s2); max-width: none; }
+    #chat { padding: var(--s2) var(--s4) var(--s8); } .dock { padding-inline: var(--s4); }
+    /* Landscape phones: keep content clear of the notch on either side. */
+    .bar, #chat, .dock { padding-left: max(var(--s4), env(safe-area-inset-left, 0px)); padding-right: max(var(--s4), env(safe-area-inset-right, 0px)); }
+    aside { padding-top: env(safe-area-inset-top, 0px); }
+    aside footer { padding-bottom: max(var(--s4), env(safe-area-inset-bottom, 0px)); }
     .under span:first-child { display: none; }
     .btn { white-space: nowrap; }
   }
@@ -317,7 +333,7 @@
     <div id="island" role="status"><i></i><span></span></div>
     <div class="composer">
       <label for="input" hidden>Message</label>
-      <textarea id="input" rows="1" placeholder="Ask anything. Ask again next week." maxlength="2000" autofocus></textarea>
+      <textarea id="input" rows="1" enterkeyhint="send" placeholder="Ask anything. Ask again next week." maxlength="2000" autofocus></textarea>
       <button id="send" type="submit" aria-label="Send" disabled><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></button>
     </div>
     <div class="under"><span><kbd>Enter</kbd> to send, <kbd>Shift</kbd>+<kbd>Enter</kbd> for a new line</span><span>One tool: web search</span></div>
