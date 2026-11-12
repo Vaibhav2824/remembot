@@ -35,9 +35,13 @@ createServer(async (req, res) => {
   }
 }).listen(port, () => console.log(`\n  Remembot is running at http://localhost:${port}\n`))
 
-// The whole UI is one static file. (On Cloudflare the platform serves it.)
+// The UI is one page plus its icon. (On Cloudflare the platform serves public/.)
+const STATIC: Record<string, [string, string]> = {
+  '/': ['index.html', 'text/html; charset=utf-8'],
+  '/favicon.svg': ['favicon.svg', 'image/svg+xml'],
+}
 async function page(req: Request): Promise<Response> {
-  if (new URL(req.url).pathname !== '/') return new Response('Not found', { status: 404 })
-  const html = await readFile(new URL('../public/index.html', import.meta.url))
-  return new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8' } })
+  const file = STATIC[new URL(req.url).pathname]
+  if (!file) return new Response('Not found', { status: 404 })
+  return new Response(await readFile(new URL(`../public/${file[0]}`, import.meta.url)), { headers: { 'content-type': file[1] } })
 }
