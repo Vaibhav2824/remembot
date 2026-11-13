@@ -254,3 +254,21 @@ test('a burst of parallel questions cannot overrun the per-user cap', async () =
   await Promise.all(burst.map((r) => r.text()))
   assert.deepEqual(burst.map((r) => r.status).sort(), [200, 200, 429, 429, 429, 429])
 })
+
+test('a guest gets a working session with no email or password, cannot be signed into, and can leave without a password', async () => {
+  script = [[{ content: 'Hi guest.' }]]
+  const db = openSqlite(':memory:')
+  const app = createApp(db, env())
+  const res = await send(app, 'POST', '/api/auth/guest', {})
+  assert.equal(res.status, 201)
+  const cookie = cookieOf(res)
+  const me = await (await send(app, 'GET', '/api/auth/me', undefined, cookie)).json()
+  assert.equal(me.name, 'Guest')
+  assert.match(me.email, /@guest\.remembot\.invalid$/)
+  assert.equal((await send(app, 'POST', '/api/auth/login', { email: me.email, password: 'guest' })).status, 401)
+  assert.deepEqual((await events(await send(app, 'POST', '/api/chat', ask, cookie))).map((e) => e.type), ['memory', 'text', 'done'])
+  assert.equal((await send(app, 'DELETE', '/api/auth/me', {}, cookie)).status, 200)
+  assert.deepEqual(await db.all('SELECT * FROM users'), [])
+  for (let i = 0; i < 9; i++) await send(app, 'POST', '/api/auth/guest', {})
+  assert.equal((await send(app, 'POST', '/api/auth/guest', {})).status, 429, 'ten guests an hour per network')
+})

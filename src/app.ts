@@ -18,6 +18,7 @@ const MAX_THREAD_TURNS = 200
 const DAY = 86_400_000
 const MINUTE = 60_000
 const ID = /^[\w-]{8,64}$/
+const GUEST_DOMAIN = '@guest.remembot.invalid' // .invalid can never be a real mailbox
 const EMAIL = /^[^\s@]{1,64}@[^\s@]+\.[^\s@]{2,}$/
 
 class HttpError extends Error {
@@ -100,6 +101,16 @@ export function createApp(db: Db, env: Env): App {
         if (!row || !ok) throw new HttpError(401, 'That email and password do not match an account.')
         return signedIn(db, { id: row.id, email: row.email, name: row.name }, secure)
       }
+      // Guest: a throwaway account with no email or password, for a look around without signing up.
+      // shortcut: guest accounts are never purged; add a cleanup of old guests if they pile up.
+      if (req.method === 'POST' && pathname === '/api/auth/guest') {
+        if (await overLimit(db, `guest:${ip}`, 10, 60 * MINUTE)) throw new HttpError(429, 'Too many guest sessions from this network. Try again in an hour.')
+        const user: User = { id: crypto.randomUUID(), email: '', name: 'Guest' }
+        user.email = `guest-${user.id.slice(0, 8)}${GUEST_DOMAIN}`
+        // 'guest' is not a PBKDF2 hash, so no password can ever sign in to this account.
+        await db.run('INSERT INTO users (id, email, name, pass) VALUES (?, ?, ?, ?)', user.id, user.email, user.name, 'guest')
+        return signedIn(db, user, secure, 201)
+      }
       if (req.method === 'POST' && pathname === '/api/auth/logout') {
         await endSession(db, req)
         return json({ ok: true }, 200, sessionCookie(null, secure))
@@ -114,7 +125,8 @@ export function createApp(db: Db, env: Env): App {
         const { password } = await readJson(req)
         if (await overLimit(db, `delete:${user.id}`, 5, 15 * MINUTE)) throw new HttpError(429, 'Too many attempts. Wait 15 minutes, then try again.')
         const [row] = await db.all<{ pass: string }>('SELECT pass FROM users WHERE id = ?', user.id)
-        if (typeof password !== 'string' || !(await verifyPassword(password, row.pass))) throw new HttpError(403, 'That password is not right.')
+        const isGuest = user.email.endsWith(GUEST_DOMAIN) // a guest has no password to confirm with
+        if (!isGuest && (typeof password !== 'string' || !(await verifyPassword(password, row.pass)))) throw new HttpError(403, 'That password is not right.')
         await forget(db, user.id)
         await db.run('DELETE FROM sessions WHERE user_id = ?', user.id)
         await db.run('DELETE FROM users WHERE id = ?', user.id)

@@ -512,11 +512,13 @@ function setAccount(open) {
 accountBtn.addEventListener('click', (e) => { e.stopPropagation(); setAccount(accountMenu.hidden) })
 document.addEventListener('click', (e) => { if (!accountMenu.hidden && !e.target.closest('.account')) setAccount(false) })
 $('signout').addEventListener('click', async () => {
-  await fetch('/api/auth/logout', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' }).catch(() => {})
+  // A guest can never sign back in, so ending the session deletes the throwaway account and its chats.
+  const guest = me?.email.endsWith('@guest.remembot.invalid')
+  await fetch(guest ? '/api/auth/me' : '/api/auth/logout', { method: guest ? 'DELETE' : 'POST', headers: { 'content-type': 'application/json' }, body: '{}' }).catch(() => {})
   location.replace('/login')
 })
 const dialog = $('delete-dialog')
-$('delete-account').addEventListener('click', () => { setAccount(false); $('delete-error').textContent = ''; dialog.showModal(); $('delete-password').focus() })
+$('delete-account').addEventListener('click', () => { setAccount(false); $('delete-error').textContent = ''; dialog.showModal(); ($('delete-password').required ? $('delete-password') : $('delete-cancel')).focus() })
 $('delete-cancel').addEventListener('click', () => dialog.close())
 $('delete-form').addEventListener('submit', async (e) => {
   e.preventDefault()
@@ -535,7 +537,12 @@ const signedIn = api('/api/auth/me').then((user) => {
   me = user
   $('avatar').textContent = (me.name.trim()[0] || '?').toUpperCase()
   $('who-name').textContent = me.name
-  $('who-email').textContent = me.email
+  const guest = me.email.endsWith('@guest.remembot.invalid')
+  $('who-email').textContent = guest ? 'Guest session' : me.email
+  // A guest has no password: deleting needs only the confirm, and signing out ends the session for good.
+  $('delete-password').closest('.field').hidden = guest
+  $('delete-password').required = !guest
+  if (guest) $('signout').lastChild.textContent = 'End guest session'
   accountBtn.setAttribute('aria-label', `Account: ${me.name}`)
 }).catch(() => {})
 

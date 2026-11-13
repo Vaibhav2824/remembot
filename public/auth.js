@@ -121,6 +121,21 @@ $('tabs').addEventListener('keydown', (e) => {
   $(`tab-${mode}`).focus()
 })
 addEventListener('hashchange', () => setMode(location.hash === '#signup' ? 'signup' : 'login', true))
+// Guest: a throwaway account, signed in at once, so anyone can try everything without signing up.
+$('guest').addEventListener('click', async () => {
+  const btn = $('guest')
+  btn.disabled = true
+  btn.innerHTML = '<span class="spinner" aria-hidden="true"></span>Starting a guest session'
+  try {
+    const res = await fetch('/api/auth/guest', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' })
+    if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || `Something went wrong (${res.status}). Try again.`)
+    location.replace('/')
+  } catch (err) {
+    formError.textContent = err.message === 'Failed to fetch' ? 'Can’t reach Remembot. Check your connection and try again.' : err.message
+    btn.disabled = false
+    btn.textContent = 'Continue as guest'
+  }
+})
 $('peek').addEventListener('click', () => {
   const show = fields.password.type === 'password'
   fields.password.type = show ? 'text' : 'password'

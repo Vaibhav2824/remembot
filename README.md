@@ -76,7 +76,7 @@ Send later messages with a later `now` (or none) and the agent treats the first 
 ## Tests
 
 ```bash
-npm test          # 47 tests, offline: time phrases, recall, the agent loop, accounts, sessions, rate limits, CSRF, saved chats
+npm test          # 48 tests, offline: time phrases, recall, the agent loop, accounts, sessions, rate limits, CSRF, saved chats
 npm run typecheck
 ```
 

@@ -47,6 +47,9 @@
   .card { width: min(400px, 100%); padding: var(--s8) var(--s6) var(--s6); border-radius: 24px; background: color-mix(in srgb, var(--canvas) 82%, transparent);
     backdrop-filter: blur(20px) saturate(1.2); -webkit-backdrop-filter: blur(20px) saturate(1.2); box-shadow: 0 0 0 1px var(--hairline-strong), 0 30px 70px -24px rgb(20 20 19 / 0.45); }
   .card .mark-tile { margin-bottom: var(--s4); }
+  .or { display: flex; align-items: center; gap: var(--s3); margin: var(--s4) 0; font: var(--t-small); color: var(--text-3); }
+  .or::before, .or::after { content: ""; flex: 1; height: 1px; background: var(--hairline-strong); }
+  .guest-note { margin-top: var(--s2); }
   .credit { position: absolute; left: 0; right: 0; bottom: var(--s3); margin: 0; text-align: center; font: var(--t-readout); color: rgb(20 20 19 / 0.6); }
   :root[data-theme="dark"] .credit { color: rgb(250 248 245 / 0.55); }
 
@@ -189,6 +192,9 @@
         <button class="key wide" type="submit" id="submit">Sign in</button>
         <p class="fine" id="fine" hidden>By creating an account you agree to the <a href="/terms">Terms</a> and the <a href="/privacy">Privacy Policy</a>.</p>
       </form>
+      <div class="or" aria-hidden="true"><span>or</span></div>
+      <button type="button" class="key quiet wide" id="guest">Continue as guest</button>
+      <p class="fine guest-note">No sign-up needed. Try everything; your chats stay with this guest session.</p>
     </section>
   </main>
   <p class="credit">J. M. W. Turner, Fishing Boats Becalmed off le Havre, c. 1832</p>
