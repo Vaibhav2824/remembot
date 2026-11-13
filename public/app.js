@@ -25,15 +25,6 @@ const MARK = '<svg class="mark live-mark" viewBox="0 0 256 256" aria-hidden="tru
 const DOTS = '<span class="dots" aria-label="Thinking"><i></i><i></i><i></i></span>'
 let me = null
 
-// "Saved today", "Saved yesterday", "Saved last Tuesday", "Saved 10 days ago".
-function savedAgo(ms) {
-  const days = Math.round((new Date().setHours(0, 0, 0, 0) - new Date(ms).setHours(0, 0, 0, 0)) / DAY)
-  if (days <= 0) return 'Saved today'
-  if (days === 1) return 'Saved yesterday'
-  if (days < 7) return `Saved last ${new Date(ms).toLocaleDateString('en-GB', { weekday: 'long' })}`
-  return `Saved ${days} days ago`
-}
-
 // Motion's "pulse dots" loader: each dot swells in turn.
 function pulse(root) {
   if (M && !calm) M.animate(root.querySelectorAll('.dots i'), { scale: [1, 1.5, 1] }, { duration: 1.2, repeat: Infinity, delay: M.stagger(0.2), ease: 'easeInOut' })
@@ -209,8 +200,8 @@ async function savedCards() {
   }
   const box = $('cards')
   if (!box || !main.classList.contains('empty')) return // the user moved on while these loaded
-  box.innerHTML = list.map((s) => `<li><button type="button" class="card saved" data-thread="${esc(s.threadId)}" data-q="${esc(s.followup)}">
-    <span class="tag recall">${icon('memory')}${esc(savedAgo(s.updatedAt))}</span><span class="pill">${esc(s.topic)}</span><span class="q">${esc(s.followup)}</span></button></li>`).join('')
+  box.innerHTML = list.map((s) => `<li><button type="button" class="card" data-thread="${esc(s.threadId)}" data-q="${esc(s.followup)}">
+    <span class="pill">${esc(s.topic)}</span><span class="q">${esc(s.followup)}</span></button></li>`).join('')
   cardsIn()
 }
 

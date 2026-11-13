@@ -127,7 +127,6 @@
   main.empty::before { opacity: 1; }
   main.empty .card, main.empty .composer { background: color-mix(in srgb, var(--canvas) 80%, transparent); backdrop-filter: blur(18px) saturate(1.2); -webkit-backdrop-filter: blur(18px) saturate(1.2); }
   main.empty .card { box-shadow: 0 0 0 1px var(--hairline-strong), 0 18px 40px -22px rgb(20 20 19 / 0.45); }
-  main.empty .card.saved .tag { box-shadow: none; }
   @media (hover: hover) and (pointer: fine) { main.empty button.card:hover { background: var(--canvas); } }
   main.empty .bar .icon-btn { background: color-mix(in srgb, var(--canvas) 55%, transparent); border-radius: var(--r-pill); }
   .bar { display: flex; align-items: center; gap: var(--s2); padding: var(--s3) var(--s4); min-height: 60px; }
@@ -157,8 +156,6 @@
     font: 600 13px/1.35 var(--sans); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .card .pill svg { width: 14px; height: 14px; }
   .card .q { font: 400 15px/1.45 var(--sans); color: var(--text-1); text-wrap: pretty; }
-  .card.saved { padding-top: var(--s6); }
-  .card.saved .tag { position: absolute; top: -11px; left: var(--s4); box-shadow: 0 0 0 3px var(--canvas); text-transform: uppercase; letter-spacing: 0.03em; font-size: 11px; }
   .card.skel { min-height: 150px; gap: var(--s4); padding-top: var(--s6); }
   .list-skel { display: grid; gap: var(--s4); padding: var(--s4) var(--s3); }
   #progress { position: absolute; inset: 0 0 auto; z-index: var(--z-island); height: 2px; background: linear-gradient(90deg, var(--signal), var(--live)); transform-origin: 0 50%; }
