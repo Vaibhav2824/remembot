@@ -3,13 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
-<meta name="color-scheme" content="light dark">
-<meta name="theme-color" media="(prefers-color-scheme: light)" content="#faf8f4">
-<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1a1917">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#faf8f5">
 <title>Remembot</title>
-<meta name="description" content="A chat agent with one tool, web search, that remembers what you asked and when.">
-<meta property="og:title" content="Remembot">
-<meta property="og:description" content="Ask something. Ask again next week. A chat agent that remembers what you asked, and when.">
+<meta name="description" content="Your chats with Remembot, the chat agent that searches the live web and remembers what you asked, and when.">
+<meta name="robots" content="noindex">
+<link rel="canonical" href="https://remembot.asof-agent.workers.dev/">
+<meta property="og:title" content="Remembot: ask anything, ask again next week">
+<meta property="og:description" content="A chat agent that searches the live web and remembers what you asked, and when.">
+<meta property="og:image" content="https://remembot.asof-agent.workers.dev/og.png">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="/favicon.ico" sizes="48x48">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -17,68 +20,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
-<script>
-  document.documentElement.classList.add('js')
-  try { if (localStorage.getItem('remembot-sidebar') === 'closed') document.documentElement.classList.add('collapsed') } catch {} // before paint: no flash of the open sidebar
-</script>
+<link rel="stylesheet" href="/base.css">
+<script src="/boot.js"></script>
 <style>
-  /* Tokens from the brand kit (brand/README.md): Paper, Linen, Ink, Stone and one accent, Now (the dot in the mark). Light and dark. */
-  :root {
-    --canvas: #faf8f4; --side-bg: #f3f0ea; --raised: #ffffff; --raised-2: #efebe3; --sunken: #e9e5dc;
-    --hairline: rgb(27 26 23 / 0.1); --hairline-strong: rgb(27 26 23 / 0.18);
-    --text-1: #1b1a17; --text-2: #57534c; --text-3: #6e6a62; --text-off: #a9a49a;
-    --signal: #b42d43; --signal-ink: #ffffff; --signal-text: #a12a3e; --signal-wash: rgb(180 45 67 / 0.1);
-    --danger: #c2410c; --scrim: rgb(27 26 23 / 0.32);
-    --shadow-float: 0 0 0 1px rgb(27 26 23 / 0.06), 0 6px 20px rgb(27 26 23 / 0.08);
-    --shadow-composer: 0 0 0 1px rgb(27 26 23 / 0.08), 0 4px 24px rgb(27 26 23 / 0.06);
-
-    --sans: Geist, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-    --serif: Newsreader, "Iowan Old Style", Georgia, serif;
-    --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    --t-greet: 500 40px/1.15 var(--serif); --t-answer: 400 17px/1.65 var(--serif); --t-body: 400 15px/1.6 var(--sans);
-    --t-ui: 500 14px/1.4 var(--sans); --t-small: 400 13px/1.45 var(--sans); --t-readout: 400 12px/1.4 var(--mono);
-
-    --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 20px; --s6: 24px; --s8: 32px; --s10: 40px; --s12: 48px; --s16: 64px;
-    --side: 280px; --rail: 56px; --col: 720px; --measure: 68ch;
-    --r-xs: 2px; --r-sm: 8px; --r-md: 10px; --r-lg: 16px; --r-xl: 22px; --r-pill: 999px;
-    --d-quick: 140ms; --d-panel: 200ms; --d-drawer: 240ms; --ease: cubic-bezier(0.2, 0, 0, 1);
-    --z-bar: 10; --z-drawer: 20; --z-island: 30; --z-tooltip: 40;
-    color-scheme: light;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --canvas: #1a1917; --side-bg: #201f1c; --raised: #262522; --raised-2: #2e2d29; --sunken: #141311;
-      --hairline: rgb(255 250 240 / 0.09); --hairline-strong: rgb(255 250 240 / 0.16);
-      --text-1: #eeeae3; --text-2: #b5afa5; --text-3: #958f85; --text-off: #5e5a53;
-      --signal: #e8667a; --signal-ink: #1a1917; --signal-text: #f07a8c; --signal-wash: rgb(232 102 122 / 0.14);
-      --danger: #f59e62; --scrim: rgb(0 0 0 / 0.5);
-      --shadow-float: 0 0 0 1px rgb(255 250 240 / 0.07), 0 8px 24px rgb(0 0 0 / 0.4);
-      --shadow-composer: 0 0 0 1px rgb(255 250 240 / 0.09), 0 4px 24px rgb(0 0 0 / 0.25);
-      color-scheme: dark;
-    }
-  }
-  * { box-sizing: border-box; }
-  html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; overflow-x: clip; scrollbar-color: var(--raised-2) transparent;
-    -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%; overscroll-behavior: none; }
-  body { margin: 0; height: 100dvh; display: grid; grid-template-columns: var(--side) minmax(0, 1fr); background: var(--canvas); color: var(--text-1); font: var(--t-body); overflow: clip; }
-  [hidden] { display: none !important; }
-  ::selection { background: var(--signal-wash); }
-  button { font: inherit; color: inherit; cursor: pointer; }
-  button, summary { touch-action: manipulation; -webkit-user-select: none; user-select: none; }
-  :focus-visible { outline: 2px solid var(--signal-text); outline-offset: 2px; }
-  svg.i { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
-  .mark { width: 22px; height: 22px; flex: none; color: var(--text-1); }
-  .mono { font: var(--t-readout); color: var(--text-3); font-variant-numeric: tabular-nums; }
-  .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-  .skip { position: absolute; left: var(--s3); top: calc(-1 * var(--s16)); z-index: var(--z-tooltip); background: var(--text-1); color: var(--canvas); padding: var(--s2) var(--s3); border-radius: var(--r-sm); }
-  .skip:focus { top: var(--s3); }
-
-  /* Buttons */
-  .icon-btn { width: 36px; height: 36px; display: grid; place-items: center; padding: 0; border: 0; border-radius: var(--r-sm); background: none; color: var(--text-2);
-    transition: background-color var(--d-quick) var(--ease), color var(--d-quick) var(--ease); }
-  @media (hover: hover) and (pointer: fine) { .icon-btn:hover { background: var(--raised-2); color: var(--text-1); } }
-  .icon-btn:active { background: var(--sunken); }
-  @media (pointer: coarse) { .icon-btn { width: 44px; height: 44px; } }
+  :root { --side: 280px; --rail: 56px; --col: 720px; --measure: 68ch; }
+  html { overscroll-behavior: none; }
+  body { height: 100dvh; display: grid; grid-template-columns: var(--side) minmax(0, 1fr); overflow: clip; }
 
   /* ---------- Sidebar ---------- */
   aside { background: var(--side-bg); border-right: 1px solid var(--hairline); display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
@@ -106,7 +53,7 @@
   #days .col.has { cursor: pointer; }
   #days i { align-self: end; width: 100%; max-width: 10px; height: 36px; border-radius: var(--r-xs); background: var(--hairline-strong);
     transform: scaleY(calc((4 + var(--h, 0) * 32) / 36)); transform-origin: bottom; transition: background-color var(--d-quick) var(--ease); }
-  #days .col.has i { background: var(--text-3); }
+  #days .col.has i { background: var(--recall); }
   #days .col.today i { background: var(--signal); }
   @media (hover: hover) and (pointer: fine) { #days .col.has:hover i { background: var(--text-1); } }
   #days .col.on i, #days .col.spy:not(.on) i { background: var(--text-1); }
@@ -117,31 +64,70 @@
   .day { margin-top: var(--s3); }
   .day h2 { position: sticky; top: 0; z-index: 1; margin: 0; padding: var(--s2) var(--s3) var(--s1); background: var(--side-bg); font: var(--t-small); font-weight: 500; color: var(--text-3); }
   .day.flash h2 { color: var(--signal-text); }
-  #timeline details { border-radius: var(--r-sm); transition: background-color var(--d-quick) var(--ease); }
-  @media (hover: hover) and (pointer: fine) { #timeline details:hover { background: var(--raised-2); } }
-  #timeline details[open] { background: var(--raised); box-shadow: inset 0 0 0 1px var(--hairline); margin-block: var(--s1); }
-  #timeline summary { cursor: pointer; list-style: none; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--s2); align-items: baseline; padding: var(--s2) var(--s3); font: var(--t-small); }
-  #timeline summary::-webkit-details-marker { display: none; }
-  #timeline summary b { font-weight: 400; color: var(--text-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  #timeline details[open] summary b { white-space: normal; font-weight: 500; }
-  #timeline .stored { padding: 0 var(--s3) var(--s3); font: var(--t-small); color: var(--text-2); }
+  .day ul { list-style: none; margin: 0; padding: 0; }
+  .chat { position: relative; display: flex; align-items: center; border-radius: var(--r-sm); transition: background-color var(--d-quick) var(--ease); }
+  .chat-link { flex: 1; min-width: 0; padding: var(--s2) var(--s3); font: var(--t-small); color: var(--text-1); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border-radius: var(--r-sm); }
+  .chat.active { background: var(--raised); box-shadow: inset 0 0 0 1px var(--hairline); }
+  .chat.active .chat-link { font-weight: 500; }
+  .chat.active::before { content: ""; position: absolute; left: 0; top: 9px; bottom: 9px; width: 2px; border-radius: 2px; background: var(--signal); }
+  .del { flex: none; display: inline-flex; align-items: center; gap: var(--s1); height: 28px; margin-right: var(--s1); padding: 0 var(--s2); border: 0; border-radius: var(--r-sm); background: none; color: var(--text-3); opacity: 0;
+    transition: opacity var(--d-quick) var(--ease), background-color var(--d-quick) var(--ease), color var(--d-quick) var(--ease); }
+  .del svg { width: 15px; height: 15px; }
+  .del span { display: none; font: 500 12px/1 var(--sans); }
+  .del.armed { opacity: 1; background: var(--danger); color: var(--canvas); }
+  .del.armed span { display: inline; }
+  .chat:hover .del, .chat:focus-within .del, .chat.active .del { opacity: 1; }
+  @media (hover: hover) and (pointer: fine) { .chat:not(.active):hover { background: var(--raised-2); } .del:not(.armed):hover { background: var(--sunken); color: var(--text-1); } }
+  @media (pointer: coarse) { .del { opacity: 0.7; height: 40px; } .chat-link { padding-block: var(--s3); } }
   .memory-note { margin: var(--s3); font: var(--t-small); color: var(--text-3); }
   .memory-note.error { color: var(--danger); }
+
+  .account { position: relative; padding: var(--s2) var(--s3) max(var(--s3), env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--hairline); }
+  #account-btn { width: 100%; display: flex; align-items: center; gap: var(--s3); padding: var(--s2); border: 0; border-radius: var(--r-md); background: none; text-align: left; }
+  @media (hover: hover) and (pointer: fine) { #account-btn:hover { background: var(--raised-2); } }
+  .avatar { width: 30px; height: 30px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--text-1); color: var(--canvas); font: 600 13px/1 var(--sans); text-box: trim-both cap alphabetic; }
+  .who { display: grid; min-width: 0; }
+  .who b, .who small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .who b { font: var(--t-ui); } .who small { font: var(--t-small); color: var(--text-3); }
+  #account-menu { position: absolute; left: var(--s3); right: var(--s3); bottom: calc(100% - var(--s1)); z-index: var(--z-tooltip); display: grid; padding: var(--s1); border-radius: var(--r-md);
+    background: var(--raised); box-shadow: var(--shadow-float); transform-origin: 50% 100%; }
+  #account-menu a, #account-menu button { display: flex; align-items: center; gap: var(--s2); padding: var(--s2) var(--s3); border: 0; border-radius: var(--r-sm); background: none; font: var(--t-small); color: var(--text-1); text-decoration: none; text-align: left; }
+  @media (hover: hover) and (pointer: fine) { #account-menu a:hover, #account-menu button:hover { background: var(--raised-2); } }
+  #account-menu hr { margin: var(--s1) 0; border: 0; border-top: 1px solid var(--hairline); }
+  #account-menu .danger { color: var(--danger); }
+  dialog { width: min(420px, calc(100vw - 32px)); padding: var(--s6); border: 0; border-radius: var(--r-xl); background: var(--raised); color: var(--text-1); box-shadow: var(--shadow-float); }
+  dialog::backdrop { background: var(--scrim); }
+  dialog h2 { margin: 0 0 var(--s2); font: 500 22px/1.25 var(--serif); }
+  dialog p { margin: 0 0 var(--s4); color: var(--text-2); font: var(--t-small); }
+  dialog form { display: grid; gap: var(--s4); }
+  dialog .row { display: flex; justify-content: flex-end; gap: var(--s2); }
+  #left { align-self: center; font: var(--t-readout); color: var(--text-3); }
+  #left.low { color: var(--danger); }
+  #island.on:not(.wait):not(.error) i { animation: pulse 1.1s var(--ease) infinite; }
+  @keyframes pulse { 50% { transform: scale(1.7); opacity: 0.45; } }
 
   /* Desktop: the sidebar collapses to a slim rail of icons, so the page never leaves an empty column. */
   @media (min-width: 821px) {
     html.ready body { transition: grid-template-columns var(--d-panel) var(--ease); }
     html.collapsed body { grid-template-columns: var(--rail) minmax(0, 1fr); }
-    html.collapsed .panel, html.collapsed .wordmark, html.collapsed #collapse { display: none; }
+    html.collapsed .panel, html.collapsed .wordmark, html.collapsed #collapse, html.collapsed .who { display: none; }
+    html.collapsed .account { padding-inline: var(--s2); }
+    html.collapsed #account-menu { left: var(--s2); right: auto; width: 220px; }
     html.collapsed .side-top { justify-content: center; padding-inline: 0; }
     html.collapsed .rail { display: flex; }
     #menu, #new { display: none; }
   }
 
   /* ---------- Chat ---------- */
-  main { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+  main { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; isolation: isolate; overflow: hidden; }
+  main::before { content: ""; position: absolute; inset: -15%; z-index: -1; pointer-events: none; opacity: 0.45; transition: opacity 0.8s var(--ease);
+    background: linear-gradient(118deg, transparent 30%, rgb(255 255 255 / 0.9) 38%, transparent 46%, transparent 52%, rgb(255 255 255 / 0.75) 58%, transparent 64%),
+      radial-gradient(45% 40% at 78% 18%, rgb(37 78 219 / 0.05), transparent 70%), radial-gradient(40% 35% at 15% 85%, rgb(217 119 6 / 0.05), transparent 70%);
+    animation: drift 36s ease-in-out infinite alternate; }
+  main.empty::before { opacity: 1; }
+  @keyframes drift { from { transform: translate3d(-4%, -2%, 0) rotate(-1deg); } to { transform: translate3d(4%, 3%, 0) rotate(1deg); } }
   .bar { display: flex; align-items: center; gap: var(--s2); padding: var(--s3) var(--s4); min-height: 60px; }
-  .clock { margin-left: auto; }
+  #new { margin-left: auto; }
   #chat { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: var(--s2) var(--s6) var(--s10); }
   #thread > * { max-width: var(--col); margin-inline: auto; }
 
@@ -150,7 +136,8 @@
   main.empty .bar { position: absolute; inset: 0 0 auto; }
   main.empty #chat { flex: 0 0 auto; overflow: visible; padding-bottom: var(--s6); }
   .welcome { display: flex; align-items: center; justify-content: center; gap: var(--s3); }
-  .welcome .mark { width: 30px; height: 30px; }
+  .welcome .mark { width: 40px; height: 40px; }
+  .welcome h2 span { display: inline-block; }
   .welcome h2 { margin: 0; font: var(--t-greet); letter-spacing: -0.015em; text-wrap: balance; text-align: center; }
   .tries { display: none; list-style: none; max-width: var(--col); margin: var(--s4) auto 0; padding: 0; flex-wrap: wrap; justify-content: center; gap: var(--s2); }
   main.empty .tries { display: flex; }
@@ -186,6 +173,8 @@
   .trace ol { margin: var(--s2) 0 0; padding: 0; list-style: none; display: grid; gap: var(--s2); }
   .trace li { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); font: var(--t-small); color: var(--text-2); }
   .trace li svg { width: 15px; height: 15px; color: var(--text-3); }
+  .trace li.memory > svg { color: var(--recall); } .trace li.search > svg { color: var(--live); }
+  .trace li.search .chip { background: var(--live-bg); color: var(--live-text); }
   .chip { font: var(--t-small); padding: 2px var(--s2); border-radius: var(--r-pill); background: var(--raised-2); color: var(--text-2); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   .sources { margin: var(--s4) 0 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: var(--s2); }
@@ -194,7 +183,7 @@
     background: var(--raised); box-shadow: inset 0 0 0 1px var(--hairline); color: var(--text-2); font: var(--t-small); text-decoration: none;
     transition: background-color var(--d-quick) var(--ease), color var(--d-quick) var(--ease); }
   @media (hover: hover) and (pointer: fine) { .sources a:hover { background: var(--raised-2); color: var(--text-1); } }
-  .sources b { font: var(--t-readout); color: var(--text-3); }
+  .sources b { font: var(--t-readout); color: var(--live-text); }
   .sources img { width: 14px; height: 14px; }
   .sources span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .meta { margin-top: var(--s3); display: flex; flex-wrap: wrap; align-items: center; gap: var(--s1) var(--s4); }
@@ -205,7 +194,7 @@
   .meta .error { font: var(--t-small); }
   .meter { display: inline-flex; align-items: center; gap: 3px; margin-right: var(--s2); vertical-align: 1px; }
   .meter b { width: 12px; height: 5px; border-radius: var(--r-xs); background: var(--hairline-strong); }
-  .meter b.on { background: var(--signal); }
+  .meter b.on { background: var(--live); }
   .cursor::after { content: ""; display: inline-block; width: 8px; height: 8px; margin-left: var(--s2); border-radius: 50%; background: var(--signal); vertical-align: 1px; }
   .msg.agent .body.cursor:empty { display: block; }
 
@@ -214,6 +203,13 @@
   .composer { max-width: var(--col); margin-inline: auto; display: flex; gap: var(--s2); align-items: flex-end; padding: var(--s3) var(--s3) var(--s3) var(--s5);
     border-radius: var(--r-xl); background: var(--raised); box-shadow: var(--shadow-composer); transition: box-shadow var(--d-quick) var(--ease); }
   .composer:focus-within { box-shadow: 0 0 0 1px var(--signal-text), var(--shadow-composer); }
+  @property --ring { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+  html.thinking .composer { border: 1.5px solid transparent; animation: ring 2.4s linear infinite;
+    background: linear-gradient(var(--raised), var(--raised)) padding-box, conic-gradient(from var(--ring), var(--signal), var(--live), var(--recall), var(--signal)) border-box; }
+  @keyframes ring { to { --ring: 360deg; } }
+  html.thinking #island:not(.error):not(.wait) span { background: linear-gradient(90deg, var(--text-3) 20%, var(--text-1) 50%, var(--text-3) 80%) 0 0 / 200% 100%;
+    -webkit-background-clip: text; background-clip: text; color: transparent; animation: shimmer 1.4s linear infinite; }
+  @keyframes shimmer { to { background-position: -200% 0; } }
   textarea { flex: 1; min-height: 28px; border: 0; outline: 0; resize: none; background: none; color: inherit; font: 400 16px/1.5 var(--sans); max-height: 200px; padding: var(--s1) 0; caret-color: var(--signal-text); }
   textarea::placeholder { color: var(--text-3); }
   textarea:focus-visible { outline: none; } /* the composer ring shows focus */
@@ -247,11 +243,10 @@
     .bar, #chat, .dock { padding-left: max(var(--s4), env(safe-area-inset-left, 0px)); padding-right: max(var(--s4), env(safe-area-inset-right, 0px)); }
     #timeline { padding-bottom: max(var(--s4), env(safe-area-inset-bottom, 0px)); }
     main.empty { padding-bottom: 10vh; }
-    .welcome h2 { font-size: 30px; }
+    .welcome h2 { font-size: 32px; }
+    .welcome .mark { width: 30px; height: 30px; }
   }
-  @media (max-width: 480px) { .clock { display: none; } }
   @media (pointer: coarse) { #input { font-size: 16px; } }
-  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
 </style>
 </head>
 <body>
@@ -264,13 +259,15 @@
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
   <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h16"/></symbol>
   <symbol id="i-panel" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M9.5 4v16"/></symbol>
-  <symbol id="i-memory" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-memory" viewBox="0 0 24 24"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></symbol>
   <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2M10 11v6M14 11v6"/></symbol>
+  <symbol id="i-out" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></symbol>
   <symbol id="i-wait" viewBox="0 0 24 24"><path d="M7 3h10M7 21h10M8 3c0 5 8 6 8 9s-8 4-8 9M16 3c0 5-8 6-8 9"/></symbol>
 </svg>
 <aside id="memory" aria-label="Memory" tabindex="-1">
   <div class="side-top">
-    <div class="brand"><svg class="mark" aria-hidden="true"><use href="#i-mark"/></svg><span class="wordmark">Remembot</span></div>
+    <div class="brand"><svg class="mark live-mark" viewBox="0 0 256 256" aria-hidden="true"><g fill="currentColor"><rect class="m-bar" x="20" y="24" width="216" height="56" rx="28"/><rect class="m-bar" x="20" y="100" width="168" height="56" rx="28"/><rect class="m-bar" x="20" y="176" width="96" height="56" rx="28"/></g><circle class="m-dot" cx="207" cy="204" r="29"/></svg><span class="wordmark">Remembot</span></div>
     <button class="icon-btn" id="collapse" type="button" aria-controls="memory" aria-expanded="true" aria-label="Collapse sidebar" title="Collapse sidebar (Ctrl+B)"><svg class="i" aria-hidden="true"><use href="#i-panel"/></svg></button>
   </div>
   <div class="rail" id="rail">
@@ -279,19 +276,42 @@
   </div>
   <div class="panel" id="panel">
     <button class="side-new" id="new-side" type="button"><span class="plus"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></span>New chat</button>
-    <section class="scrub" aria-label="Last 14 days">
+    <section class="scrub" aria-label="Chats in the last 14 days">
       <header><b>Last 14 days</b><span class="mono" id="count"></span></header>
       <div id="days" role="slider" aria-label="Jump to a day" aria-valuemin="1" aria-valuemax="14"></div>
     </section>
-    <div id="timeline"><div id="timeline-list" aria-busy="true"><p class="memory-note">Loading…</p></div></div>
+    <nav id="timeline" aria-label="Your chats"><div id="timeline-list" aria-busy="true"><p class="memory-note">Loading your chats…</p></div></nav>
+  </div>
+  <div class="account">
+    <div id="account-menu" hidden>
+      <a href="/privacy">Privacy Policy</a>
+      <a href="/terms">Terms of Service</a>
+      <button type="button" data-consent-open>Cookie settings</button>
+      <hr>
+      <button type="button" id="signout"><svg class="i" aria-hidden="true"><use href="#i-out"/></svg>Sign out</button>
+      <button type="button" id="delete-account" class="danger"><svg class="i" aria-hidden="true"><use href="#i-trash"/></svg>Delete account</button>
+    </div>
+    <button type="button" id="account-btn" aria-expanded="false" aria-controls="account-menu" aria-label="Account"><span class="avatar" id="avatar" aria-hidden="true"></span><span class="who"><b id="who-name"></b><small id="who-email"></small></span></button>
   </div>
 </aside>
 
-<main id="main">
+<dialog id="delete-dialog" aria-labelledby="delete-title">
+  <h2 id="delete-title">Delete your account?</h2>
+  <p>Your account and every saved chat are erased for good. This cannot be undone.</p>
+  <form id="delete-form">
+    <div class="field">
+      <label for="delete-password">Your password</label>
+      <div class="well"><input id="delete-password" type="password" autocomplete="current-password" required maxlength="128"></div>
+      <span class="hint error" id="delete-error" role="alert"></span>
+    </div>
+    <div class="row"><button type="button" class="key quiet" id="delete-cancel">Cancel</button><button type="submit" class="key danger" id="delete-confirm">Delete forever</button></div>
+  </form>
+</dialog>
+
+<main id="main" class="empty">
   <h1 class="sr-only">Remembot, a chat agent that remembers what you asked and when</h1>
   <div class="bar">
     <button class="icon-btn" id="menu" type="button" aria-controls="memory" aria-expanded="false" aria-label="Memory"><svg class="i" aria-hidden="true"><use href="#i-menu"/></svg></button>
-    <span class="clock mono" id="clock"></span>
     <button class="icon-btn" id="new" type="button" aria-label="New chat"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></button>
   </div>
   <div id="chat"><div id="thread" aria-live="polite"></div></div>
@@ -301,350 +321,15 @@
     <div class="composer">
       <label for="input" class="sr-only">Message</label>
       <textarea id="input" rows="1" enterkeyhint="send" placeholder="Ask anything" maxlength="2000" autofocus></textarea>
+      <span id="left" aria-live="polite" hidden></span>
       <button id="send" type="submit" aria-label="Send" disabled><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></button>
     </div>
     <ul class="tries" id="tries" aria-label="Try one"></ul>
   </form>
 </main>
 
-<script>
-const $ = (id) => document.getElementById(id)
-const chat = $('thread'), scroller = $('chat'), main = $('main'), input = $('input'), sendBtn = $('send'), island = $('island')
-
-// Identity is a random id kept in this browser. Memory belongs to it, across every chat.
-let userId = null
-try { userId = localStorage.getItem('remembot-user') || localStorage.getItem('asof-user') } catch {} // keeps memory from before the rename
-if (!userId) { userId = crypto.randomUUID(); try { localStorage.setItem('remembot-user', userId) } catch {} }
-let threadId = crypto.randomUUID()
-const tz = -new Date().getTimezoneOffset()
-let busy = null // AbortController while a reply is streaming
-
-const EXAMPLES = [
-  ['Postgres pricing since Tuesday', 'Last Tuesday I asked you about Postgres hosting. Has any pricing changed since then?'],
-  ['What I asked on 3 Nov', 'What did I ask you on 3 November? Is your answer still correct today?'],
-  ['CRM news since Monday', 'On Monday we shortlisted 5 CRM tools for a 20-person sales team. Has any of them changed pricing or shipped something big since?'],
-]
-
-// ---------- rendering ----------
-const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
-const safeUrl = (u) => (/^https?:\/\//i.test(u) ? esc(u) : '#')
-const host = (u) => { try { return new URL(u).hostname.replace(/^www\./, '') } catch { return '' } }
-const icon = (name) => `<svg class="i" aria-hidden="true"><use href="#i-${name}"/></svg>`
-const link = (href, inner, attrs = '') => `<a ${attrs} href="${href}" target="_blank" rel="noopener noreferrer">${inner}</a>`
-const timeOf = (ms) => new Date(ms).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-const dayOf = (ms) => new Date(ms).toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
-const dayKey = (ms) => new Date(ms).toLocaleDateString('en-CA') // YYYY-MM-DD, local
-const DAY = 86_400_000
-
-// Minimal, escape-first markdown: everything is escaped, then a few safe patterns are turned back into tags.
-function markdown(text, sources) {
-  text = text.replace(/【(\d+)[^】]*】/g, '[$1]').replace(/(\[\d+\])(?:\s*\1)+/g, '$1') // some models cite as 【1†L2-L5】, twice
-  const inline = (s) => esc(s)
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/(^|[^*\w])\*([^*\n]+?)\*(?![*\w])/g, '$1<em>$2</em>')
-    .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (_, label, url) => link(url, label))
-    .replace(/\[(\d+)\]/g, (_, n) => { const s = sources[n - 1]; return s ? link(safeUrl(s.url), n, `class="cite" data-tip="${esc(s.title)}&#10;${esc(host(s.url))}"`) : '' })
-  const out = []
-  let items = []
-  const flush = () => { if (items.length) out.push(`<ul>${items.join('')}</ul>`); items = [] }
-  for (const line of text.split('\n')) {
-    const bullet = line.match(/^\s*(?:[-*•]|\d+[.)])\s+(.*)/)
-    if (bullet) items.push(`<li>${inline(bullet[1])}</li>`)
-    else { flush(); if (line.trim()) out.push(`<p>${inline(line.replace(/^#+\s*/, ''))}</p>`) }
-  }
-  flush()
-  return out.join('')
-}
-
-// Follow the stream only while the reader is at the bottom; scrolling up stops it and offers a way back.
-let pinned = true, lastTop = 0
-const latest = $('latest')
-const atBottom = () => scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight < 80
-scroller.addEventListener('scroll', () => {
-  if (atBottom()) { pinned = true; latest.hidden = true }
-  else if (scroller.scrollTop < lastTop) pinned = false // only an upward scroll unpins; the stream itself only scrolls down
-  lastTop = scroller.scrollTop
-}, { passive: true })
-function scrollDown(force = false) {
-  if (force) pinned = true
-  if (!pinned) { latest.hidden = false; return }
-  scroller.scrollTop = scroller.scrollHeight
-}
-latest.addEventListener('click', () => { latest.hidden = true; scrollDown(true) })
-
-// Scroll-spy: as the timeline scrolls, the scrubber marks the day at the top of the list.
-$('timeline').addEventListener('scroll', () => {
-  const top = $('timeline').getBoundingClientRect().top + 24
-  let current = null
-  for (const d of document.querySelectorAll('#timeline-list .day')) { if (d.getBoundingClientRect().top <= top) current = d.id.slice(2); else break }
-  for (const c of $('days').children) c.classList.toggle('spy', c.dataset.day === current)
-}, { passive: true })
-
-function addMessage(role, text = '') {
-  const el = document.createElement('article')
-  el.className = `msg ${role}`
-  el.innerHTML = role === 'user'
-    ? `<div class="body"></div>`
-    : `<details class="trace" hidden><summary></summary><ol></ol></details><div class="body"></div><ul class="sources"></ul><div class="meta mono"></div>`
-  el.querySelector('.body').textContent = text
-  chat.append(el)
-  scrollDown()
-  return el
-}
-
-function welcome() {
-  main.classList.add('empty')
-  chat.innerHTML = `<section class="welcome"><svg class="mark" aria-hidden="true"><use href="#i-mark"/></svg><h2>Ask again next week</h2></section>`
-  $('tries').innerHTML = EXAMPLES.map(([tag, q]) => `<li><button type="button" data-q="${esc(q)}" title="${esc(q)}">${esc(tag)}</button></li>`).join('')
-  $('tries').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => send(b.dataset.q)))
-  scroller.scrollTop = 0
-}
-
-let islandTimer = 0
-function status(text, kind = '') {
-  clearTimeout(islandTimer)
-  if (!text) { island.classList.remove('on'); return }
-  island.className = `on ${kind}`
-  island.querySelector('span').textContent = text
-  if (kind === 'error') islandTimer = setTimeout(() => status(''), 6000)
-}
-
-function scrubber(turns) {
-  const counts = {}
-  for (const t of turns) counts[dayKey(t.askedAt)] = (counts[dayKey(t.askedAt)] || 0) + 1
-  const max = Math.max(1, ...Object.values(counts))
-  const today = dayKey(Date.now())
-  $('days').innerHTML = Array.from({ length: 14 }, (_, i) => {
-    const ms = Date.now() - (13 - i) * DAY, k = dayKey(ms), n = counts[k] || 0
-    const label = `${dayOf(ms)}: ${n || 'no'} exchange${n === 1 ? '' : 's'}`
-    return `<span class="col${n ? ' has' : ''}${k === today ? ' today' : ''}" data-day="${k}" title="${label}" style="--h:${n / max}">
-      <i></i><b>${new Date(ms).toLocaleDateString([], { weekday: 'narrow' })}</b></span>`
-  }).join('')
-  const days = new Set(Object.keys(counts)).size
-  $('count').textContent = turns.length ? `${turns.length}` : ''
-  // The slider is only focusable when there is a day to jump to.
-  const slider = $('days')
-  slider.tabIndex = turns.length ? 0 : -1
-  slider.toggleAttribute('aria-disabled', !turns.length)
-  slider.setAttribute('aria-valuenow', '14')
-  slider.setAttribute('aria-valuetext', turns.length ? `${turns.length} asked over ${days} day${days === 1 ? '' : 's'}; use the arrow keys to pick a day` : 'No questions yet')
-}
-
-async function loadTimeline() {
-  const box = $('timeline-list')
-  let turns
-  try {
-    const r = await fetch(`/api/turns?userId=${userId}`)
-    if (!r.ok) throw new Error(`status ${r.status}`)
-    turns = await r.json()
-  } catch {
-    // A failed load is not an empty memory: say so, and keep whatever was already shown.
-    box.removeAttribute('aria-busy')
-    if (!box.querySelector('.day')) box.innerHTML = '<p class="memory-note error">Couldn’t load memory. Retrying after your next question.</p>'
-    if (!$('days').children.length) scrubber([])
-    return
-  }
-  box.removeAttribute('aria-busy')
-  scrubber(turns)
-  if (!turns.length) { box.innerHTML = '<p class="memory-note">Nothing yet</p>'; return }
-  const name = (ms) => { const k = dayKey(ms); return k === dayKey(Date.now()) ? 'Today' : k === dayKey(Date.now() - DAY) ? 'Yesterday' : dayOf(ms) }
-  let html = '', day = ''
-  for (const t of turns) {
-    if (dayKey(t.askedAt) !== day) {
-      if (day) html += '</div>'
-      day = dayKey(t.askedAt)
-      html += `<div class="day" id="d-${day}"><h2>${esc(name(t.askedAt))}</h2>`
-    }
-    html += `<details><summary><b>${esc(t.question)}</b><span class="mono">${timeOf(t.askedAt)}</span></summary>
-      <div class="stored body">${markdown(t.answer, t.sources)}</div></details>`
-  }
-  box.innerHTML = html + '</div>'
-}
-
-// ---------- streaming ----------
-async function* stream(path, body, signal) {
-  const res = await fetch(path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body), signal })
-  if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || `Request failed (${res.status})`)
-  const reader = res.body.getReader(), decoder = new TextDecoder()
-  let buffer = ''
-  for (;;) {
-    const { value, done } = await reader.read()
-    if (done) return
-    buffer += decoder.decode(value, { stream: true })
-    const frames = buffer.split('\n\n')
-    buffer = frames.pop()
-    for (const f of frames) if (f.startsWith('data: ')) yield JSON.parse(f.slice(6))
-  }
-}
-
-function setBusy(controller) {
-  busy = controller
-  sendBtn.setAttribute('aria-label', busy ? 'Stop' : 'Send')
-  sendBtn.innerHTML = icon(busy ? 'stop' : 'arrow')
-  sendBtn.disabled = !busy && !input.value.trim()
-}
-
-async function send(text) {
-  text = text.trim()
-  if (!text || busy) return
-  if (main.classList.contains('empty')) { main.classList.remove('empty'); chat.innerHTML = '' }
-  pinned = true
-  input.value = ''; input.style.height = 'auto'
-  addMessage('user', text)
-  const el = addMessage('agent')
-  const trace = el.querySelector('.trace'), body = el.querySelector('.body'), meta = el.querySelector('.meta')
-  // The trace folds into one line ("Recalled 3 exchanges, searched 2 times"); the steps open beneath it.
-  const did = { recalled: 0, missing: false, searched: 0, waited: 0 }
-  const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`
-  const summary = () => {
-    const parts = [
-      did.recalled ? `recalled ${plural(did.recalled, 'exchange')}` : did.missing ? 'nothing remembered for that day' : '',
-      did.searched ? `searched ${plural(did.searched, 'time')}` : '',
-      did.waited ? `waited ${did.waited} s for the model` : '',
-    ].filter(Boolean).join(', ')
-    return parts.charAt(0).toUpperCase() + parts.slice(1)
-  }
-  const step = (kind, html) => {
-    trace.querySelector('ol').insertAdjacentHTML('beforeend', `<li class="${kind}">${icon(kind)}${html}</li>`)
-    trace.querySelector('summary').textContent = summary()
-    trace.hidden = false
-    scrollDown()
-  }
-  let answer = '', sources = [], firstTokenMs = 0
-  const started = performance.now()
-  const paint = () => { body.innerHTML = markdown(answer, sources); scrollDown() }
-
-  setBusy(new AbortController())
-  body.classList.add('cursor')
-  status('Recalling')
-  try {
-    for await (const e of stream('/api/chat', { userId, threadId, message: text, tz }, busy.signal)) {
-      if (e.type === 'memory') {
-        const found = e.windows.filter((w) => w.count)
-        did.recalled += found.reduce((n, w) => n + w.count, 0) + (e.related || 0)
-        did.missing = !found.length && e.windows.length > 0
-        if (found.length) step('memory', `Remembered ${found.map((w) => `${w.count} from <b>${esc(w.label)}</b>`).join(', ')}`)
-        else if (e.windows.length) step('memory', `Nothing remembered for ${e.windows.map((w) => `<b>${esc(w.label)}</b>`).join(' or ')}`)
-        if (e.related) step('memory', `Remembered ${e.related} related exchange${e.related > 1 ? 's' : ''}`)
-        status('Thinking')
-      } else if (e.type === 'search') {
-        answer = ''; paint() // anything said before a search was a preamble, not the answer
-        did.searched += e.queries.length
-        step('search', `Searched ${e.queries.map((q) => `<span class="chip">${esc(q)}</span>`).join('')}`)
-        status(e.queries.length > 1 ? `Searching ${e.queries.length} queries in parallel` : 'Searching the web')
-      } else if (e.type === 'wait') {
-        did.waited += e.seconds
-        step('wait', `Model rate limit reached, retrying in ${e.seconds} s`)
-        status(`Rate limited, retrying in ${e.seconds} s`, 'wait')
-      } else if (e.type === 'sources') {
-        sources = e.sources
-      } else if (e.type === 'text') {
-        if (!firstTokenMs) { firstTokenMs = performance.now() - started; status('Writing') }
-        answer += e.delta; paint()
-      } else if (e.type === 'done') {
-        const shown = body.innerHTML // rendered, so 【n†…】 citations are already normalised to [n] links
-        const cited = sources.filter((s) => shown.includes(`>${s.n}</a>`))
-        el.querySelector('.sources').innerHTML = cited.map((s) => `<li>${link(safeUrl(s.url),
-          `<b>${s.n}</b><img src="https://icons.duckduckgo.com/ip3/${esc(host(s.url))}.ico" alt="" loading="lazy" decoding="async" onerror="this.remove()"><span>${esc(s.title)}</span>`,
-          `title="${esc(s.title)}"`)}</li>`).join('')
-        const secs = (ms) => (ms / 1000).toFixed(1) + ' s'
-        meta.innerHTML = [timeOf(e.askedAt), `first word ${secs(firstTokenMs)}`, `done ${secs(performance.now() - started)}`,
-          e.searches ? `<span class="meter" aria-hidden="true">${Array.from({ length: 6 }, (_, i) => `<b class="${i < e.searches ? 'on' : ''}"></b>`).join('')}</span>${e.searches} of 6 searches`
-            : 'Answered from memory'].map((s) => `<span>${s}</span>`).join('')
-        meta.insertAdjacentHTML('beforeend', '<button type="button" class="copy">Copy answer</button>')
-        const copy = meta.querySelector('.copy'), copied = answer
-        copy.addEventListener('click', () => navigator.clipboard?.writeText(copied).then(() => { copy.textContent = 'Copied'; setTimeout(() => { copy.textContent = 'Copy answer' }, 1500) }))
-        scrollDown() // the sources and readout line land after the last token
-        loadTimeline()
-      } else if (e.type === 'error') {
-        throw new Error(e.message)
-      }
-    }
-    status('')
-  } catch (err) {
-    if (err.name === 'AbortError') { meta.innerHTML = '<span>Stopped. Not saved to memory.</span>'; status('') }
-    else {
-      meta.innerHTML = `<span class="error">This answer didn’t finish: ${esc(err.message.replace(/\.$/, ''))}. Ask again to retry.</span>`
-      status('Answer failed. Ask again to retry.', 'error')
-    }
-  }
-  body.classList.remove('cursor')
-  setBusy(null)
-  input.focus()
-}
-
-// ---------- wiring ----------
-$('form').addEventListener('submit', (e) => { e.preventDefault(); busy ? busy.abort() : send(input.value) })
-input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); send(input.value) } })
-input.addEventListener('input', () => {
-  input.style.height = 'auto'; input.style.height = input.scrollHeight + 'px'
-  if (!busy) sendBtn.disabled = !input.value.trim()
-})
-const newChat = () => { if (busy) return; threadId = crypto.randomUUID(); welcome(); setMenu(false); input.focus() }
-for (const id of ['new', 'new-side', 'new-rail']) $(id).addEventListener('click', newChat)
-
-// Phone drawer: the button reports its state, Escape or a tap outside closes it, focus moves in and comes back.
-const menuBtn = $('menu'), memory = $('memory'), panel = $('panel')
-function setMenu(open) {
-  if (document.body.classList.contains('menu-open') === open) return
-  document.body.classList.toggle('menu-open', open)
-  menuBtn.setAttribute('aria-expanded', String(open))
-  if (open) ([...memory.querySelectorAll('button:not(:disabled), summary, [tabindex="0"]')].find((el) => el.offsetParent !== null) || memory).focus()
-  else if (memory.contains(document.activeElement)) menuBtn.focus()
-}
-menuBtn.addEventListener('click', (e) => { e.stopPropagation(); setMenu(!document.body.classList.contains('menu-open')) })
-main.addEventListener('click', () => setMenu(false))
-addEventListener('keydown', (e) => { if (e.key === 'Escape') setMenu(false) })
-
-// Desktop sidebar: collapses to a rail of icons (Ctrl/Cmd+B toggles). The choice is remembered.
-const desktop = matchMedia('(min-width: 821px)'), root = document.documentElement
-function setSidebar(open) {
-  root.classList.toggle('collapsed', !open)
-  panel.inert = !open
-  $('collapse').setAttribute('aria-expanded', String(open))
-  try { localStorage.setItem('remembot-sidebar', open ? 'open' : 'closed') } catch {}
-  ;(open ? $('collapse') : $('expand')).focus({ preventScroll: true })
-}
-const syncLayout = () => { panel.inert = desktop.matches && root.classList.contains('collapsed') }
-desktop.addEventListener('change', syncLayout); syncLayout()
-requestAnimationFrame(() => requestAnimationFrame(() => root.classList.add('ready'))) // animate toggles, not the first paint
-$('collapse').addEventListener('click', () => setSidebar(false))
-$('expand').addEventListener('click', () => setSidebar(true))
-addEventListener('keydown', (e) => {
-  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b' && desktop.matches) { e.preventDefault(); setSidebar(root.classList.contains('collapsed')) }
-})
-
-// Time scrubber: click a day, or press and drag across the bars; arrows step between days with history.
-const cols = () => [...$('days').children]
-function jumpTo(c) {
-  const group = c && c.classList.contains('has') && $(`d-${c.dataset.day}`)
-  if (!group) return
-  document.querySelectorAll('.day.flash').forEach((d) => d.classList.remove('flash'))
-  cols().forEach((x) => x.classList.toggle('on', x === c))
-  group.classList.add('flash')
-  $('days').setAttribute('aria-valuenow', String(cols().indexOf(c) + 1))
-  $('days').setAttribute('aria-valuetext', c.title)
-  group.querySelector('h2').scrollIntoView({ block: 'start' })
-}
-let scrubbing = false
-const dayAt = (e) => document.elementFromPoint(e.clientX, e.clientY)?.closest('#days .col')
-$('days').addEventListener('pointerdown', (e) => { scrubbing = true; jumpTo(dayAt(e)) })
-$('days').addEventListener('pointermove', (e) => { const b = scrubbing && dayAt(e); if (b && !b.classList.contains('on')) jumpTo(b) })
-addEventListener('pointerup', () => { scrubbing = false })
-$('days').addEventListener('keydown', (e) => {
-  const has = cols().filter((c) => c.classList.contains('has'))
-  const cur = has.indexOf(document.querySelector('#days .on')), last = has.length - 1
-  const next = { Home: 0, End: last, ArrowLeft: cur < 0 ? last : cur - 1, ArrowDown: cur < 0 ? last : cur - 1,
-    ArrowRight: cur < 0 ? last : cur + 1, ArrowUp: cur < 0 ? last : cur + 1 }[e.key]
-  if (next === undefined || !has.length) return
-  e.preventDefault()
-  jumpTo(has[Math.max(0, Math.min(last, next))])
-})
-const tick = () => { $('clock').textContent = `${dayOf(Date.now())}, ${timeOf(Date.now())}` }
-tick(); setInterval(tick, 30_000)
-welcome()
-loadTimeline()
-</script>
+<script src="/vendor/motion.js" defer></script>
+<script src="/consent.js" defer></script>
+<script src="/app.js" defer></script>
 </body>
 </html>

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>Privacy Policy · Remembot</title>
+<meta name="description" content="What Remembot stores about you, which services process your questions, how long data is kept, and how to delete it.">
+<link rel="canonical" href="https://remembot.asof-agent.workers.dev/privacy">
+<meta property="og:title" content="Privacy Policy · Remembot">
+<meta property="og:description" content="What Remembot stores, who processes it, and how to delete it.">
+<meta property="og:image" content="https://remembot.asof-agent.workers.dev/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/base.css">
+<link rel="stylesheet" href="/legal.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-mark" viewBox="0 0 256 256"><path fill="currentColor" d="M48 24H208A28 28 0 0 1 208 80H48A28 28 0 0 1 48 24Z M48 100H160A28 28 0 0 1 160 156H48A28 28 0 0 1 48 100Z M48 176H88A28 28 0 0 1 88 232H48A28 28 0 0 1 48 176Z"/><path fill="var(--signal)" d="M178 204A29 29 0 1 1 236 204A29 29 0 1 1 178 204Z"/></symbol>
+</svg>
+<header class="top"><a class="brand" href="/" aria-label="Remembot home"><svg class="mark" aria-hidden="true"><use href="#i-mark"/></svg>Remembot</a></header>
+<main class="prose" id="content">
+  <h1>Privacy Policy</h1>
+  <p class="updated mono">Last updated 13 November 2026</p>
+
+  <p>Remembot is a chat agent that answers from the live web and remembers what you asked. This page says plainly what we store, who else sees it, and how you remove it.</p>
+
+  <h2 id="what">What we store</h2>
+  <ul>
+    <li><strong>Your account:</strong> your name, your email address, and a salted PBKDF2 hash of your password. We never store the password itself and cannot read it.</li>
+    <li><strong>Your chats:</strong> each question you ask, the answer, the web pages it cited, and the date and time. This is what lets Remembot remember. Only your account can read them.</li>
+    <li><strong>Sign-in records:</strong> a hashed session token, and for 24 hours, failed sign-in attempts with the email or network address they came from, to stop password guessing.</li>
+  </ul>
+  <p>We do not sell your data, show ads, or use your chats to train any model.</p>
+
+  <h2 id="processors">Services that process your data</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Service</th><th>What it receives</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>OpenAI</td><td>Your question, the recent turns of the chat, and remembered exchanges relevant to it</td><td>Writing the answer</td></tr>
+      <tr><td>Firecrawl</td><td>Search queries the model writes from your question</td><td>Live web search</td></tr>
+      <tr><td>Cloudflare</td><td>All traffic, and the database your account and chats live in</td><td>Hosting and storage</td></tr>
+      <tr><td>Google Fonts</td><td>Your browser’s request for the typefaces</td><td>Showing the page</td></tr>
+      <tr><td>DuckDuckGo</td><td>The domain names of cited sources, from your browser</td><td>Showing each source’s icon</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="cookies">Cookies and local storage</h2>
+  <ul>
+    <li><strong>One essential cookie</strong>, <code>sid</code>, keeps you signed in for up to 30 days. It is HttpOnly, so page scripts cannot read it, and it is only sent to this site. It needs no consent because the service cannot work without it.</li>
+    <li><strong>Local storage</strong> in your browser remembers whether the sidebar is collapsed and your cookie choice. It never leaves your device.</li>
+    <li><strong>Analytics</strong>, only if you choose “Accept all”: Cloudflare Web Analytics counts page views without cookies and without tracking you across sites. You can change your choice any time with <button type="button" data-consent-open class="key quiet" style="min-height:28px;padding:0 10px;font-size:13px">Cookie settings</button>.</li>
+  </ul>
+
+  <h2 id="retention">How long we keep it, and how to delete it</h2>
+  <p>Chats stay until you delete them. To delete one chat, hover it in the sidebar and press the trash icon twice. To delete everything, open the account menu at the bottom of the sidebar and choose <strong>Delete account</strong>: your account, every chat and every session are erased at once, permanently.</p>
+
+  <h2 id="security">Security</h2>
+  <p>All traffic is encrypted with HTTPS. Passwords are hashed with PBKDF2-SHA256 and a unique salt. Session tokens are random, stored only as hashes, and end when you sign out. Sign-in is rate-limited against guessing.</p>
+
+  <h2 id="rights">Your rights</h2>
+  <p>You can see your data in the app, delete it at any time, and ask us about it. Depending on where you live (for example under the GDPR or CCPA) you may also have the right to a copy of your data, to correct it, or to object to processing.</p>
+
+  <h2 id="children">Children</h2>
+  <p>Remembot is not meant for children under 13, and we do not knowingly collect their data.</p>
+
+  <h2 id="contact">Contact and changes</h2>
+  <p>Questions or requests: <a href="https://github.com/Vaibhav2824/remembot/issues" rel="noopener">open an issue on GitHub</a>. If this policy changes in a way that matters, we will say so in the app before it takes effect.</p>
+</main>
+<footer>
+  <span>© 2026 Remembot</span>
+  <a href="/privacy" aria-current="page">Privacy</a>
+  <a href="/terms">Terms</a>
+  <button type="button" data-consent-open>Cookie settings</button>
+</footer>
+<script src="/vendor/motion.js" defer></script>
+<script src="/consent.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+/* Shared by every page. "Editorial Archive meets Live Terminal": archival paper and carbon ink,
+   one action color (Cobalt Index), and two meanings: Amber Bookmark is the past (recalled chats,
+   memory), Oxidized Verdigris is the live web (what was checked or changed today). Light only. */
+:root {
+  --canvas: #faf8f5; --side-bg: #f2efe9; --raised: #ffffff; --raised-2: #f2efe9; --sunken: #e8e4dc;
+  --hairline: rgb(20 20 19 / 0.09); --hairline-strong: rgb(20 20 19 / 0.16);
+  --text-1: #141413; --text-2: #3e3c38; --text-3: #5c5a55; --text-off: #a9a59d;
+  --signal: #254edb; --signal-ink: #ffffff; --signal-text: #254edb; --signal-wash: rgb(37 78 219 / 0.09);
+  --recall: #d97706; --recall-bg: #fef3c7; --recall-text: #92400e;
+  --live: #0d9488; --live-bg: #ccfbf1; --live-text: #115e59;
+  --danger: #9a3412; --ok: #0d9488; --scrim: rgb(20 20 19 / 0.32);
+  --shadow-float: 0 0 0 1px rgb(20 20 19 / 0.06), 0 6px 20px rgb(20 20 19 / 0.07);
+  --shadow-composer: 0 0 0 1px rgb(20 20 19 / 0.08), 0 4px 24px rgb(20 20 19 / 0.05);
+  --shadow-key: inset 0 1px 0 rgb(255 255 255 / 0.22), 0 1px 0 rgb(10 20 60 / 0.3), 0 3px 8px -2px rgb(37 78 219 / 0.45);
+
+  --sans: Geist, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --serif: Newsreader, "Iowan Old Style", Georgia, serif;
+  --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --t-greet: 500 46px/1.12 var(--serif); --t-answer: 400 17px/1.65 var(--serif); --t-body: 400 15px/1.6 var(--sans);
+  --t-ui: 500 14px/1.4 var(--sans); --t-small: 400 13px/1.45 var(--sans); --t-readout: 400 12px/1.4 var(--mono);
+
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 20px; --s6: 24px; --s8: 32px; --s10: 40px; --s12: 48px; --s16: 64px;
+  --r-xs: 2px; --r-sm: 8px; --r-md: 10px; --r-lg: 16px; --r-xl: 22px; --r-pill: 999px;
+  --d-quick: 140ms; --d-panel: 200ms; --d-drawer: 240ms; --ease: cubic-bezier(0.2, 0, 0, 1);
+  --z-bar: 10; --z-drawer: 20; --z-island: 30; --z-tooltip: 40; --z-banner: 50;
+  color-scheme: light;
+}
+/* Semantic tags: the past and the live web. */
+.tag { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px 1px 6px; border-radius: var(--r-pill); font: 500 12px/1.5 var(--sans); white-space: nowrap; }
+.tag svg { width: 12px; height: 12px; }
+.tag.recall { background: var(--recall-bg); color: var(--recall-text); }
+.tag.live { background: var(--live-bg); color: var(--live-text); }
+/* The mark, live: bars draw in from the left, the dot is now. */
+.live-mark .m-bar { transform-box: fill-box; transform-origin: left center; }
+.live-mark .m-dot { transform-box: fill-box; transform-origin: center; fill: var(--signal); }
+html.thinking .live-mark .m-dot { animation: m-pulse 1s var(--ease) infinite; }
+html.thinking .live-mark .m-bar { animation: m-write 1.4s var(--ease) infinite; }
+html.thinking .live-mark .m-bar:nth-child(2) { animation-delay: 0.15s; }
+html.thinking .live-mark .m-bar:nth-child(3) { animation-delay: 0.3s; }
+@keyframes m-pulse { 50% { transform: scale(0.7); opacity: 0.55; } }
+@keyframes m-write { 50% { transform: scaleX(0.72); } }
+@media (hover: hover) and (pointer: fine) {
+  .brand:hover .live-mark .m-bar { transition: transform 0.35s var(--ease); }
+  .brand:hover .live-mark .m-bar:nth-child(1) { transform: scaleX(0.82); }
+  .brand:hover .live-mark .m-bar:nth-child(3) { transform: scaleX(1.5); }
+}
+* { box-sizing: border-box; }
+html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; overflow-x: clip; scrollbar-color: var(--raised-2) transparent;
+  -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--canvas); color: var(--text-1); font: var(--t-body); }
+[hidden] { display: none !important; }
+::selection { background: var(--signal-wash); }
+button { font: inherit; color: inherit; cursor: pointer; }
+button, summary { touch-action: manipulation; -webkit-user-select: none; user-select: none; }
+:focus-visible { outline: 2px solid var(--signal-text); outline-offset: 2px; }
+a { color: inherit; text-decoration-color: var(--signal-text); text-underline-offset: 3px; }
+svg.i { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.mark { width: 22px; height: 22px; flex: none; color: var(--text-1); }
+.mono { font: var(--t-readout); color: var(--text-3); font-variant-numeric: tabular-nums; }
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.skip { position: absolute; left: var(--s3); top: calc(-1 * var(--s16)); z-index: var(--z-tooltip); background: var(--text-1); color: var(--canvas); padding: var(--s2) var(--s3); border-radius: var(--r-sm); }
+.skip:focus { top: var(--s3); }
+
+.icon-btn { width: 36px; height: 36px; display: grid; place-items: center; padding: 0; border: 0; border-radius: var(--r-sm); background: none; color: var(--text-2);
+  transition: background-color var(--d-quick) var(--ease), color var(--d-quick) var(--ease); }
+@media (hover: hover) and (pointer: fine) { .icon-btn:hover { background: var(--raised-2); color: var(--text-1); } }
+.icon-btn:active { background: var(--sunken); }
+@media (pointer: coarse) { .icon-btn { width: 44px; height: 44px; } }
+
+/* Keys: tactile buttons. A lit top edge, a shadow below, and they sink when pressed (Motion adds the spring). */
+.key { display: inline-flex; align-items: center; justify-content: center; gap: var(--s2); min-height: 44px; padding: 0 var(--s5); border: 0; border-radius: var(--r-md);
+  background: var(--signal); color: var(--signal-ink); font: 600 15px/1 var(--sans); box-shadow: var(--shadow-key); text-decoration: none;
+  transition: filter var(--d-quick) var(--ease), box-shadow var(--d-quick) var(--ease), transform var(--d-quick) var(--ease); }
+@media (hover: hover) and (pointer: fine) { .key:hover { filter: brightness(1.06); } }
+.key:active { transform: translateY(1px); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.15), 0 0 0 rgb(0 0 0 / 0); }
+.key:disabled { cursor: progress; filter: saturate(0.6) brightness(0.95); }
+.key.quiet { background: var(--raised); color: var(--text-1); box-shadow: inset 0 0 0 1px var(--hairline-strong), 0 1px 0 var(--hairline-strong); }
+@media (hover: hover) and (pointer: fine) { .key.quiet:hover { background: var(--raised-2); filter: none; } }
+.key.danger { background: var(--danger); }
+.spinner { width: 16px; height: 16px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Fields */
+.field { display: grid; gap: var(--s1); }
+.field label { font: var(--t-ui); color: var(--text-1); }
+.well { display: flex; align-items: center; border-radius: var(--r-md); background: var(--canvas); box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.06), inset 0 0 0 1px var(--hairline-strong);
+  transition: box-shadow var(--d-quick) var(--ease); }
+.well:focus-within { box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.06), inset 0 0 0 1px var(--signal-text), 0 0 0 3px var(--signal-wash); }
+.well input { flex: 1; min-width: 0; height: 44px; padding: 0 var(--s3); border: 0; outline: 0; background: none; color: inherit; font: 400 16px/1.2 var(--sans); }
+.well input::placeholder { color: var(--text-3); }
+.well[data-invalid] { box-shadow: inset 0 0 0 1px var(--danger); }
+.hint { font: var(--t-small); color: var(--text-3); min-height: 0; }
+.hint.error { color: var(--danger); }
+.peek { margin-right: var(--s1); height: 34px; padding: 0 var(--s3); border: 0; border-radius: var(--r-sm); background: var(--raised-2); color: var(--text-2); font: 500 12px/1 var(--sans);
+  box-shadow: inset 0 -1px 0 var(--hairline-strong); }
+.peek[aria-pressed="true"] { background: var(--sunken); box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.12); }
+
+/* Cookie consent */
+.consent { position: fixed; left: var(--s4); bottom: var(--s4); z-index: var(--z-banner); width: min(400px, calc(100vw - 2 * var(--s4))); padding: var(--s4);
+  border-radius: var(--r-lg); background: var(--raised); box-shadow: var(--shadow-float); font: var(--t-small); color: var(--text-2); }
+.consent p { margin: 0 0 var(--s3); }
+.consent .row { display: flex; gap: var(--s2); justify-content: flex-end; flex-wrap: wrap; }
+.consent .key { min-height: 36px; padding: 0 var(--s4); font-size: 13px; }
+
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }

@@ -1,16 +1,27 @@
-// Cloudflare deployment of the same app: Worker for /api/*, static assets for the UI, D1 for memory.
+// Cloudflare deployment of the same app: one Worker in front of everything, static assets for the UI, D1 for memory.
 {
   "name": "remembot",
   "main": "src/worker.ts",
   "compatibility_date": "2026-11-01",
-  "assets": { "directory": "public" },
-  "d1_databases": [{ "binding": "DB", "database_name": "remembot", "database_id": "ebc5ea31-4ed8-41da-9b35-e283644b5afd" }],
+  "assets": {
+    "directory": "public",
+    "binding": "ASSETS",
+    // The Worker sees every request first: HTTPS redirect, security headers, sign-in redirects.
+    "run_worker_first": true,
+    "not_found_handling": "404-page"
+  },
+  "d1_databases": [{ "binding": "DB", "database_name": "asof", "database_id": "ebc5ea31-4ed8-41da-9b35-e283644b5afd" }],
   "vars": {
-    "LLM_BASE_URL": "https://api.groq.com/openai/v1",
-    "LLM_MODEL": "openai/gpt-oss-120b",
-    "LLM_REASONING_EFFORT": "low",
-    // Public demo runs on the author's keys: cap what strangers can spend per day.
-    "MAX_TURNS_PER_DAY": "300"
+    "LLM_BASE_URL": "https://api.openai.com/v1",
+    "LLM_MODEL": "gpt-6-luna",
+    // gpt-6-luna calls tools over Chat Completions only with reasoning off.
+    "LLM_REASONING_EFFORT": "none",
+    // OpenAI fast tier: about 2x quicker answers at 2x the token price (still ~$0.012 a heavy turn).
+    "LLM_SERVICE_TIER": "fast",
+    // Spend caps: everyone together, and each account.
+    "MAX_TURNS_PER_DAY": "1000",
+    "MAX_TURNS_PER_USER_PER_DAY": "50"
   }
   // Secrets (set with `npx wrangler secret put`): LLM_API_KEY, FIRECRAWL_API_KEY
+  // Schema (once, and after schema.sql changes): npx wrangler d1 execute asof --remote --file schema.sql
 }

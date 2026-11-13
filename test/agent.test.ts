@@ -180,3 +180,19 @@ test('stored answers keep only real citations, renumbered from 1, without repeat
     sources: [sources[2], sources[0]],
   })
 })
+
+test('pre-search runs the message as a query beside recall, so the model can answer in one call; questions about past chats skip it', async () => {
+  const searched: string[] = []
+  const search = async (q: string) => { searched.push(q); return [{ title: 'Nvidia', url: 'https://nvidia.example', snippet: 'NVDA closed at $1' }] }
+  const { chat, prompts } = scriptedChat(['NVDA closed at $1 [1].'])
+  const events = await run({ db: openSqlite(':memory:'), chat, search, now: () => NOW, preSearch: true }, 'Nvidia stock price today')
+  assert.deepEqual(searched, ['Nvidia stock price today'])
+  assert.equal(prompts.length, 1, 'one model call')
+  assert.match(lastToolResult(prompts[0]), /NVDA closed at \$1/)
+  assert.deepEqual(events.map((e) => e.type), ['memory', 'search', 'sources', 'text', 'done'])
+
+  const skipped: string[] = []
+  const memoryOnly = scriptedChat(['You asked nothing then.'])
+  await run({ db: openSqlite(':memory:'), chat: memoryOnly.chat, search: async (q) => { skipped.push(q); return [] }, now: () => NOW, preSearch: true }, 'What did I ask you last Tuesday?')
+  assert.deepEqual(skipped, [])
+})

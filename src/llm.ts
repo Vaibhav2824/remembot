@@ -21,6 +21,7 @@ export interface LlmConfig {
   apiKey: string
   model: string
   reasoningEffort?: string
+  serviceTier?: string // OpenAI "fast": up to 2.5x quicker, at 2x the token price
 }
 
 const MAX_OUTPUT_TOKENS = 1500
@@ -42,6 +43,7 @@ export function createChat(cfg: LlmConfig): Chat {
       max_completion_tokens: MAX_OUTPUT_TOKENS,
       ...(tools && { tools, tool_choice: 'auto' }),
       ...(cfg.reasoningEffort && { reasoning_effort: cfg.reasoningEffort }),
+      ...(cfg.serviceTier && { service_tier: cfg.serviceTier }),
     }
 
     let res = await post(body)

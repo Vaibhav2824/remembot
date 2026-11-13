@@ -103,10 +103,30 @@ export async function recentTurns(db: Db, userId: string, limit: number, before 
   return rows.map(toTurn)
 }
 
-// Counts by real write time, so replayed (backdated) turns still count toward spend.
-export async function countTurnsSince(db: Db, since: number): Promise<number> {
-  const [{ n }] = await db.all<{ n: number }>('SELECT count(*) AS n FROM turns WHERE created_at >= ?', since)
-  return n
+// Saved chats, newest activity first, titled by their first question.
+export interface ThreadSummary {
+  id: string
+  title: string
+  updatedAt: number
+  count: number
+}
+
+export async function listThreads(db: Db, userId: string, limit: number): Promise<ThreadSummary[]> {
+  return db.all<ThreadSummary>(
+    `SELECT thread_id AS id, count(*) AS count, max(asked_at) AS updatedAt,
+       (SELECT question FROM turns f WHERE f.user_id = t.user_id AND f.thread_id = t.thread_id ORDER BY f.asked_at LIMIT 1) AS title
+     FROM turns t WHERE user_id = ? GROUP BY thread_id ORDER BY updatedAt DESC LIMIT ?`,
+    userId,
+    limit,
+  )
+}
+
+// Forgets turns for good, keyword index included. Without threadId: everything the user said.
+export async function forget(db: Db, userId: string, threadId?: string): Promise<void> {
+  const where = threadId ? 'user_id = ? AND thread_id = ?' : 'user_id = ?'
+  const params = threadId ? [userId, threadId] : [userId]
+  await db.run(`DELETE FROM turns_fts WHERE rowid IN (SELECT id FROM turns WHERE ${where})`, ...params)
+  await db.run(`DELETE FROM turns WHERE ${where}`, ...params)
 }
 
 async function turnsBetween(db: Db, userId: string, from: number, to: number): Promise<Turn[]> {

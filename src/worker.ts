@@ -1,6 +1,7 @@
-// Cloudflare Workers entry point (`npm run deploy`): D1 for memory. The UI in
-// public/ is served by the platform's static assets, so only /api/* reaches this code.
-import { createApp, type Env } from './app.ts'
+// Cloudflare Workers entry point (`npm run deploy`): D1 for memory. Every request runs
+// through here first (run_worker_first), so HTTPS and the security headers cover the
+// static pages too; anything the app does not handle is served from public/.
+import { createApp, withSecurityHeaders, type Env } from './app.ts'
 import type { Db } from './memory.ts'
 
 // The slice of the D1 API this app uses.
@@ -18,8 +19,13 @@ const d1 = (database: D1): Db => ({
 })
 
 export default {
-  async fetch(req: Request, env: Env & { DB: D1 }): Promise<Response> {
+  async fetch(req: Request, env: Env & { DB: D1; ASSETS: { fetch(req: Request): Promise<Response> } }): Promise<Response> {
+    const url = new URL(req.url)
+    if (url.protocol === 'http:') {
+      url.protocol = 'https:'
+      return Response.redirect(url.toString(), 301)
+    }
     const app = createApp(d1(env.DB), env)
-    return (await app(req)) ?? new Response('Not found', { status: 404 })
+    return withSecurityHeaders((await app(req)) ?? (await env.ASSETS.fetch(req)), true)
   },
 }

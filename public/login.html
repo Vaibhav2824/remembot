@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#faf8f5">
+<title>Remembot: the chat agent that remembers what you asked, and when</title>
+<meta name="description" content="Ask anything and get answers from the live web with sources. Remembot remembers every question with its date, so next week you can ask what changed.">
+<link rel="canonical" href="https://remembot.asof-agent.workers.dev/login">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Remembot">
+<meta property="og:title" content="Remembot: ask anything, ask again next week">
+<meta property="og:description" content="A chat agent that searches the live web and remembers what you asked, and when.">
+<meta property="og:url" content="https://remembot.asof-agent.workers.dev/login">
+<meta property="og:image" content="https://remembot.asof-agent.workers.dev/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Remembot: ask anything, ask again next week">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/base.css">
+<style>
+  body { min-height: 100dvh; display: flex; flex-direction: column; }
+  .top { display: flex; align-items: center; justify-content: space-between; padding: var(--s4) clamp(var(--s4), 4vw, var(--s10)); }
+  .brand { display: inline-flex; align-items: center; gap: var(--s2); text-decoration: none; font: 600 20px/1 var(--serif); letter-spacing: -0.01em; }
+  .top a.cta { font: var(--t-ui); color: var(--text-2); text-decoration: none; padding: var(--s2) var(--s3); border-radius: var(--r-sm); }
+  @media (hover: hover) and (pointer: fine) { .top a.cta:hover { background: var(--raised-2); color: var(--text-1); } }
+
+  .stage { flex: 1; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 420px); grid-template-areas: "copy card" "demo card"; column-gap: clamp(var(--s8), 6vw, 96px); row-gap: var(--s8); align-items: center;
+    width: min(1120px, 100%); margin: 0 auto; padding: var(--s8) clamp(var(--s4), 4vw, var(--s10)) var(--s12); }
+  .eyebrow { margin: 0 0 var(--s4); display: inline-flex; align-items: center; gap: var(--s2); }
+  .eyebrow i { width: 7px; height: 7px; border-radius: 50%; background: var(--signal); }
+  .story h1 { margin: 0; font: 500 clamp(38px, 5.4vw, 64px)/1.04 var(--serif); letter-spacing: -0.025em; text-wrap: balance; }
+  .story h1 em { font-style: italic; color: var(--signal-text); }
+  .lede { margin: var(--s5) 0 0; max-width: 46ch; font: 400 17px/1.6 var(--sans); color: var(--text-2); text-wrap: pretty; }
+
+  .story { grid-area: copy; align-self: end; }
+  .card { grid-area: card; }
+
+  /* The demo: a faux Remembot window playing the product's one story (Stageshow rules: one hero,
+     one satellite straddling its edge, real words only on the subject, bars for the rest, the
+     page is the ground, the window fades out at its foot over empty pane). Designed at 560x420,
+     scaled to the column; under 480px it switches to a 358x420 compact design without the
+     satellite. Pulled left by the gutter so the satellite lines up with the copy. */
+  .demo { grid-area: demo; align-self: start; position: relative; margin: 0 0 0 -24px; width: calc(100% + 24px); max-width: 560px; height: 420px; overflow: hidden; }
+  .demo-stage { position: absolute; left: 0; top: 0; width: 560px; height: 420px; transform-origin: 0 0; }
+  .demo .win { position: absolute; left: 124px; top: 24px; width: 412px; height: 420px; display: flex; flex-direction: column; border-radius: 12px; background: var(--raised);
+    -webkit-mask-image: linear-gradient(to bottom, #000 80%, transparent 97%); mask-image: linear-gradient(to bottom, #000 80%, transparent 97%);
+    box-shadow: 0 0 0 1px var(--hairline), 0 24px 48px -16px rgb(27 26 23 / 0.22), 0 8px 16px -8px rgb(27 26 23 / 0.12); overflow: hidden; }
+  .demo .chrome { height: 38px; flex: none; display: flex; align-items: center; gap: 6px; padding: 0 14px; border-bottom: 1px solid var(--hairline); }
+  .demo .chrome i { width: 10px; height: 10px; border-radius: 50%; background: var(--sunken); }
+  .demo .panes { flex: 1; display: flex; min-height: 0; }
+  .demo .side { width: 92px; flex: none; padding: 12px 10px; background: var(--side-bg); border-right: 1px solid var(--hairline); display: grid; align-content: start; gap: 10px; }
+  .demo .newchat { display: flex; align-items: center; gap: 6px; height: 22px; }
+  .demo .newchat b { width: 18px; height: 18px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--signal); color: var(--signal-ink); font: 600 13px/1 var(--sans); }
+  .demo .bar { display: block; height: 7px; border-radius: 4px; background: var(--sunken); }
+  .demo .side .bar.on { height: 20px; border-radius: 6px; background: var(--raised); box-shadow: inset 0 0 0 1px var(--hairline); }
+  .demo .main { flex: 1; padding: 18px 20px; }
+  .demo .thread { width: 100%; display: grid; gap: 14px; }
+  .demo .past { display: grid; gap: 7px; }
+  .demo .past .bub { justify-self: end; width: 150px; height: 26px; border-radius: 13px; background: var(--raised-2); margin-bottom: 3px; }
+  .demo .q { justify-self: end; max-width: 236px; padding: 8px 12px; border-radius: 14px; background: var(--raised-2); font: 400 13px/1.4 var(--sans); color: var(--text-1); }
+  .demo .trace { display: flex; align-items: center; gap: 6px; margin-bottom: -6px; font: 400 12px/1.3 var(--sans); color: var(--text-3); }
+  .demo .trace svg { width: 14px; height: 14px; color: var(--recall); }
+  .demo .ans { margin: 0; font: 400 15px/1.55 var(--serif); color: var(--text-1); }
+  .demo .cite { display: inline-grid; place-items: center; min-width: 16px; height: 16px; padding: 0 4px; margin: 0 1px; vertical-align: 2px; border-radius: var(--r-pill);
+    background: var(--signal-wash); color: var(--signal-text); font: 500 10px/1 var(--sans); }
+  .demo .srcs { display: flex; gap: 6px; margin-top: -4px; }
+  .demo .src { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px 0 6px; border-radius: var(--r-pill); background: var(--raised); box-shadow: inset 0 0 0 1px var(--hairline);
+    font: 400 11.5px/1 var(--sans); color: var(--text-2); white-space: nowrap; }
+  .demo .src b { font: 400 10.5px/1 var(--mono); color: var(--live-text); }
+  .demo .sat { position: absolute; left: 24px; top: 168px; width: 196px; padding: 12px; border-radius: 10px; background: var(--raised);
+    box-shadow: 0 0 0 1px var(--hairline), 0 10px 24px -8px rgb(27 26 23 / 0.28); }
+  .demo .sat time { display: flex; align-items: center; gap: 6px; font: 400 11px/1.3 var(--mono); color: var(--text-3); }
+  .demo .sat time i { width: 6px; height: 6px; border-radius: 50%; background: var(--recall); }
+  .demo .sat p { margin: 6px 0 0; font: 500 13px/1.35 var(--serif); color: var(--text-1); }
+  .demo.compact .demo-stage { width: 358px; }
+  .demo.compact .win { left: 16px; width: 326px; }
+  .demo.compact .side, .demo.compact .sat { display: none; }
+
+  /* The card */
+  .card { padding: var(--s6); border-radius: var(--r-xl); background: var(--raised); box-shadow: var(--shadow-float), 0 30px 60px -30px rgb(27 26 23 / 0.25); }
+  .card h2 { margin: 0 0 var(--s1); font: 500 26px/1.2 var(--serif); letter-spacing: -0.01em; }
+  .card .sub { margin: 0 0 var(--s5); font: var(--t-small); color: var(--text-3); }
+  .tabs { position: relative; display: grid; grid-template-columns: 1fr 1fr; padding: 3px; margin-bottom: var(--s5); border-radius: var(--r-md); background: var(--sunken);
+    box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.08); }
+  .tabs button { position: relative; z-index: 1; height: 36px; border: 0; border-radius: var(--r-sm); background: none; font: var(--t-ui); color: var(--text-2);
+    transition: color var(--d-quick) var(--ease); }
+  .tabs button[aria-selected="true"] { color: var(--text-1); }
+  .tabs .ind { position: absolute; top: 3px; bottom: 3px; left: 3px; width: calc(50% - 3px); border-radius: var(--r-sm); background: var(--raised);
+    box-shadow: 0 1px 0 var(--hairline-strong), 0 1px 3px rgb(0 0 0 / 0.08); transition: transform var(--d-panel) var(--ease); }
+  .tabs[data-mode="signup"] .ind { transform: translateX(100%); }
+  form { display: grid; gap: var(--s4); }
+  .meter { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--s1); margin-top: var(--s1); }
+  .meter b { height: 4px; border-radius: var(--r-pill); background: var(--hairline-strong); transition: background-color var(--d-quick) var(--ease); }
+  .meter[data-score="1"] b:nth-child(-n+1) { background: var(--danger); }
+  .meter[data-score="2"] b:nth-child(-n+2) { background: #c98a1b; }
+  .meter[data-score="3"] b:nth-child(-n+3), .meter[data-score="4"] b { background: var(--ok); }
+  .hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+  #form-error:empty { display: none; }
+  #form-error { margin: 0; padding: var(--s2) var(--s3); border-radius: var(--r-sm); background: color-mix(in srgb, var(--danger) 10%, transparent); }
+  .key.wide { width: 100%; margin-top: var(--s1); }
+  .fine { margin: 0; font: var(--t-small); color: var(--text-3); text-align: center; }
+
+  .faq { width: min(760px, 100%); margin: 0 auto; padding: var(--s12) clamp(var(--s4), 4vw, var(--s10)) var(--s16); }
+  .faq h2 { margin: 0 0 var(--s5); font: 500 30px/1.2 var(--serif); letter-spacing: -0.015em; }
+  .faq details { border-top: 1px solid var(--hairline); }
+  .faq details:last-of-type { border-bottom: 1px solid var(--hairline); }
+  .faq summary { display: flex; justify-content: space-between; gap: var(--s4); padding: var(--s4) 0; cursor: pointer; list-style: none; font: 500 16px/1.4 var(--sans); }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after { content: "+"; font: 400 20px/1 var(--sans); color: var(--text-3); transition: transform var(--d-panel) var(--ease); }
+  .faq details[open] summary::after { transform: rotate(45deg); }
+  .faq details p { margin: 0 0 var(--s4); max-width: 62ch; color: var(--text-2); }
+  footer { display: flex; flex-wrap: wrap; gap: var(--s2) var(--s5); justify-content: center; padding: var(--s6) var(--s4) max(var(--s6), env(safe-area-inset-bottom)); border-top: 1px solid var(--hairline); font: var(--t-small); color: var(--text-3); }
+  footer a, footer button { color: var(--text-2); background: none; border: 0; padding: 0; font: inherit; text-decoration: none; }
+  footer a:hover, footer button:hover { color: var(--text-1); text-decoration: underline; }
+
+  @media (max-width: 880px) {
+    .stage { grid-template-columns: 1fr; grid-template-areas: "copy" "card" "demo"; gap: var(--s8); padding-top: var(--s4); }
+    .demo { margin-left: 0; width: 100%; justify-self: center; }
+    .card { padding: var(--s5); }
+  }
+</style>
+<script src="/boot.js"></script>
+</head>
+<body>
+<a class="skip" href="#email">Skip to sign in</a>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-memory" viewBox="0 0 24 24"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></symbol>
+  <symbol id="i-mark" viewBox="0 0 256 256"><path fill="currentColor" d="M48 24H208A28 28 0 0 1 208 80H48A28 28 0 0 1 48 24Z M48 100H160A28 28 0 0 1 160 156H48A28 28 0 0 1 48 100Z M48 176H88A28 28 0 0 1 88 232H48A28 28 0 0 1 48 176Z"/><path fill="var(--signal)" d="M178 204A29 29 0 1 1 236 204A29 29 0 1 1 178 204Z"/></symbol>
+</svg>
+<header class="top">
+  <a class="brand" href="/login" aria-label="Remembot home"><svg class="mark live-mark" viewBox="0 0 256 256" aria-hidden="true"><g fill="currentColor"><rect class="m-bar" x="20" y="24" width="216" height="56" rx="28"/><rect class="m-bar" x="20" y="100" width="168" height="56" rx="28"/><rect class="m-bar" x="20" y="176" width="96" height="56" rx="28"/></g><circle class="m-dot" cx="207" cy="204" r="29"/></svg>Remembot</a>
+  <a class="cta" href="#faq">How it works</a>
+</header>
+
+<main class="stage" id="main">
+  <section class="story" aria-labelledby="hero">
+    <p class="eyebrow mono"><i aria-hidden="true"></i>A chat agent with a memory for dates</p>
+    <h1 id="hero">Ask anything.<br><em>Ask again</em> next week.</h1>
+    <p class="lede">Remembot answers from the live web, with sources. It remembers every question and when you asked it, so later you can ask what changed.</p>
+  </section>
+
+  <section class="card" id="card" aria-labelledby="form-title">
+    <div class="tabs" role="tablist" aria-label="Sign in or create an account" id="tabs" data-mode="login">
+      <span class="ind" aria-hidden="true"></span>
+      <button type="button" role="tab" id="tab-login" aria-selected="true" aria-controls="auth">Sign in</button>
+      <button type="button" role="tab" id="tab-signup" aria-selected="false" aria-controls="auth" tabindex="-1">Create account</button>
+    </div>
+    <h2 id="form-title">Welcome back</h2>
+    <p class="sub" id="form-sub">Sign in to pick up your saved chats.</p>
+    <form id="auth" role="tabpanel" aria-labelledby="form-title" novalidate>
+      <div class="field" id="name-field" hidden>
+        <label for="name">Name</label>
+        <div class="well"><input id="name" name="name" autocomplete="name" maxlength="60" aria-describedby="name-hint"></div>
+        <span class="hint" id="name-hint"></span>
+      </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <div class="well"><input id="email" name="email" type="email" inputmode="email" autocomplete="email" maxlength="254" required aria-describedby="email-hint" autocapitalize="off" spellcheck="false"></div>
+        <span class="hint" id="email-hint"></span>
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <div class="well"><input id="password" name="password" type="password" autocomplete="current-password" maxlength="128" required aria-describedby="password-hint"><button type="button" class="peek" id="peek" aria-pressed="false" aria-controls="password">Show</button></div>
+        <div class="meter" id="meter" hidden aria-hidden="true"><b></b><b></b><b></b><b></b></div>
+        <span class="hint" id="password-hint"></span>
+      </div>
+      <div class="hp" aria-hidden="true"><label for="website">Leave this empty</label><input id="website" name="website" tabindex="-1" autocomplete="off"></div>
+      <p id="form-error" class="hint error" role="alert"></p>
+      <button class="key wide" type="submit" id="submit">Sign in</button>
+      <p class="fine" id="fine" hidden>By creating an account you agree to the <a href="/terms">Terms</a> and the <a href="/privacy">Privacy Policy</a>.</p>
+    </form>
+  </section>
+
+  <figure class="demo" id="demo" aria-label="Remembot recalling a chat from Tuesday, checking the web, and answering with sources">
+    <div class="demo-stage" aria-hidden="true">
+      <div class="win">
+        <div class="chrome"><i></i><i></i><i></i></div>
+        <div class="panes">
+          <div class="side">
+            <div class="newchat"><b>+</b><span class="bar" style="width:44px"></span></div>
+            <span class="bar on"></span><span class="bar" style="width:60%"></span><span class="bar" style="width:45%"></span><span class="bar" style="width:70%"></span><span class="bar" style="width:52%"></span>
+          </div>
+          <div class="main">
+            <div class="thread">
+              <div class="past"><span class="bub"></span><span class="bar" style="width:86%"></span><span class="bar" style="width:62%"></span></div>
+              <div class="q" data-beat="q">Has any Postgres pricing changed since Tuesday?</div>
+              <div class="trace" data-beat="recall"><svg class="i" aria-hidden="true"><use href="#i-memory"/></svg><span>Recalled 1 exchange<span data-beat="search">, searched 3 times</span></span></div>
+              <p class="ans" data-beat="answer">One has. On Tue 10 Nov you compared four hosts <span class="cite">1</span>. Three cost the same today; one raised its entry plan <span class="cite">2</span>.</p>
+              <div class="srcs" data-beat="sources"><span class="tag recall"><svg class="i" aria-hidden="true"><use href="#i-memory"/></svg>Your chat, Tue 10 Nov</span><span class="tag live">Pricing pages, today</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="sat" data-beat="recall"><time><i></i>Tue 10 Nov, 15:00</time><p>Compare managed Postgres hosting for a small startup</p></div>
+    </div>
+  </figure>
+</main>
+
+<section class="faq" id="faq" aria-labelledby="faq-title">
+  <h2 id="faq-title">Questions</h2>
+  <details><summary>What is Remembot?</summary><p>A chat agent with one tool, live web search, and a long memory. Every answer cites the pages it came from, and every question is saved with the date and time you asked it.</p></details>
+  <details><summary>What does “ask again next week” mean?</summary><p>Ask “What did I ask last Tuesday?” or “Has the pricing you found on Monday changed?” Remembot finds that exchange by its date, re-checks the facts against fresh sources, and tells you what changed.</p></details>
+  <details><summary>Are my chats saved?</summary><p>Yes. Every chat is saved to your account and listed in the sidebar, newest first, so you can reopen and continue any of them. You can delete a single chat, or your whole account, at any time.</p></details>
+  <details><summary>Who can see my chats?</summary><p>Only you. Your password is stored as a salted hash, never in plain text, and your session lives in a secure cookie that page scripts cannot read. See the <a href="/privacy">Privacy Policy</a> for the services that process your questions.</p></details>
+  <details><summary>Does it cost anything?</summary><p>No. Each account can ask up to 50 questions a day.</p></details>
+</section>
+
+<footer>
+  <span>© 2026 Remembot</span>
+  <a href="/privacy">Privacy</a>
+  <a href="/terms">Terms</a>
+  <button type="button" data-consent-open>Cookie settings</button>
+</footer>
+<script src="/vendor/motion.js" defer></script>
+<script src="/consent.js" defer></script>
+<script src="/auth.js" defer></script>
+</body>
+</html>
