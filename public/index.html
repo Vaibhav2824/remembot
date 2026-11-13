@@ -119,13 +119,7 @@
   }
 
   /* ---------- Chat ---------- */
-  main { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; isolation: isolate; overflow: hidden; }
-  main::before { content: ""; position: absolute; inset: -15%; z-index: -1; pointer-events: none; opacity: 0.45; transition: opacity 0.8s var(--ease);
-    background: linear-gradient(118deg, transparent 30%, rgb(255 255 255 / 0.9) 38%, transparent 46%, transparent 52%, rgb(255 255 255 / 0.75) 58%, transparent 64%),
-      radial-gradient(45% 40% at 78% 18%, rgb(37 78 219 / 0.05), transparent 70%), radial-gradient(40% 35% at 15% 85%, rgb(217 119 6 / 0.05), transparent 70%);
-    animation: drift 36s ease-in-out infinite alternate; }
-  main.empty::before { opacity: 1; }
-  @keyframes drift { from { transform: translate3d(-4%, -2%, 0) rotate(-1deg); } to { transform: translate3d(4%, 3%, 0) rotate(1deg); } }
+  main { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; }
   .bar { display: flex; align-items: center; gap: var(--s2); padding: var(--s3) var(--s4); min-height: 60px; }
   #new { margin-left: auto; }
   #chat { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: var(--s2) var(--s6) var(--s10); }
@@ -162,8 +156,6 @@
   .meta .copy svg { width: 14px; height: 14px; }
   .meta .copy .done { color: var(--live-text); }
   #send svg { will-change: transform, filter; }
-  :root[data-theme="dark"] main::before { opacity: 0.03; }
-  :root[data-theme="dark"] main.empty::before { opacity: 0.06; }
 
   /* Messages */
   .msg { margin-bottom: var(--s8); }
@@ -223,13 +215,6 @@
   .composer { max-width: var(--col); margin-inline: auto; display: flex; gap: var(--s2); align-items: flex-end; padding: var(--s3) var(--s3) var(--s3) var(--s5);
     border-radius: var(--r-xl); background: var(--raised); box-shadow: var(--shadow-composer); transition: box-shadow var(--d-quick) var(--ease); }
   .composer:focus-within { box-shadow: 0 0 0 1px var(--signal-text), var(--shadow-composer); }
-  @property --ring { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
-  html.thinking .composer { border: 1.5px solid transparent; animation: ring 2.4s linear infinite;
-    background: linear-gradient(var(--raised), var(--raised)) padding-box, conic-gradient(from var(--ring), var(--signal), var(--live), var(--recall), var(--signal)) border-box; }
-  @keyframes ring { to { --ring: 360deg; } }
-  html.thinking #island:not(.error):not(.wait) span { background: linear-gradient(90deg, var(--text-3) 20%, var(--text-1) 50%, var(--text-3) 80%) 0 0 / 200% 100%;
-    -webkit-background-clip: text; background-clip: text; color: transparent; animation: shimmer 1.4s linear infinite; }
-  @keyframes shimmer { to { background-position: -200% 0; } }
   textarea { flex: 1; min-height: 28px; border: 0; outline: 0; resize: none; background: none; color: inherit; font: 400 16px/1.5 var(--sans); max-height: 200px; padding: var(--s1) 0; caret-color: var(--signal-text); }
   textarea::placeholder { color: var(--text-3); }
   textarea:focus-visible { outline: none; } /* the composer ring shows focus */

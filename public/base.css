@@ -11,7 +11,7 @@
   --danger: #9a3412; --ok: #0d9488; --scrim: rgb(20 20 19 / 0.32);
   --shadow-float: 0 0 0 1px rgb(20 20 19 / 0.06), 0 6px 20px rgb(20 20 19 / 0.07);
   --shadow-composer: 0 0 0 1px rgb(20 20 19 / 0.08), 0 4px 24px rgb(20 20 19 / 0.05);
-  --shadow-key: inset 0 1px 0 rgb(255 255 255 / 0.22), 0 1px 0 rgb(10 20 60 / 0.3), 0 3px 8px -2px rgb(37 78 219 / 0.45);
+  --shadow-key: inset 0 1px 0 rgb(255 255 255 / 0.16);
 
   --sans: Geist, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --serif: Newsreader, "Iowan Old Style", Georgia, serif;
@@ -36,7 +36,7 @@
   --danger: #fdba74; --ok: #2dd4bf; --scrim: rgb(0 0 0 / 0.55);
   --shadow-float: 0 0 0 1px rgb(250 248 245 / 0.08), 0 10px 28px rgb(0 0 0 / 0.45);
   --shadow-composer: 0 0 0 1px rgb(250 248 245 / 0.1), 0 6px 28px rgb(0 0 0 / 0.35);
-  --shadow-key: inset 0 1px 0 rgb(255 255 255 / 0.18), 0 1px 0 rgb(0 0 0 / 0.5), 0 4px 12px -2px rgb(61 99 238 / 0.45);
+  --shadow-key: inset 0 1px 0 rgb(255 255 255 / 0.16);
   color-scheme: dark;
 }
 /* The page changes theme behind a circle that grows from the switch (View Transitions). */
@@ -59,11 +59,7 @@
 .live-mark .m-bar { transform-box: fill-box; transform-origin: left center; }
 .live-mark .m-dot { transform-box: fill-box; transform-origin: center; fill: var(--signal); }
 html.thinking .live-mark .m-dot { animation: m-pulse 1s var(--ease) infinite; }
-html.thinking .live-mark .m-bar { animation: m-write 1.4s var(--ease) infinite; }
-html.thinking .live-mark .m-bar:nth-child(2) { animation-delay: 0.15s; }
-html.thinking .live-mark .m-bar:nth-child(3) { animation-delay: 0.3s; }
 @keyframes m-pulse { 50% { transform: scale(0.7); opacity: 0.55; } }
-@keyframes m-write { 50% { transform: scaleX(0.72); } }
 @media (hover: hover) and (pointer: fine) {
   .brand:hover .live-mark .m-bar { transition: transform 0.35s var(--ease); }
   .brand:hover .live-mark .m-bar:nth-child(1) { transform: scaleX(0.82); }
@@ -97,7 +93,7 @@ svg.i { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor;
   background: var(--signal); color: var(--signal-ink); font: 600 15px/1 var(--sans); box-shadow: var(--shadow-key); text-decoration: none;
   transition: filter var(--d-quick) var(--ease), box-shadow var(--d-quick) var(--ease), transform var(--d-quick) var(--ease); }
 @media (hover: hover) and (pointer: fine) { .key:hover { filter: brightness(1.06); } }
-.key:active { transform: translateY(1px); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.15), 0 0 0 rgb(0 0 0 / 0); }
+.key:active { transform: translateY(1px); }
 .key:disabled { cursor: progress; filter: saturate(0.6) brightness(0.95); }
 .key.quiet { background: var(--raised); color: var(--text-1); box-shadow: inset 0 0 0 1px var(--hairline-strong), 0 1px 0 var(--hairline-strong); }
 @media (hover: hover) and (pointer: fine) { .key.quiet:hover { background: var(--raised-2); filter: none; } }

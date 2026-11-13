@@ -28,29 +28,30 @@
 <link rel="stylesheet" href="/base.css">
 <style>
   body { min-height: 100dvh; display: flex; flex-direction: column; }
-  .top { display: flex; align-items: center; justify-content: space-between; padding: var(--s4) clamp(var(--s4), 4vw, var(--s10)); }
+  .top { display: flex; align-items: center; justify-content: space-between; width: min(1280px, 100%); margin: 0 auto; padding: var(--s4) clamp(var(--s4), 2vw, var(--s6)); }
   .brand { display: inline-flex; align-items: center; gap: var(--s2); text-decoration: none; font: 600 20px/1 var(--serif); letter-spacing: -0.01em; }
   .top-actions { display: flex; align-items: center; gap: var(--s2); }
   .top a.cta { font: var(--t-ui); color: var(--text-2); text-decoration: none; padding: var(--s2) var(--s3); border-radius: var(--r-sm); }
   @media (hover: hover) and (pointer: fine) { .top a.cta:hover { background: var(--raised-2); color: var(--text-1); } }
 
-  .stage { flex: 1; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 420px); grid-template-areas: "copy card" "demo card"; column-gap: clamp(var(--s8), 6vw, 96px); row-gap: var(--s8); align-items: center;
-    width: min(1120px, 100%); margin: 0 auto; padding: var(--s8) clamp(var(--s4), 4vw, var(--s10)) var(--s12); }
-  .eyebrow { margin: 0 0 var(--s4); display: inline-flex; align-items: center; gap: var(--s2); }
-  .eyebrow i { width: 7px; height: 7px; border-radius: 50%; background: var(--signal); }
-  .story h1 { margin: 0; font: 500 clamp(38px, 5.4vw, 64px)/1.04 var(--serif); letter-spacing: -0.025em; text-wrap: balance; }
-  .story h1 em { font-style: italic; color: var(--signal-text); }
-  .lede { margin: var(--s5) 0 0; max-width: 46ch; font: 400 17px/1.6 var(--sans); color: var(--text-2); text-wrap: pretty; }
-
-  .story { grid-area: copy; align-self: end; }
-  .card { grid-area: card; }
+  /* Split layout: a parchment panel with the story and the product, the form on the plain page. */
+  .stage { flex: 1; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: clamp(var(--s6), 4vw, var(--s16)); align-items: stretch;
+    width: min(1280px, 100%); margin: 0 auto; padding: 0 clamp(var(--s4), 2vw, var(--s6)) var(--s6); }
+  .story { position: relative; display: flex; flex-direction: column; min-height: min(760px, calc(100dvh - 96px)); overflow: hidden;
+    padding: clamp(var(--s8), 5vw, var(--s16)) clamp(var(--s6), 5vw, var(--s16)) 0; border-radius: 28px; background: var(--side-bg); box-shadow: inset 0 0 0 1px var(--hairline); }
+  .story h1 { margin: 0; max-width: 12ch; font: 500 clamp(40px, 5.6vw, 72px)/1.02 var(--serif); letter-spacing: -0.03em; text-wrap: balance; }
+  /* Collect UI's inline badge: the promise sits in the headline as the product's own recall tag. */
+  .h-chip { display: inline-flex; align-items: center; gap: 0.18em; padding: 0.02em 0.28em 0.06em 0.2em; border-radius: 0.24em; background: var(--recall-bg); color: var(--recall-text); white-space: nowrap; }
+  .h-chip svg { width: 0.62em; height: 0.62em; stroke-width: 2.4; }
+  .lede { margin: var(--s5) 0 0; max-width: 44ch; font: 400 17px/1.6 var(--sans); color: var(--text-2); text-wrap: pretty; }
+  .card { align-self: center; justify-self: center; width: min(400px, 100%); padding: var(--s8) 0; }
 
   /* The demo: a faux Remembot window playing the product's one story (Stageshow rules: one hero,
      one satellite straddling its edge, real words only on the subject, bars for the rest, the
      page is the ground, the window fades out at its foot over empty pane). Designed at 560x420,
      scaled to the column; under 480px it switches to a 358x420 compact design without the
      satellite. Pulled left by the gutter so the satellite lines up with the copy. */
-  .demo { grid-area: demo; align-self: start; position: relative; margin: 0 0 0 -24px; width: calc(100% + 24px); max-width: 560px; height: 420px; overflow: hidden; }
+  .demo { position: relative; margin: auto calc(-1 * clamp(var(--s6), 5vw, var(--s16))) 0; width: auto; max-width: none; height: 420px; overflow: hidden; }
   .demo-stage { position: absolute; left: 0; top: 0; width: 560px; height: 420px; transform-origin: 0 0; }
   .demo .win { position: absolute; left: 124px; top: 24px; width: 412px; height: 420px; display: flex; flex-direction: column; border-radius: 12px; background: var(--raised);
     -webkit-mask-image: linear-gradient(to bottom, #000 80%, transparent 97%); mask-image: linear-gradient(to bottom, #000 80%, transparent 97%);
@@ -87,8 +88,7 @@
   .demo.compact .side, .demo.compact .sat { display: none; }
 
   /* The card */
-  .card { padding: var(--s6); border-radius: var(--r-xl); background: var(--raised); box-shadow: var(--shadow-float), 0 30px 60px -30px rgb(27 26 23 / 0.25); }
-  .card h2 { margin: 0 0 var(--s1); font: 500 26px/1.2 var(--serif); letter-spacing: -0.01em; }
+  .card h2 { margin: 0 0 var(--s1); font: 500 32px/1.15 var(--serif); letter-spacing: -0.02em; }
   .card .sub { margin: 0 0 var(--s5); font: var(--t-small); color: var(--text-3); }
   .tabs { position: relative; display: grid; grid-template-columns: 1fr 1fr; padding: 3px; margin-bottom: var(--s5); border-radius: var(--r-md); background: var(--sunken);
     box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.08); }
@@ -124,9 +124,10 @@
   footer a:hover, footer button:hover { color: var(--text-1); text-decoration: underline; }
 
   @media (max-width: 880px) {
-    .stage { grid-template-columns: 1fr; grid-template-areas: "copy" "card" "demo"; gap: var(--s8); padding-top: var(--s4); }
-    .demo { margin-left: 0; width: 100%; justify-self: center; }
-    .card { padding: var(--s5); }
+    .stage { grid-template-columns: 1fr; gap: 0; }
+    .story { min-height: 0; padding-bottom: var(--s8); border-radius: 20px; }
+    .demo { display: none; }
+    .card { padding-top: var(--s8); }
   }
 </style>
 <script src="/boot.js"></script>
@@ -144,9 +145,31 @@
 
 <main class="stage" id="main">
   <section class="story" aria-labelledby="hero">
-    <p class="eyebrow mono"><i aria-hidden="true"></i>A chat agent with a memory for dates</p>
-    <h1 id="hero">Ask anything.<br><em>Ask again</em> next week.</h1>
+    <h1 id="hero">Ask anything. Ask again <span class="h-chip"><svg class="i" aria-hidden="true"><use href="#i-memory"/></svg>next week.</span></h1>
     <p class="lede">Remembot answers from the live web, with sources. It remembers every question and when you asked it, so later you can ask what changed.</p>
+    <figure class="demo" id="demo" aria-label="Remembot recalling a chat from Tuesday, checking the web, and answering with sources">
+      <div class="demo-stage" aria-hidden="true">
+        <div class="win">
+          <div class="chrome"><i></i><i></i><i></i></div>
+          <div class="panes">
+            <div class="side">
+              <div class="newchat"><b>+</b><span class="bar" style="width:44px"></span></div>
+              <span class="bar on"></span><span class="bar" style="width:60%"></span><span class="bar" style="width:45%"></span><span class="bar" style="width:70%"></span><span class="bar" style="width:52%"></span>
+            </div>
+            <div class="main">
+              <div class="thread">
+                <div class="past"><span class="bub"></span><span class="bar" style="width:86%"></span><span class="bar" style="width:62%"></span></div>
+                <div class="q" data-beat="q">Has any Postgres pricing changed since Tuesday?</div>
+                <div class="trace" data-beat="recall"><svg class="i" aria-hidden="true"><use href="#i-memory"/></svg><span>Recalled 1 exchange<span data-beat="search">, searched 3 times</span></span></div>
+                <p class="ans" data-beat="answer">One has. On Tue 10 Nov you compared four hosts <span class="cite">1</span>. Three cost the same today; one raised its entry plan <span class="cite">2</span>.</p>
+                <div class="srcs" data-beat="sources"><span class="tag recall"><svg class="i" aria-hidden="true"><use href="#i-memory"/></svg>Your chat, Tue 10 Nov</span><span class="tag live">Pricing pages, today</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="sat" data-beat="recall"><time><i></i>Tue 10 Nov, 15:00</time><p>Compare managed Postgres hosting for a small startup</p></div>
+      </div>
+    </figure>
   </section>
 
   <section class="card" id="card" aria-labelledby="form-title">
@@ -181,29 +204,6 @@
     </form>
   </section>
 
-  <figure class="demo" id="demo" aria-label="Remembot recalling a chat from Tuesday, checking the web, and answering with sources">
-    <div class="demo-stage" aria-hidden="true">
-      <div class="win">
-        <div class="chrome"><i></i><i></i><i></i></div>
-        <div class="panes">
-          <div class="side">
-            <div class="newchat"><b>+</b><span class="bar" style="width:44px"></span></div>
-            <span class="bar on"></span><span class="bar" style="width:60%"></span><span class="bar" style="width:45%"></span><span class="bar" style="width:70%"></span><span class="bar" style="width:52%"></span>
-          </div>
-          <div class="main">
-            <div class="thread">
-              <div class="past"><span class="bub"></span><span class="bar" style="width:86%"></span><span class="bar" style="width:62%"></span></div>
-              <div class="q" data-beat="q">Has any Postgres pricing changed since Tuesday?</div>
-              <div class="trace" data-beat="recall"><svg class="i" aria-hidden="true"><use href="#i-memory"/></svg><span>Recalled 1 exchange<span data-beat="search">, searched 3 times</span></span></div>
-              <p class="ans" data-beat="answer">One has. On Tue 10 Nov you compared four hosts <span class="cite">1</span>. Three cost the same today; one raised its entry plan <span class="cite">2</span>.</p>
-              <div class="srcs" data-beat="sources"><span class="tag recall"><svg class="i" aria-hidden="true"><use href="#i-memory"/></svg>Your chat, Tue 10 Nov</span><span class="tag live">Pricing pages, today</span></div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="sat" data-beat="recall"><time><i></i>Tue 10 Nov, 15:00</time><p>Compare managed Postgres hosting for a small startup</p></div>
-    </div>
-  </figure>
 </main>
 
 <section class="faq" id="faq" aria-labelledby="faq-title">

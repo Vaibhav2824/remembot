@@ -188,8 +188,7 @@ function welcome() {
   scroller.scrollTop = 0
   if (M && !calm) {
     drawMark(chat.querySelector('.mark'))
-    animate(chat.querySelectorAll('.welcome h2 span'), { opacity: [0, 1], y: [10, 0], filter: ['blur(6px)', 'blur(0px)'] }, { delay: M.stagger(0.07, { startDelay: 0.08 }), duration: 0.55, ease: [0.2, 0, 0, 1] })
-    animate(chat.querySelector('.welcome .sub'), { opacity: [0, 1] }, { delay: 0.3, duration: 0.4 })
+    animate(chat.querySelectorAll('.welcome h2, .welcome .sub'), { opacity: [0, 1], y: [6, 0] }, { delay: M.stagger(0.08), duration: 0.35, ease: [0.2, 0, 0, 1] })
   }
   cardsIn()
   if (returning) savedCards()
@@ -391,7 +390,7 @@ async function* stream(path, body, signal) {
 
 function setBusy(controller) {
   busy = controller
-  document.documentElement.classList.toggle('thinking', !!busy) // the mark writes, the composer ring runs
+  document.documentElement.classList.toggle('thinking', !!busy) // the mark's dot pulses
   sendBtn.setAttribute('aria-label', busy ? 'Stop' : 'Send')
   swapIcon(sendBtn, icon(busy ? 'stop' : 'arrow'))
   sendBtn.disabled = !busy && !input.value.trim()

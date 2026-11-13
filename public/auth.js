@@ -139,15 +139,9 @@ if (M && !calm) {
 // ---------- entrance ----------
 setMode(location.hash === '#signup' ? 'signup' : 'login')
 if (M && !calm) {
-  const words = document.querySelectorAll('.story h1, .eyebrow, .lede')
-  const intro = [
-    M.animate(words, { opacity: [0, 1], y: [14, 0], filter: ['blur(6px)', 'blur(0px)'] }, { delay: M.stagger(0.09), duration: 0.7, ease: [0.2, 0, 0, 1] }),
-    M.animate(card, { opacity: [0, 1], y: [18, 0] }, { type: 'spring', stiffness: 180, damping: 24, delay: 0.15 }),
-  ]
-  setTimeout(() => intro.forEach((a) => a.complete()), 2000)
   const mark = document.querySelector('.brand .live-mark') // the mark draws itself: bars, then the dot
   M.animate(mark.querySelectorAll('.m-bar'), { scaleX: [0, 1], originX: 0 }, { delay: M.stagger(0.09), type: 'spring', stiffness: 220, damping: 22 })
-  M.animate(mark.querySelector('.m-dot'), { scale: [0, 1] }, { delay: 0.32, type: 'spring', stiffness: 500, damping: 14 }) // the form must never stay invisible, even if a tab throttles animation
+  M.animate(mark.querySelector('.m-dot'), { scale: [0, 1] }, { delay: 0.32, type: 'spring', stiffness: 500, damping: 14 })
 }
 demo()
 
@@ -163,6 +157,7 @@ function demo() {
     const [W, H] = compact ? [358, 420] : [560, 420]
     const k = Math.min(1, w / W)
     stage.style.transform = `scale(${k})`
+    stage.style.left = `${Math.max(0, (w - W * k) / 2)}px` // centred in a wider panel
     box.style.height = `${H * k}px`
   }
   new ResizeObserver(fit).observe(box)
