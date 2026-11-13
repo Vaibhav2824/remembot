@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="940" height="400" viewBox="0 0 940 400" role="img" aria-label="Recall happens in code, before the model sees anything">
+<defs>
+<marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#5c5a55"/></marker>
+<marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#254edb"/></marker>
+<marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#115e59"/></marker>
+</defs>
+<rect width="100%" height="100%" fill="#faf8f5"/>
+<text x="32" y="34" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="9" font-weight="500" letter-spacing="1.6" fill="#5c5a55">04 · DATA FLOW</text>
+<text x="32" y="60" font-family="Newsreader, Georgia, 'Times New Roman', serif" font-size="22" fill="#141413">Recall happens in code, before the model sees anything</text>
+<path d="M202 190 H228 Q236 190 236 182 V135 Q236 127 244 127 H270" fill="none" stroke="#5c5a55" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M202 212 H228 Q236 212 236 220 V271 Q236 279 244 279 H270" fill="none" stroke="#5c5a55" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M470 127 H540" fill="none" stroke="#5c5a55" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M470 279 H540" fill="none" stroke="#5c5a55" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M740 127 H752 Q760 127 760 135 V177 Q760 185 768 185 H780" fill="none" stroke="#254edb" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
+<path d="M740 201 H780" fill="none" stroke="#254edb" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
+<path d="M740 279 H752 Q760 279 760 271 V225 Q760 217 768 217 H780" fill="none" stroke="#254edb" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
+<rect x="32" y="170" width="170" height="62" rx="8" fill="#faf8f5"/>
+<rect x="32" y="170" width="170" height="62" rx="8" fill="#faf8f5" stroke="rgba(20,20,19,0.16)" stroke-width="1"/>
+<text x="44" y="186" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="7.5" font-weight="500" letter-spacing="1.4" fill="#5c5a55">INPUT</text>
+<text x="44" y="203.0" font-family="Geist, -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="12.5" font-weight="600" fill="#141413">"…last Tuesday?"</text>
+<text x="44" y="218.0" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="9" fill="#5c5a55">the user's message</text>
+<rect x="270" y="96" width="200" height="62" rx="8" fill="#faf8f5"/>
+<rect x="270" y="96" width="200" height="62" rx="8" fill="#faf8f5" stroke="rgba(20,20,19,0.16)" stroke-width="1"/>
+<text x="282" y="112" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="7.5" font-weight="500" letter-spacing="1.4" fill="#5c5a55">CODE</text>
+<text x="282" y="129.0" font-family="Geist, -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="12.5" font-weight="600" fill="#141413">time.ts</text>
+<text x="282" y="144.0" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="9" fill="#5c5a55">phrase → day windows, user tz</text>
+<rect x="270" y="248" width="200" height="62" rx="8" fill="#faf8f5"/>
+<rect x="270" y="248" width="200" height="62" rx="8" fill="#faf8f5" stroke="rgba(20,20,19,0.16)" stroke-width="1"/>
+<text x="282" y="264" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="7.5" font-weight="500" letter-spacing="1.4" fill="#5c5a55">CODE</text>
+<text x="282" y="281.0" font-family="Geist, -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="12.5" font-weight="600" fill="#141413">keywordsOf()</text>
+<text x="282" y="296.0" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="9" fill="#5c5a55">stemmed, stop words dropped</text>
+<rect x="540" y="96" width="200" height="62" rx="8" fill="#faf8f5"/>
+<rect x="540" y="96" width="200" height="62" rx="8" fill="#faf8f5" stroke="rgba(20,20,19,0.16)" stroke-width="1"/>
+<text x="552" y="124.0" font-family="Geist, -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="12.5" font-weight="600" fill="#141413">Turns in each window</text>
+<text x="552" y="139.0" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="9" fill="#5c5a55">up to 6, most on topic</text>
+<rect x="540" y="248" width="200" height="62" rx="8" fill="#faf8f5"/>
+<rect x="540" y="248" width="200" height="62" rx="8" fill="#faf8f5" stroke="rgba(20,20,19,0.16)" stroke-width="1"/>
+<text x="552" y="276.0" font-family="Geist, -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="12.5" font-weight="600" fill="#141413">FTS5 · BM25 matches</text>
+<text x="552" y="291.0" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="9" fill="#5c5a55">only if the day was empty</text>
+<rect x="540" y="170" width="200" height="62" rx="8" fill="#faf8f5"/>
+<rect x="540" y="170" width="200" height="62" rx="8" fill="#faf8f5" stroke="rgba(20,20,19,0.16)" stroke-width="1"/>
+<text x="552" y="198.0" font-family="Geist, -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="12.5" font-weight="600" fill="#141413">Recent timeline</text>
+<text x="552" y="213.0" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="9" fill="#5c5a55">12 newest, any thread</text>
+<rect x="780" y="160" width="140" height="82" rx="8" fill="#faf8f5"/>
+<rect x="780" y="160" width="140" height="82" rx="8" fill="rgba(37,78,219,0.07)" stroke="#254edb" stroke-width="1.4"/>
+<text x="792" y="176" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="7.5" font-weight="500" letter-spacing="1.4" fill="#254edb">PROMPT</text>
+<text x="792" y="203.0" font-family="Geist, -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="12.5" font-weight="600" fill="#141413">Context block</text>
+<text x="792" y="218.0" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="9" fill="#5c5a55">clock, 14-day calendar,</text>
+<text x="792" y="230.0" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="9" fill="#5c5a55">MEMORY with dates</text>
+<text x="32" y="360" text-anchor="start" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="9" fill="#5c5a55">About 1 ms, no model call. A day with no history reaches the model as "no exchanges recorded", which stops it inventing one.</text>
+<text x="32" y="374" text-anchor="start" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="9" fill="#5c5a55">Ambiguity is kept: "last Tuesday" on a Thursday gives two candidate days; memory decides which is real.</text>
+</svg>

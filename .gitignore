@@ -5,3 +5,6 @@ node_modules/
 *.db-*
 .wrangler/
 .claude/
+
+# Local design-review captures (hallmark skill)
+.hallmark/

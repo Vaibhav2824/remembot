@@ -5,7 +5,7 @@ import type { Db } from './memory.ts'
 
 export function openSqlite(path: string): Db {
   const sqlite = new DatabaseSync(path)
-  sqlite.exec(readFileSync(new URL('../schema.sql', import.meta.url), 'utf8'))
+  sqlite.exec(readFileSync(new URL('../db/schema.sql', import.meta.url), 'utf8'))
   return {
     async run(sql, ...params) {
       sqlite.prepare(sql).run(...(params as SQLInputValue[]))

@@ -27,5 +27,5 @@
     "MAX_TURNS_PER_USER_PER_DAY": "50"
   }
   // Secrets (set with `npx wrangler secret put`): LLM_API_KEY (Groq), FALLBACK_LLM_API_KEY (OpenAI), FIRECRAWL_API_KEY
-  // Schema (once, and after schema.sql changes): npx wrangler d1 execute asof --remote --file schema.sql
+  // Schema (once, and after db/schema.sql changes): npm run db:migrate
 }

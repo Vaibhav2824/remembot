@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="940" height="470" viewBox="0 0 940 470" role="img" aria-label="One Worker in front of everything">
+<defs>
+<marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#5c5a55"/></marker>
+<marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#254edb"/></marker>
+<marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#115e59"/></marker>
+</defs>
+<rect width="100%" height="100%" fill="#faf8f5"/>
+<text x="32" y="34" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="9" font-weight="500" letter-spacing="1.6" fill="#5c5a55">01 · ARCHITECTURE</text>
+<text x="32" y="60" font-family="Newsreader, Georgia, 'Times New Roman', serif" font-size="22" fill="#141413">One Worker in front of everything</text>
+<path d="M212 225 H300" fill="none" stroke="#254edb" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
+<rect x="221.8" y="207" width="68.3" height="13" fill="#faf8f5"/>
+<text x="256" y="216" text-anchor="middle" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="8.5" letter-spacing="0.4" fill="#254edb">HTTPS · SSE</text>
+<path d="M418 284 V336" fill="none" stroke="#5c5a55" stroke-width="1.2" marker-end="url(#arrow)"/>
+<rect x="433.1" y="305" width="25.9" height="13" fill="#faf8f5"/>
+<text x="446" y="314" text-anchor="middle" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="8.5" letter-spacing="0.4" fill="#5c5a55">SQL</text>
+<path d="M536 195.5 H592 Q600 195.5 600 187.5 V129 Q600 121 608 121 H700" fill="none" stroke="#115e59" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+<rect x="620.9" y="103" width="68.3" height="13" fill="#faf8f5"/>
+<text x="655" y="112" text-anchor="middle" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="8.5" letter-spacing="0.4" fill="#115e59">chat stream</text>
+<path d="M536 225 H700" fill="none" stroke="#115e59" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow-link)"/>
+<rect x="613.2" y="207" width="73.6" height="13" fill="#faf8f5"/>
+<text x="650" y="216" text-anchor="middle" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="8.5" letter-spacing="0.4" fill="#115e59">on 429 / 5xx</text>
+<path d="M536 254.5 H652 Q660 254.5 660 262.5 V325 Q660 333 668 333 H700" fill="none" stroke="#115e59" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+<rect x="672.7" y="315" width="20.6" height="13" fill="#faf8f5"/>
+<text x="683" y="324" text-anchor="middle" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="8.5" letter-spacing="0.4" fill="#115e59">≤6</text>
+<rect x="32" y="186" width="180" height="78" rx="8" fill="#faf8f5"/>
+<rect x="32" y="186" width="180" height="78" rx="8" fill="#faf8f5" stroke="rgba(20,20,19,0.16)" stroke-width="1"/>
+<text x="44" y="202" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="7.5" font-weight="500" letter-spacing="1.4" fill="#5c5a55">CLIENT</text>
+<text x="44" y="227.0" font-family="Geist, -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="12.5" font-weight="600" fill="#141413">Browser</text>
+<text x="44" y="242.0" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="9" fill="#5c5a55">public/ · app.js, auth.js</text>
+<text x="44" y="254.0" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="9" fill="#5c5a55">no framework, no build</text>
+<rect x="300" y="166" width="236" height="118" rx="8" fill="#faf8f5"/>
+<rect x="300" y="166" width="236" height="118" rx="8" fill="rgba(37,78,219,0.07)" stroke="#254edb" stroke-width="1.4"/>
+<text x="312" y="182" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="7.5" font-weight="500" letter-spacing="1.4" fill="#254edb">RUNTIME</text>
+<text x="312" y="227.0" font-family="Geist, -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="12.5" font-weight="600" fill="#141413">Cloudflare Worker</text>
+<text x="312" y="242.0" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="9" fill="#5c5a55">src/app.ts · auth, CSRF,</text>
+<text x="312" y="254.0" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="9" fill="#5c5a55">rate limits, security headers</text>
+<text x="312" y="266.0" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="9" fill="#5c5a55">src/agent.ts · the turn loop</text>
+<rect x="300" y="336" width="236" height="80" rx="8" fill="#faf8f5"/>
+<rect x="300" y="336" width="236" height="80" rx="8" fill="#faf8f5" stroke="rgba(20,20,19,0.16)" stroke-width="1"/>
+<text x="312" y="352" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="7.5" font-weight="500" letter-spacing="1.4" fill="#5c5a55">MEMORY</text>
+<text x="312" y="378.0" font-family="Geist, -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="12.5" font-weight="600" fill="#141413">D1 (SQLite)</text>
+<text x="312" y="393.0" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="9" fill="#5c5a55">db/schema.sql · users, sessions,</text>
+<text x="312" y="405.0" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="9" fill="#5c5a55">turns + FTS5, thread_notes</text>
+<rect x="700" y="88" width="210" height="66" rx="8" fill="#faf8f5"/>
+<rect x="700" y="88" width="210" height="66" rx="8" fill="#faf8f5" stroke="rgba(20,20,19,0.16)" stroke-width="1"/>
+<text x="712" y="104" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="7.5" font-weight="500" letter-spacing="1.4" fill="#5c5a55">MODEL</text>
+<text x="712" y="123.0" font-family="Geist, -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="12.5" font-weight="600" fill="#141413">Groq · gpt-oss-120b</text>
+<text x="712" y="138.0" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="9" fill="#5c5a55">primary model, free tier</text>
+<rect x="700" y="192" width="210" height="66" rx="8" fill="#faf8f5"/>
+<rect x="700" y="192" width="210" height="66" rx="8" fill="#faf8f5" stroke="rgba(20,20,19,0.16)" stroke-width="1"/>
+<text x="712" y="208" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="7.5" font-weight="500" letter-spacing="1.4" fill="#5c5a55">MODEL</text>
+<text x="712" y="227.0" font-family="Geist, -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="12.5" font-weight="600" fill="#141413">OpenAI · gpt-6-luna</text>
+<text x="712" y="242.0" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="9" fill="#5c5a55">fallback, fast tier</text>
+<rect x="700" y="300" width="210" height="66" rx="8" fill="#faf8f5"/>
+<rect x="700" y="300" width="210" height="66" rx="8" fill="#faf8f5" stroke="rgba(20,20,19,0.16)" stroke-width="1"/>
+<text x="712" y="316" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="7.5" font-weight="500" letter-spacing="1.4" fill="#5c5a55">TOOL</text>
+<text x="712" y="335.0" font-family="Geist, -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="12.5" font-weight="600" fill="#141413">Firecrawl search</text>
+<text x="712" y="350.0" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="9" fill="#5c5a55">/v2/search · 3 results/query</text>
+<text x="32" y="450" text-anchor="start" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="9" fill="#5c5a55">Static pages are served by the same Worker (run_worker_first): HTTPS redirect and headers apply everywhere.</text>
+</svg>

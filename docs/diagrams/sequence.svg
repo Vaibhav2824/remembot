@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="940" height="560" viewBox="0 0 940 560" role="img" aria-label="One question, about 1.5 s to the first word">
+<defs>
+<marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#5c5a55"/></marker>
+<marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#254edb"/></marker>
+<marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#115e59"/></marker>
+</defs>
+<rect width="100%" height="100%" fill="#faf8f5"/>
+<text x="32" y="34" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="9" font-weight="500" letter-spacing="1.6" fill="#5c5a55">02 · SEQUENCE</text>
+<text x="32" y="60" font-family="Newsreader, Georgia, 'Times New Roman', serif" font-size="22" fill="#141413">One question, about 1.5 s to the first word</text>
+<line x1="90" y1="118" x2="90" y2="520" stroke="rgba(20,20,19,0.16)" stroke-dasharray="3,4"/>
+<line x1="270" y1="118" x2="270" y2="520" stroke="rgba(20,20,19,0.16)" stroke-dasharray="3,4"/>
+<line x1="450" y1="118" x2="450" y2="520" stroke="rgba(20,20,19,0.16)" stroke-dasharray="3,4"/>
+<line x1="630" y1="118" x2="630" y2="520" stroke="rgba(20,20,19,0.16)" stroke-dasharray="3,4"/>
+<line x1="810" y1="118" x2="810" y2="520" stroke="rgba(20,20,19,0.16)" stroke-dasharray="3,4"/>
+<path d="M90 160 H266" fill="none" stroke="#254edb" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
+<rect x="135.9" y="143" width="84.2" height="13" fill="#faf8f5"/>
+<text x="178.0" y="152" text-anchor="middle" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="8.5" letter-spacing="0.4" fill="#254edb">POST /api/chat</text>
+<rect x="278" y="186" width="368" height="96" rx="6" fill="none" stroke="rgba(20,20,19,0.16)" stroke-dasharray="2,3"/>
+<path d="M270 222 H446" fill="none" stroke="#5c5a55" stroke-width="1.2" marker-end="url(#arrow)"/>
+<rect x="284.1" y="205" width="147.8" height="13" fill="#faf8f5"/>
+<text x="358.0" y="214" text-anchor="middle" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="8.5" letter-spacing="0.4" fill="#5c5a55">recall: day windows + FTS5</text>
+<path d="M270 246 H626" fill="none" stroke="#115e59" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+<rect x="392.6" y="229" width="110.7" height="13" fill="#faf8f5"/>
+<text x="448.0" y="238" text-anchor="middle" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="8.5" letter-spacing="0.4" fill="#115e59">search(the message)</text>
+<path d="M450 266 H274" fill="none" stroke="#5c5a55" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+<rect x="319.9" y="249" width="84.2" height="13" fill="#faf8f5"/>
+<text x="362.0" y="258" text-anchor="middle" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="8.5" letter-spacing="0.4" fill="#5c5a55">memory · ~1 ms</text>
+<path d="M630 300 H274" fill="none" stroke="#115e59" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow-link)"/>
+<rect x="388.7" y="283" width="126.6" height="13" fill="#faf8f5"/>
+<text x="452.0" y="292" text-anchor="middle" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="8.5" letter-spacing="0.4" fill="#115e59">top 3 results · ~0.8 s</text>
+<path d="M270 340 H806" fill="none" stroke="#115e59" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+<rect x="466.8" y="323" width="142.5" height="13" fill="#faf8f5"/>
+<text x="538.0" y="332" text-anchor="middle" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="8.5" letter-spacing="0.4" fill="#115e59">prompt + memory + results</text>
+<path d="M810 376 H274" fill="none" stroke="#115e59" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow-link)"/>
+<rect x="454.9" y="359" width="174.3" height="13" fill="#faf8f5"/>
+<text x="542.0" y="368" text-anchor="middle" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="8.5" letter-spacing="0.4" fill="#115e59">tokens stream · first in ~0.5 s</text>
+<path d="M270 412 H94" fill="none" stroke="#254edb" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
+<rect x="94.9" y="395" width="174.3" height="13" fill="#faf8f5"/>
+<text x="182.0" y="404" text-anchor="middle" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="8.5" letter-spacing="0.4" fill="#254edb">SSE: memory, search, text, done</text>
+<path d="M270 452 H446" fill="none" stroke="#5c5a55" stroke-width="1.2" marker-end="url(#arrow)"/>
+<rect x="276.1" y="435" width="163.7" height="13" fill="#faf8f5"/>
+<text x="358.0" y="444" text-anchor="middle" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="8.5" letter-spacing="0.4" fill="#5c5a55">remember(turn, cited sources)</text>
+<rect x="28" y="82" width="124" height="36" rx="8" fill="#faf8f5"/>
+<rect x="28" y="82" width="124" height="36" rx="8" fill="#faf8f5" stroke="rgba(20,20,19,0.16)" stroke-width="1"/>
+<text x="40" y="104.0" font-family="Geist, -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="12.5" font-weight="600" fill="#141413">Browser</text>
+<rect x="208" y="82" width="124" height="36" rx="8" fill="#faf8f5"/>
+<rect x="208" y="82" width="124" height="36" rx="8" fill="rgba(37,78,219,0.07)" stroke="#254edb" stroke-width="1.4"/>
+<text x="220" y="104.0" font-family="Geist, -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="12.5" font-weight="600" fill="#141413">Worker</text>
+<rect x="388" y="82" width="124" height="36" rx="8" fill="#faf8f5"/>
+<rect x="388" y="82" width="124" height="36" rx="8" fill="#faf8f5" stroke="rgba(20,20,19,0.16)" stroke-width="1"/>
+<text x="400" y="104.0" font-family="Geist, -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="12.5" font-weight="600" fill="#141413">D1</text>
+<rect x="568" y="82" width="124" height="36" rx="8" fill="#faf8f5"/>
+<rect x="568" y="82" width="124" height="36" rx="8" fill="#faf8f5" stroke="rgba(20,20,19,0.16)" stroke-width="1"/>
+<text x="580" y="104.0" font-family="Geist, -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="12.5" font-weight="600" fill="#141413">Firecrawl</text>
+<rect x="748" y="82" width="124" height="36" rx="8" fill="#faf8f5"/>
+<rect x="748" y="82" width="124" height="36" rx="8" fill="#faf8f5" stroke="rgba(20,20,19,0.16)" stroke-width="1"/>
+<text x="760" y="104.0" font-family="Geist, -apple-system, 'Segoe UI', system-ui, sans-serif" font-size="12.5" font-weight="600" fill="#141413">Groq</text>
+<text x="286" y="200" text-anchor="start" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="7.5" fill="#5c5a55">IN PARALLEL</text>
+<text x="32" y="544" text-anchor="start" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="9" fill="#5c5a55">If Groq returns 429/5xx or is unreachable, the same call goes to OpenAI at once. If the results are thin, the model searches again (≤6 queries, ≤4 calls).</text>
+</svg>

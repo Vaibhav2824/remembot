@@ -13,7 +13,8 @@
     "test": "node --test",
     "typecheck": "tsc --noEmit",
     "deploy": "npx wrangler@4 deploy",
-    "vendor": "node -e \"require('fs').copyFileSync('node_modules/motion/dist/motion.js','public/vendor/motion.js')\""
+    "vendor": "node -e \"require('fs').copyFileSync('node_modules/motion/dist/motion.js','public/vendor/motion.js')\"",
+    "db:migrate": "npx wrangler@4 d1 execute asof --remote --file db/schema.sql"
   },
   "dependencies": {
     "chrono-node": "^2.9.0"

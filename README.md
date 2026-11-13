@@ -1,115 +1,319 @@
-# Remembot
+<a id="readme-top"></a>
 
-A chat agent with one tool, web search, that remembers what you asked and when.
-**Live demo:** https://remembot.asof-agent.workers.dev (runs on my free-tier keys, so it can be slow or capped; local is the real thing)
+<div align="center">
+  <a href="https://remembot.asof-agent.workers.dev">
+    <img src="public/favicon.svg" alt="Remembot" width="72" height="72">
+  </a>
 
-Built for the [minimi hiring challenge](https://app.notion.com/p/minimi-hiring-challenge-build-a-chat-agent-4100a8b933b181b98277d8ea5a534d6f). The reasoning is in [DESIGN.md](DESIGN.md).
+  <h1 align="center">Remembot</h1>
 
-## Run it
+  <p align="center">
+    A chat agent with one tool, web search, that remembers what you asked and when.
+    <br />
+    Ask anything. Ask again next week, and it tells you what changed.
+    <br />
+    <br />
+    <a href="https://remembot.asof-agent.workers.dev"><strong>Try it live (Continue as guest, no sign-up) »</strong></a>
+    <br />
+    <br />
+    <a href="docs/media/demo.mp4">Watch the demo</a>
+    &middot;
+    <a href="DESIGN.md">Read the design</a>
+    &middot;
+    <a href="https://github.com/Vaibhav2824/remembot/issues/new?labels=bug">Report a bug</a>
+  </p>
 
-Needs Node 22.18 or newer (it uses Node's built-in SQLite and TypeScript support).
+  [![Cloudflare Workers][workers-shield]][workers-url]
+  [![TypeScript][ts-shield]][ts-url]
+  [![Node 22][node-shield]][node-url]
+  [![Tests][tests-shield]](#tests)
+</div>
 
-```bash
-npm install
-cp .env.example .env      # then fill in the two keys
-npm run dev               # http://localhost:3000
-```
+<details>
+  <summary>Table of contents</summary>
+  <ol>
+    <li><a href="#about-the-project">About the project</a>
+      <ul><li><a href="#built-with">Built with</a></li></ul>
+    </li>
+    <li><a href="#getting-started">Getting started</a>
+      <ul>
+        <li><a href="#prerequisites">Prerequisites</a></li>
+        <li><a href="#installation">Installation</a></li>
+        <li><a href="#deploy-to-cloudflare">Deploy to Cloudflare</a></li>
+      </ul>
+    </li>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#project-structure">Project structure</a></li>
+    <li><a href="#tests">Tests</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#contributing">Contributing</a></li>
+    <li><a href="#license">License</a></li>
+    <li><a href="#contact">Contact</a></li>
+    <li><a href="#acknowledgments">Acknowledgments</a></li>
+  </ol>
+</details>
 
-Keys:
+## About the project
+
+<a href="docs/media/demo.mp4"><img src="docs/media/demo.webp" alt="Remembot in 60 seconds: recall in code, one model decision, parallel search, a cited answer, a budget so every turn ends" width="100%"></a>
+
+<sub>60-second tour. Click it for the full video with sound (<a href="docs/media/demo.mp4">MP4, 3 MB</a>).</sub>
+
+Most chat agents forget you the moment the tab closes. Remembot keeps every question with the date and time you asked it, so "What did I ask last Tuesday? Is that still right?" has a real answer:
+
+- **It remembers when.** "Last Tuesday", "on 3 Nov" or "since Monday" are resolved in code to real days, and the matching exchanges are put in front of the model with their dates.
+- **It checks the live web.** Answers come from Firecrawl search with numbered citations. A re-check reports the old value, the new value, and what it could not verify.
+- **It is fast.** The first word arrives in about 1.5 s: memory and a search run in parallel, then Groq's `gpt-oss-120b` streams the answer. OpenAI's `gpt-6-luna` takes over instantly if Groq is rate-limited or down.
+- **It is a real product:**
+  - Accounts, or one-click guest sessions.
+  - Saved chats, light and dark themes.
+  - Privacy and terms pages, a cookie choice, rate limits.
+  - Security headers on every response, and 48 offline tests.
+
+How it works, with diagrams of the architecture, one turn, the agent loop, memory recall and the data model: **[DESIGN.md](DESIGN.md)**.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+### Built with
+
+[![Cloudflare Workers][workers-shield]][workers-url] [![D1][d1-shield]][d1-url] [![TypeScript][ts-shield]][ts-url] [![Groq][groq-shield]][groq-url] [![OpenAI][openai-shield]][openai-url] [![Firecrawl][firecrawl-shield]][firecrawl-url] [![Motion][motion-shield]][motion-url]
+
+- **No framework and no build step.** The UI is plain HTML, CSS and JS. Motion is vendored as one file.
+- **One runtime dependency,** [`chrono-node`](https://github.com/wanasit/chrono), to spot date phrases.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Getting started
+
+### Prerequisites
+
+- Node.js 22.18 or newer (it uses Node's built-in SQLite and TypeScript support).
+- Two keys, with an optional third:
 
 | Key | For | Get it |
 | --- | --- | --- |
 | `LLM_API_KEY` | the primary model (Groq, `openai/gpt-oss-120b`; the free tier works) | https://console.groq.com/keys |
-| `FALLBACK_LLM_API_KEY` | optional backup (OpenAI, `gpt-6-luna`) | https://platform.openai.com/api-keys |
 | `FIRECRAWL_API_KEY` | web search | https://www.firecrawl.dev/app/api-keys |
+| `FALLBACK_LLM_API_KEY` | optional backup (OpenAI, `gpt-6-luna`) | https://platform.openai.com/api-keys |
 
-Any OpenAI-compatible endpoint works for either: set `LLM_BASE_URL`, `LLM_MODEL` and `LLM_REASONING_EFFORT` (or the `FALLBACK_LLM_*` versions) in `.env`.
+### Installation
 
-**Speed and cost.** The first word arrives in about 1.5 to 2.5 s, search included:
-- **Search starts immediately.** The question is searched while memory is recalled, so most answers take one model call.
-- **Search skips the slow extras.** It runs without Firecrawl's highlights and domain-tool lookups, which tripled its latency.
-- **The model is fast.** gpt-oss-120b on Groq streams its first token in about 0.5 s.
+1. Clone the repo and install:
+   ```sh
+   git clone https://github.com/Vaibhav2824/remembot.git
+   cd remembot
+   npm install
+   ```
+2. Copy the example settings, then fill in the keys:
+   ```sh
+   cp .env.example .env
+   ```
+3. Run it at http://localhost:3000:
+   ```sh
+   npm run dev
+   ```
 
-On Groq's free tier the model costs nothing. That tier allows 8,000 tokens a minute, about two answers a minute across all users. When Groq is rate-limited or down, the turn goes straight to OpenAI's `gpt-6-luna` on the fast tier: about $0.012 for a heavy turn, $0.10 / $0.50 per million tokens doubled. Groq's paid Developer plan raises the limit to 250k tokens a minute at $0.15 / $0.60. Spend is capped per account (`MAX_TURNS_PER_USER_PER_DAY`, 50 on the deployment) and in total (`MAX_TURNS_PER_DAY`). Firecrawl searches are billed in Firecrawl credits.
+Any OpenAI-compatible endpoint works for either model: set `LLM_BASE_URL`, `LLM_MODEL` and `LLM_REASONING_EFFORT`, or their `FALLBACK_LLM_*` versions.
 
-## Using it
+**Cost.**
+- **Groq:** the model costs nothing on Groq's free tier (8,000 tokens a minute, about two answers a minute site-wide).
+- **OpenAI:** when it covers for Groq, a heavy turn costs about $0.012.
+- **Caps:** spend is capped per account (`MAX_TURNS_PER_USER_PER_DAY`) and in total (`MAX_TURNS_PER_DAY`).
+- **Firecrawl:** searches are billed in Firecrawl credits.
 
-- **Accounts.** `/` sends you to `/login` until you sign in. Create an account with a name, email and password (8+ characters); the password is stored as a salted PBKDF2-SHA256 hash and the session is an HttpOnly cookie. Sign-in locks for 15 minutes after 10 wrong passwords.
-- **Welcome.** A new account sees "Create your first memory" with three starter questions that have moving parts (prices, events, rumours). A returning user sees "Welcome back" with a card per recent chat. Each card shows when it was saved, a short topic, and a "what has changed since?" question the model writes once per chat and caches. A card reopens that chat and asks its question there.
-- **Light and dark.** The sun/moon switch beside the sidebar's collapse button (and on the sign-in page) changes theme with a circle that grows from the switch. The choice is remembered.
-- **Saved chats.** Every chat is saved to your account and listed in the sidebar, newest activity first, grouped by day. Click one to reopen and continue it; its URL (`/?c=<id>`) can be bookmarked. Hover a chat and press the trash icon twice to delete it. The account menu (bottom left) has sign-out and **Delete account**, which erases everything after asking for your password.
-- **Each answer leads.** Above it, one quiet line says what the agent did ("Recalled 3 exchanges, searched 3 times"); click it to see the memory windows and the exact queries. Citations like `1` link to the source, show its title on hover or focus, and the cited sources sit under the answer.
-- **The readout line** under each answer gives the time, how long the first word and the whole answer took, and a six-cell meter of the searches used out of the 6 a message allows ("Answered from memory" when none).
-- **The 14-day bars** above the chat list show how many chats were active each day: drag across them, or focus them and use the arrow keys, to jump the list to that day. Memory itself spans every chat of your account.
-- **Collapse the panel** to a slim rail of icons with the button beside the name, or **Ctrl+B** (**Cmd+B** on a Mac); the rail brings it back. The choice is remembered. On a phone the panel is a drawer behind the menu button (Escape or a tap outside closes it).
-- **A streaming answer is followed while you are at the bottom;** scroll up to read and it stops, showing **Latest**. Each finished answer has **Copy answer**.
-- **The look** is calm and quiet: warm paper (or a warm dark theme, following your system), a serif greeting with the composer centred on an empty chat, answers set in a reading serif, and one accent. Motion ([Motion](https://motion.dev), vendored in `public/vendor/`) is springy and short: keys that sink when pressed, messages that settle in, a word-by-word greeting, a stack of dated questions on the sign-in page. All of it is off under "reduce motion". The brand kit (logo, colours, type, usage) is in [`brand/`](brand/README.md).
+### Deploy to Cloudflare
 
-## Try the questions from the brief
+1. Create the database once, and put the printed id in `wrangler.jsonc`:
+   ```sh
+   npx wrangler d1 create asof
+   ```
+2. Create or update the tables, again after every `db/schema.sql` change:
+   ```sh
+   npm run db:migrate
+   ```
+3. Store the keys as secrets:
+   ```sh
+   npx wrangler secret put LLM_API_KEY
+   ```
+   ```sh
+   npx wrangler secret put FALLBACK_LLM_API_KEY
+   ```
+   ```sh
+   npx wrangler secret put FIRECRAWL_API_KEY
+   ```
+4. Deploy:
+   ```sh
+   npm run deploy
+   ```
 
-A new install has no past. To give it one, replay three real questions with the clock set to 3 November, last Monday and last Tuesday (live searches, real answers, backdated timestamps). There is no button for this in the UI; while signed in, run this in the browser console, then reload:
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Usage
+
+- **Sign in, create an account, or Continue as guest.**
+  - **Accounts:** the password is stored as a salted PBKDF2-SHA256 hash, and the session is an HttpOnly cookie.
+  - **Guests:** one click opens the app. Ending the session deletes the guest account and its chats.
+- **First visit:** "Create your first memory" offers three starter questions with moving parts (a price, an event, a rumour).
+- **Returning:** "Welcome back" shows a card per recent chat with a "what has changed since?" question. A card reopens that chat and asks it there.
+- **Saved chats** sit in the sidebar, grouped by day.
+  - **Reopen:** click one to continue it; `/?c=<id>` links straight to it.
+  - **Delete:** hover a chat and press the trash icon twice.
+  - **The 14-day bars** jump the list to a day.
+- **Each answer leads.** One quiet line above it says what was recalled and searched; open it for the details. Citations link to their sources.
+- **Light or dark:** the sun/moon switch is beside the sidebar's collapse button. **Ctrl+B** (**Cmd+B** on a Mac) collapses the sidebar.
+
+**Try the "ask again" side.** A new account has no past. To give it one, run this in the browser console while signed in, then reload. It replays three real questions at 3 November, last Monday and last Tuesday, using live searches and real answers with backdated timestamps:
 
 ```js
 await (await fetch('/api/demo', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ tz: -new Date().getTimezoneOffset() }) })).text()
 ```
 
-It takes about half a minute and uses ten searches, so on free keys give it a minute before asking:
-
+Then ask:
 - "Last Tuesday I asked you about Postgres hosting. Has any pricing changed since then?"
 - "What did I ask you on 3 November? Is your answer still correct today?"
-- "On Monday we shortlisted 5 CRM tools for a 20-person sales team. Has any of them changed pricing or shipped something big since?"
 
-Also worth trying: ask about a day with no history ("what did I ask last Friday?"). It should say it has no record, not make one up. **New chat** starts an empty conversation; memory carries over.
+With `ALLOW_TIME_TRAVEL=1`, a request to `/api/chat` can also carry its own clock (`"now": "2026-11-03T10:00:00+05:30"`) to replay a dated conversation.
 
-### Replaying your own dated conversation
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-With `ALLOW_TIME_TRAVEL=1` (the default in `.env.example`), a request can carry its own clock. Signed in, from the browser console:
+## Project structure
 
-```js
-await (await fetch('/api/chat', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({
-  threadId: 'thread-01', tz: 330, now: '2026-11-03T10:00:00+05:30',
-  message: 'Which managed Postgres host is cheapest for a side project?' }) })).text()
+```text
+remembot/
+├── DESIGN.md              how and why it works, with diagrams
+├── README.md
+├── src/                   the server (TypeScript, runs on Node and on Workers)
+│   ├── app.ts             HTTP API as Request -> Response: auth, CSRF, rate limits, headers
+│   ├── agent.ts           one turn: recall + pre-search, model, parallel searches, remember
+│   ├── auth.ts            password hashing, sessions, rate-limit events (Web Crypto)
+│   ├── llm.ts             streaming chat client with instant provider fallback
+│   ├── memory.ts          store and recall exchanges (SQLite, FTS5), saved chats
+│   ├── prompt.ts          the rules and the per-message context the model sees
+│   ├── search.ts          the one tool: Firecrawl web search
+│   ├── suggest.ts         returning-user cards, written once per chat and cached
+│   ├── time.ts            time phrases -> candidate day windows
+│   ├── demo.ts            replay of three dated questions
+│   ├── node.ts, sqlite.ts Node entry point, node:sqlite adapter, static files
+│   └── worker.ts          Cloudflare entry point, D1 adapter, HTTPS redirect
+├── public/                the UI: no framework, no build
+│   ├── index.html, app.js the chat app
+│   ├── login.html, auth.js sign-in, sign-up and guest; landing, demo, FAQ
+│   ├── base.css, theme.js tokens, light and dark, the theme switch
+│   ├── privacy.html, terms.html, 404.html, robots.txt, sitemap.xml
+│   └── vendor/motion.js   Motion, vendored
+├── db/schema.sql          one schema for SQLite locally and D1 in production
+├── test/                  48 offline tests (node:test)
+├── docs/
+│   ├── diagrams/          the DESIGN.md diagrams, plus build.py that draws them
+│   ├── media/             the demo video and its animated preview
+│   └── brand/             logo (Strata), lockups, icons, colours, usage
+├── wrangler.jsonc         Cloudflare config: Worker, assets, D1, model settings
+└── .env.example           every setting, documented
 ```
 
-Send later messages with a later `now` (or none) and the agent treats the first one as having happened on 3 November.
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Tests
 
-```bash
-npm test          # 48 tests, offline: time phrases, recall, the agent loop, accounts, sessions, rate limits, CSRF, saved chats
+Run the suite:
+
+```sh
+npm test
+```
+
+Then the typecheck:
+
+```sh
 npm run typecheck
 ```
 
-## Where things are
+48 tests, all offline:
+- time phrases and recall
+- the agent loop against a scripted model, with pre-search and fallback
+- accounts, guest sessions and sessions
+- rate limits and parallel bursts, and CSRF
+- per-user isolation of saved chats
+- returning-user cards and their dates
 
-| File | Job |
-| --- | --- |
-| `src/agent.ts` | One turn: recall, model, parallel searches, streamed answer, remember |
-| `src/time.ts` | Time phrases to candidate day windows |
-| `src/memory.ts` | Store and recall exchanges (SQLite, FTS5) |
-| `src/prompt.ts` | The rules and the per-message context the model sees |
-| `src/search.ts` | The one tool: web search |
-| `src/llm.ts` | Streaming chat completions client |
-| `src/app.ts` | HTTP API as a `Request -> Response` handler, sign-in redirects, security headers |
-| `src/auth.ts` | Password hashing, sessions, rate limiting (Web Crypto, runs on both runtimes) |
-| `src/node.ts`, `src/sqlite.ts` | Node entry point and node:sqlite adapter |
-| `src/worker.ts` | Cloudflare Workers entry point and D1 adapter |
-| `src/demo.ts` | Demo memory replay |
-| `public/index.html`, `public/app.js` | The chat UI: no framework, no build |
-| `public/login.html`, `public/auth.js` | Sign in and create account, with the landing copy and FAQ |
-| `public/base.css` | Shared tokens and components (keys, fields, consent banner) |
-| `public/consent.js` | Cookie consent; loads Cloudflare Web Analytics only after "Accept all" (paste your token at the top) |
-| `public/privacy.html`, `terms.html`, `404.html` | Legal pages and the not-found page |
-| `public/robots.txt`, `sitemap.xml`, `og.png` | Crawling and the social preview image |
-| `brand/` | Logo (Strata), lockups, icon set, colours, type and usage guide |
-| `schema.sql` | Turns and their search index; users, sessions, sign-in events |
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## Deploy to Cloudflare (optional)
+## Roadmap
 
-```bash
-npx wrangler d1 create asof                           # put the printed id in wrangler.jsonc
-npx wrangler d1 execute asof --remote --file schema.sql   # again after every schema.sql change
-npx wrangler secret put LLM_API_KEY
-npx wrangler secret put FIRECRAWL_API_KEY
-npm run deploy
-```
+- [x] Accounts, guest sessions and saved chats
+- [x] Groq first, OpenAI fallback, parallel pre-search (first word ~1.5 s)
+- [x] Launch checklist: legal pages, consent, SEO, security headers, 404
+- [ ] An eval set of dated multi-day conversations, scored on date accuracy and citations
+- [ ] Purge idle guest accounts; seed new guests with one dated exchange
+- [ ] Open one page when search excerpts are too thin; cache searches for follow-ups
+- [ ] IANA time zones for daylight-saving accuracy
+
+See the [open issues](https://github.com/Vaibhav2824/remembot/issues) for more.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Contributing
+
+Suggestions and fixes are welcome.
+
+1. Fork the project.
+2. Create a branch:
+   ```sh
+   git checkout -b feature/your-change
+   ```
+3. Make sure `npm test` and `npm run typecheck` pass.
+4. Commit:
+   ```sh
+   git commit -m "feat: your change"
+   ```
+5. Push, then open a pull request:
+   ```sh
+   git push origin feature/your-change
+   ```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## License
+
+No license has been chosen yet, so all rights are reserved by the author. Open an issue if you would like to use the code.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Contact
+
+Vaibhav, on GitHub: [@Vaibhav2824](https://github.com/Vaibhav2824)
+
+- **Project:** https://github.com/Vaibhav2824/remembot
+- **Live:** https://remembot.asof-agent.workers.dev
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Acknowledgments
+
+- **[Best-README-Template](https://github.com/othneildrew/Best-README-Template):** the shape of this README.
+- **[diagram-design](https://github.com/cathrynlavery/diagram-design):** the grammar of the DESIGN.md diagrams.
+- **[Motion](https://motion.dev):** the springs and loaders.
+- **[SmoothUI](https://smoothui.dev), [tactileui](https://tactileui.dev) and [Stageshow](https://github.com/benjitaylor/skills):** button, toggle and demo patterns.
+- **[Collect UI](https://collectui.com):** the sign-in layout, after Dima Kazarov's "Wafer".
+- **J. M. W. Turner, *Fishing Boats Becalmed off le Havre*:** public domain, via [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Joseph_Mallord_William_Turner_-_Fishing_Boats_Becalmed_off_le_Havre_-_Google_Art_Project.jpg).
+- **[Groq](https://groq.com), [OpenAI](https://openai.com), [Firecrawl](https://firecrawl.dev) and [Cloudflare](https://workers.cloudflare.com).**
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- MARKDOWN LINKS & IMAGES -->
+[workers-shield]: https://img.shields.io/badge/Cloudflare_Workers-F38020?style=for-the-badge&logo=cloudflareworkers&logoColor=white
+[workers-url]: https://workers.cloudflare.com
+[d1-shield]: https://img.shields.io/badge/D1_SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white
+[d1-url]: https://developers.cloudflare.com/d1/
+[ts-shield]: https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white
+[ts-url]: https://www.typescriptlang.org
+[node-shield]: https://img.shields.io/badge/Node-22.18+-5FA04E?style=for-the-badge&logo=nodedotjs&logoColor=white
+[node-url]: https://nodejs.org
+[tests-shield]: https://img.shields.io/badge/tests-48_passing-0D9488?style=for-the-badge
+[groq-shield]: https://img.shields.io/badge/Groq-gpt--oss--120b-F55036?style=for-the-badge
+[groq-url]: https://groq.com
+[openai-shield]: https://img.shields.io/badge/OpenAI-fallback-412991?style=for-the-badge&logo=openai&logoColor=white
+[openai-url]: https://platform.openai.com
+[firecrawl-shield]: https://img.shields.io/badge/Firecrawl-search-FF6B35?style=for-the-badge
+[firecrawl-url]: https://firecrawl.dev
+[motion-shield]: https://img.shields.io/badge/Motion-vendored-111111?style=for-the-badge
+[motion-url]: https://motion.dev
