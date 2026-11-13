@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="color-scheme" content="light">
+<meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#faf8f5">
 <title>Remembot: the chat agent that remembers what you asked, and when</title>
 <meta name="description" content="Ask anything and get answers from the live web with sources. Remembot remembers every question with its date, so next week you can ask what changed.">
@@ -30,6 +30,7 @@
   body { min-height: 100dvh; display: flex; flex-direction: column; }
   .top { display: flex; align-items: center; justify-content: space-between; padding: var(--s4) clamp(var(--s4), 4vw, var(--s10)); }
   .brand { display: inline-flex; align-items: center; gap: var(--s2); text-decoration: none; font: 600 20px/1 var(--serif); letter-spacing: -0.01em; }
+  .top-actions { display: flex; align-items: center; gap: var(--s2); }
   .top a.cta { font: var(--t-ui); color: var(--text-2); text-decoration: none; padding: var(--s2) var(--s3); border-radius: var(--r-sm); }
   @media (hover: hover) and (pointer: fine) { .top a.cta:hover { background: var(--raised-2); color: var(--text-1); } }
 
@@ -138,7 +139,7 @@
 </svg>
 <header class="top">
   <a class="brand" href="/login" aria-label="Remembot home"><svg class="mark live-mark" viewBox="0 0 256 256" aria-hidden="true"><g fill="currentColor"><rect class="m-bar" x="20" y="24" width="216" height="56" rx="28"/><rect class="m-bar" x="20" y="100" width="168" height="56" rx="28"/><rect class="m-bar" x="20" y="176" width="96" height="56" rx="28"/></g><circle class="m-dot" cx="207" cy="204" r="29"/></svg>Remembot</a>
-  <a class="cta" href="#faq">How it works</a>
+  <div class="top-actions"><a class="cta" href="#faq">How it works</a><button class="icon-btn theme-btn" type="button" role="switch" aria-checked="false" aria-label="Switch to dark mode" title="Light or dark" data-theme-toggle><svg class="i sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg><svg class="i moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></button></div>
 </header>
 
 <main class="stage" id="main">
@@ -222,6 +223,7 @@
 </footer>
 <script src="/vendor/motion.js" defer></script>
 <script src="/consent.js" defer></script>
+<script src="/theme.js" defer></script>
 <script src="/auth.js" defer></script>
 </body>
 </html>

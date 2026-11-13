@@ -66,6 +66,17 @@ test('a rate-limited request waits as told and retries until it succeeds', async
   assert.deepEqual([text, waits], ['third try', 2])
 })
 
+test('a rate-limited or failing primary hands the turn to the fallback at once, without waiting', async () => {
+  for (const status of [429, 503]) {
+    script = [status, [{ content: 'from the backup' }]]
+    const chat = createChat({ baseUrl, apiKey: 'k', model: 'primary' }, { baseUrl, apiKey: 'k', model: 'backup' })
+    assert.deepEqual(await collect(chat([{ role: 'user', content: 'hi' }])), { text: 'from the backup', calls: [], waits: 0 })
+  }
+  const unreachable = createChat({ baseUrl: 'http://127.0.0.1:9', apiKey: 'k', model: 'primary' }, { baseUrl, apiKey: 'k', model: 'backup' })
+  script = [[{ content: 'still answered' }]]
+  assert.equal((await collect(unreachable([{ role: 'user', content: 'hi' }]))).text, 'still answered')
+})
+
 test('a failing model endpoint throws with the status', async () => {
   script = [500]
   await assert.rejects(collect(chatClient()([{ role: 'user', content: 'hi' }])), /Model request failed \(500\)/)

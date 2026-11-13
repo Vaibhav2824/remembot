@@ -12,16 +12,20 @@
   },
   "d1_databases": [{ "binding": "DB", "database_name": "asof", "database_id": "ebc5ea31-4ed8-41da-9b35-e283644b5afd" }],
   "vars": {
-    "LLM_BASE_URL": "https://api.openai.com/v1",
-    "LLM_MODEL": "gpt-6-luna",
+    // Primary: Groq free tier, gpt-oss-120b (~1.5 s to first word). Fallback: OpenAI gpt-6-luna on the
+    // fast tier, used at once whenever Groq is rate-limited (free tier: 8k tokens a minute) or down.
+    "LLM_BASE_URL": "https://api.groq.com/openai/v1",
+    "LLM_MODEL": "openai/gpt-oss-120b",
+    "LLM_REASONING_EFFORT": "low",
+    "FALLBACK_LLM_BASE_URL": "https://api.openai.com/v1",
+    "FALLBACK_LLM_MODEL": "gpt-6-luna",
     // gpt-6-luna calls tools over Chat Completions only with reasoning off.
-    "LLM_REASONING_EFFORT": "none",
-    // OpenAI fast tier: about 2x quicker answers at 2x the token price (still ~$0.012 a heavy turn).
-    "LLM_SERVICE_TIER": "fast",
+    "FALLBACK_LLM_REASONING_EFFORT": "none",
+    "FALLBACK_LLM_SERVICE_TIER": "fast",
     // Spend caps: everyone together, and each account.
     "MAX_TURNS_PER_DAY": "1000",
     "MAX_TURNS_PER_USER_PER_DAY": "50"
   }
-  // Secrets (set with `npx wrangler secret put`): LLM_API_KEY, FIRECRAWL_API_KEY
+  // Secrets (set with `npx wrangler secret put`): LLM_API_KEY (Groq), FALLBACK_LLM_API_KEY (OpenAI), FIRECRAWL_API_KEY
   // Schema (once, and after schema.sql changes): npx wrangler d1 execute asof --remote --file schema.sql
 }

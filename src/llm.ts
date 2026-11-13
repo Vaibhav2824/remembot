@@ -27,7 +27,10 @@ export interface LlmConfig {
 const MAX_OUTPUT_TOKENS = 1500
 const MAX_RATE_LIMIT_WAIT_S = 45 // total, across retries, before giving up on a turn
 
-export function createChat(cfg: LlmConfig): Chat {
+// With a fallback, a primary that is rate-limited, down or unreachable hands the turn over
+// at once: a fast cheap primary (Groq) backed by a reliable one (OpenAI) never makes a user wait.
+export function createChat(cfg: LlmConfig, fallback?: LlmConfig): Chat {
+  const backup = fallback && createChat(fallback)
   const post = (body: object) =>
     fetch(`${cfg.baseUrl.replace(/\/$/, '')}/chat/completions`, {
       method: 'POST',
@@ -46,7 +49,15 @@ export function createChat(cfg: LlmConfig): Chat {
       ...(cfg.serviceTier && { service_tier: cfg.serviceTier }),
     }
 
-    let res = await post(body)
+    const first = await post(body).catch((err) => {
+      if (backup) return undefined
+      throw err
+    })
+    if (backup && (!first || first.status === 429 || first.status >= 500)) {
+      console.warn(`${cfg.model} ${first ? `returned ${first.status}` : 'unreachable'}: answering with ${fallback!.model}`)
+      return yield* backup(messages, tools)
+    }
+    let res = first!
     // Free tiers have tight per-minute token budgets. Waiting as long as the provider
     // asks, and saying so, beats failing the turn.
     for (let waited = 0; res.status === 429; res = await post(body)) {
