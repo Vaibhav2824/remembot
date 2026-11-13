@@ -16,6 +16,8 @@
     "LLM_MODEL": "gpt-6-luna",
     // gpt-6-luna calls tools over Chat Completions only with reasoning off.
     "LLM_REASONING_EFFORT": "none",
+    // OpenAI fast tier: about 2x quicker answers at 2x the token price (still ~$0.012 a heavy turn).
+    "LLM_SERVICE_TIER": "fast",
     // Spend caps: everyone together, and each account.
     "MAX_TURNS_PER_DAY": "1000",
     "MAX_TURNS_PER_USER_PER_DAY": "50"

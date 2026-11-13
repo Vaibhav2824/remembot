@@ -3,9 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
-<meta name="color-scheme" content="light dark">
-<meta name="theme-color" media="(prefers-color-scheme: light)" content="#faf8f4">
-<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1a1917">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#faf8f5">
 <title>Remembot</title>
 <meta name="description" content="Your chats with Remembot, the chat agent that searches the live web and remembers what you asked, and when.">
 <meta name="robots" content="noindex">
@@ -54,7 +53,7 @@
   #days .col.has { cursor: pointer; }
   #days i { align-self: end; width: 100%; max-width: 10px; height: 36px; border-radius: var(--r-xs); background: var(--hairline-strong);
     transform: scaleY(calc((4 + var(--h, 0) * 32) / 36)); transform-origin: bottom; transition: background-color var(--d-quick) var(--ease); }
-  #days .col.has i { background: var(--text-3); }
+  #days .col.has i { background: var(--recall); }
   #days .col.today i { background: var(--signal); }
   @media (hover: hover) and (pointer: fine) { #days .col.has:hover i { background: var(--text-1); } }
   #days .col.on i, #days .col.spy:not(.on) i { background: var(--text-1); }
@@ -120,9 +119,15 @@
   }
 
   /* ---------- Chat ---------- */
-  main { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+  main { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; isolation: isolate; overflow: hidden; }
+  main::before { content: ""; position: absolute; inset: -15%; z-index: -1; pointer-events: none; opacity: 0.45; transition: opacity 0.8s var(--ease);
+    background: linear-gradient(118deg, transparent 30%, rgb(255 255 255 / 0.9) 38%, transparent 46%, transparent 52%, rgb(255 255 255 / 0.75) 58%, transparent 64%),
+      radial-gradient(45% 40% at 78% 18%, rgb(37 78 219 / 0.05), transparent 70%), radial-gradient(40% 35% at 15% 85%, rgb(217 119 6 / 0.05), transparent 70%);
+    animation: drift 36s ease-in-out infinite alternate; }
+  main.empty::before { opacity: 1; }
+  @keyframes drift { from { transform: translate3d(-4%, -2%, 0) rotate(-1deg); } to { transform: translate3d(4%, 3%, 0) rotate(1deg); } }
   .bar { display: flex; align-items: center; gap: var(--s2); padding: var(--s3) var(--s4); min-height: 60px; }
-  .clock { margin-left: auto; }
+  #new { margin-left: auto; }
   #chat { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: var(--s2) var(--s6) var(--s10); }
   #thread > * { max-width: var(--col); margin-inline: auto; }
 
@@ -131,7 +136,7 @@
   main.empty .bar { position: absolute; inset: 0 0 auto; }
   main.empty #chat { flex: 0 0 auto; overflow: visible; padding-bottom: var(--s6); }
   .welcome { display: flex; align-items: center; justify-content: center; gap: var(--s3); }
-  .welcome .mark { width: 30px; height: 30px; }
+  .welcome .mark { width: 40px; height: 40px; }
   .welcome h2 span { display: inline-block; }
   .welcome h2 { margin: 0; font: var(--t-greet); letter-spacing: -0.015em; text-wrap: balance; text-align: center; }
   .tries { display: none; list-style: none; max-width: var(--col); margin: var(--s4) auto 0; padding: 0; flex-wrap: wrap; justify-content: center; gap: var(--s2); }
@@ -168,6 +173,8 @@
   .trace ol { margin: var(--s2) 0 0; padding: 0; list-style: none; display: grid; gap: var(--s2); }
   .trace li { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); font: var(--t-small); color: var(--text-2); }
   .trace li svg { width: 15px; height: 15px; color: var(--text-3); }
+  .trace li.memory > svg { color: var(--recall); } .trace li.search > svg { color: var(--live); }
+  .trace li.search .chip { background: var(--live-bg); color: var(--live-text); }
   .chip { font: var(--t-small); padding: 2px var(--s2); border-radius: var(--r-pill); background: var(--raised-2); color: var(--text-2); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   .sources { margin: var(--s4) 0 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: var(--s2); }
@@ -176,7 +183,7 @@
     background: var(--raised); box-shadow: inset 0 0 0 1px var(--hairline); color: var(--text-2); font: var(--t-small); text-decoration: none;
     transition: background-color var(--d-quick) var(--ease), color var(--d-quick) var(--ease); }
   @media (hover: hover) and (pointer: fine) { .sources a:hover { background: var(--raised-2); color: var(--text-1); } }
-  .sources b { font: var(--t-readout); color: var(--text-3); }
+  .sources b { font: var(--t-readout); color: var(--live-text); }
   .sources img { width: 14px; height: 14px; }
   .sources span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .meta { margin-top: var(--s3); display: flex; flex-wrap: wrap; align-items: center; gap: var(--s1) var(--s4); }
@@ -187,7 +194,7 @@
   .meta .error { font: var(--t-small); }
   .meter { display: inline-flex; align-items: center; gap: 3px; margin-right: var(--s2); vertical-align: 1px; }
   .meter b { width: 12px; height: 5px; border-radius: var(--r-xs); background: var(--hairline-strong); }
-  .meter b.on { background: var(--signal); }
+  .meter b.on { background: var(--live); }
   .cursor::after { content: ""; display: inline-block; width: 8px; height: 8px; margin-left: var(--s2); border-radius: 50%; background: var(--signal); vertical-align: 1px; }
   .msg.agent .body.cursor:empty { display: block; }
 
@@ -196,6 +203,13 @@
   .composer { max-width: var(--col); margin-inline: auto; display: flex; gap: var(--s2); align-items: flex-end; padding: var(--s3) var(--s3) var(--s3) var(--s5);
     border-radius: var(--r-xl); background: var(--raised); box-shadow: var(--shadow-composer); transition: box-shadow var(--d-quick) var(--ease); }
   .composer:focus-within { box-shadow: 0 0 0 1px var(--signal-text), var(--shadow-composer); }
+  @property --ring { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+  html.thinking .composer { border: 1.5px solid transparent; animation: ring 2.4s linear infinite;
+    background: linear-gradient(var(--raised), var(--raised)) padding-box, conic-gradient(from var(--ring), var(--signal), var(--live), var(--recall), var(--signal)) border-box; }
+  @keyframes ring { to { --ring: 360deg; } }
+  html.thinking #island:not(.error):not(.wait) span { background: linear-gradient(90deg, var(--text-3) 20%, var(--text-1) 50%, var(--text-3) 80%) 0 0 / 200% 100%;
+    -webkit-background-clip: text; background-clip: text; color: transparent; animation: shimmer 1.4s linear infinite; }
+  @keyframes shimmer { to { background-position: -200% 0; } }
   textarea { flex: 1; min-height: 28px; border: 0; outline: 0; resize: none; background: none; color: inherit; font: 400 16px/1.5 var(--sans); max-height: 200px; padding: var(--s1) 0; caret-color: var(--signal-text); }
   textarea::placeholder { color: var(--text-3); }
   textarea:focus-visible { outline: none; } /* the composer ring shows focus */
@@ -229,9 +243,9 @@
     .bar, #chat, .dock { padding-left: max(var(--s4), env(safe-area-inset-left, 0px)); padding-right: max(var(--s4), env(safe-area-inset-right, 0px)); }
     #timeline { padding-bottom: max(var(--s4), env(safe-area-inset-bottom, 0px)); }
     main.empty { padding-bottom: 10vh; }
-    .welcome h2 { font-size: 30px; }
+    .welcome h2 { font-size: 32px; }
+    .welcome .mark { width: 30px; height: 30px; }
   }
-  @media (max-width: 480px) { .clock { display: none; } }
   @media (pointer: coarse) { #input { font-size: 16px; } }
 </style>
 </head>
@@ -245,7 +259,7 @@
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
   <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h16"/></symbol>
   <symbol id="i-panel" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M9.5 4v16"/></symbol>
-  <symbol id="i-memory" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-memory" viewBox="0 0 24 24"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></symbol>
   <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
   <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2M10 11v6M14 11v6"/></symbol>
   <symbol id="i-out" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></symbol>
@@ -253,7 +267,7 @@
 </svg>
 <aside id="memory" aria-label="Memory" tabindex="-1">
   <div class="side-top">
-    <div class="brand"><svg class="mark" aria-hidden="true"><use href="#i-mark"/></svg><span class="wordmark">Remembot</span></div>
+    <div class="brand"><svg class="mark live-mark" viewBox="0 0 256 256" aria-hidden="true"><g fill="currentColor"><rect class="m-bar" x="20" y="24" width="216" height="56" rx="28"/><rect class="m-bar" x="20" y="100" width="168" height="56" rx="28"/><rect class="m-bar" x="20" y="176" width="96" height="56" rx="28"/></g><circle class="m-dot" cx="207" cy="204" r="29"/></svg><span class="wordmark">Remembot</span></div>
     <button class="icon-btn" id="collapse" type="button" aria-controls="memory" aria-expanded="true" aria-label="Collapse sidebar" title="Collapse sidebar (Ctrl+B)"><svg class="i" aria-hidden="true"><use href="#i-panel"/></svg></button>
   </div>
   <div class="rail" id="rail">
@@ -294,11 +308,10 @@
   </form>
 </dialog>
 
-<main id="main">
+<main id="main" class="empty">
   <h1 class="sr-only">Remembot, a chat agent that remembers what you asked and when</h1>
   <div class="bar">
     <button class="icon-btn" id="menu" type="button" aria-controls="memory" aria-expanded="false" aria-label="Memory"><svg class="i" aria-hidden="true"><use href="#i-menu"/></svg></button>
-    <span class="clock mono" id="clock"></span>
     <button class="icon-btn" id="new" type="button" aria-label="New chat"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></button>
   </div>
   <div id="chat"><div id="thread" aria-live="polite"></div></div>

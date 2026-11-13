@@ -3,9 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="color-scheme" content="light dark">
-<meta name="theme-color" media="(prefers-color-scheme: light)" content="#faf8f4">
-<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1a1917">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#faf8f5">
 <title>Remembot: the chat agent that remembers what you asked, and when</title>
 <meta name="description" content="Ask anything and get answers from the live web with sources. Remembot remembers every question with its date, so next week you can ask what changed.">
 <link rel="canonical" href="https://remembot.asof-agent.workers.dev/login">
@@ -69,28 +68,22 @@
   .demo .past .bub { justify-self: end; width: 150px; height: 26px; border-radius: 13px; background: var(--raised-2); margin-bottom: 3px; }
   .demo .q { justify-self: end; max-width: 236px; padding: 8px 12px; border-radius: 14px; background: var(--raised-2); font: 400 13px/1.4 var(--sans); color: var(--text-1); }
   .demo .trace { display: flex; align-items: center; gap: 6px; margin-bottom: -6px; font: 400 12px/1.3 var(--sans); color: var(--text-3); }
-  .demo .trace svg { width: 14px; height: 14px; }
+  .demo .trace svg { width: 14px; height: 14px; color: var(--recall); }
   .demo .ans { margin: 0; font: 400 15px/1.55 var(--serif); color: var(--text-1); }
   .demo .cite { display: inline-grid; place-items: center; min-width: 16px; height: 16px; padding: 0 4px; margin: 0 1px; vertical-align: 2px; border-radius: var(--r-pill);
     background: var(--signal-wash); color: var(--signal-text); font: 500 10px/1 var(--sans); }
   .demo .srcs { display: flex; gap: 6px; margin-top: -4px; }
   .demo .src { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px 0 6px; border-radius: var(--r-pill); background: var(--raised); box-shadow: inset 0 0 0 1px var(--hairline);
     font: 400 11.5px/1 var(--sans); color: var(--text-2); white-space: nowrap; }
-  .demo .src b { font: 400 10.5px/1 var(--mono); color: var(--text-3); }
+  .demo .src b { font: 400 10.5px/1 var(--mono); color: var(--live-text); }
   .demo .sat { position: absolute; left: 24px; top: 168px; width: 196px; padding: 12px; border-radius: 10px; background: var(--raised);
     box-shadow: 0 0 0 1px var(--hairline), 0 10px 24px -8px rgb(27 26 23 / 0.28); }
   .demo .sat time { display: flex; align-items: center; gap: 6px; font: 400 11px/1.3 var(--mono); color: var(--text-3); }
-  .demo .sat time i { width: 6px; height: 6px; border-radius: 50%; background: var(--signal); }
+  .demo .sat time i { width: 6px; height: 6px; border-radius: 50%; background: var(--recall); }
   .demo .sat p { margin: 6px 0 0; font: 500 13px/1.35 var(--serif); color: var(--text-1); }
   .demo.compact .demo-stage { width: 358px; }
   .demo.compact .win { left: 16px; width: 326px; }
   .demo.compact .side, .demo.compact .sat { display: none; }
-  @media (prefers-color-scheme: dark) {
-    .demo .win { background: var(--raised); box-shadow: 0 0 0 1px var(--hairline-strong), 0 24px 48px -16px rgb(0 0 0 / 0.6); }
-    .demo .sat { background: var(--raised-2); box-shadow: 0 0 0 1px var(--hairline-strong), 0 12px 28px -8px rgb(0 0 0 / 0.6); }
-    .demo .bar, .demo .chrome i { background: var(--raised-2); }
-    .demo .past .bub, .demo .q { background: var(--sunken); }
-  }
 
   /* The card */
   .card { padding: var(--s6); border-radius: var(--r-xl); background: var(--raised); box-shadow: var(--shadow-float), 0 30px 60px -30px rgb(27 26 23 / 0.25); }
@@ -140,11 +133,11 @@
 <body>
 <a class="skip" href="#email">Skip to sign in</a>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <symbol id="i-memory" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-memory" viewBox="0 0 24 24"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></symbol>
   <symbol id="i-mark" viewBox="0 0 256 256"><path fill="currentColor" d="M48 24H208A28 28 0 0 1 208 80H48A28 28 0 0 1 48 24Z M48 100H160A28 28 0 0 1 160 156H48A28 28 0 0 1 48 100Z M48 176H88A28 28 0 0 1 88 232H48A28 28 0 0 1 48 176Z"/><path fill="var(--signal)" d="M178 204A29 29 0 1 1 236 204A29 29 0 1 1 178 204Z"/></symbol>
 </svg>
 <header class="top">
-  <a class="brand" href="/login" aria-label="Remembot home"><svg class="mark" aria-hidden="true"><use href="#i-mark"/></svg>Remembot</a>
+  <a class="brand" href="/login" aria-label="Remembot home"><svg class="mark live-mark" viewBox="0 0 256 256" aria-hidden="true"><g fill="currentColor"><rect class="m-bar" x="20" y="24" width="216" height="56" rx="28"/><rect class="m-bar" x="20" y="100" width="168" height="56" rx="28"/><rect class="m-bar" x="20" y="176" width="96" height="56" rx="28"/></g><circle class="m-dot" cx="207" cy="204" r="29"/></svg>Remembot</a>
   <a class="cta" href="#faq">How it works</a>
 </header>
 
@@ -202,7 +195,7 @@
               <div class="q" data-beat="q">Has any Postgres pricing changed since Tuesday?</div>
               <div class="trace" data-beat="recall"><svg class="i" aria-hidden="true"><use href="#i-memory"/></svg><span>Recalled 1 exchange<span data-beat="search">, searched 3 times</span></span></div>
               <p class="ans" data-beat="answer">One has. On Tue 10 Nov you compared four hosts <span class="cite">1</span>. Three cost the same today; one raised its entry plan <span class="cite">2</span>.</p>
-              <div class="srcs" data-beat="sources"><span class="src"><b>1</b>Your chat, Tue 10 Nov</span><span class="src"><b>2</b>Pricing pages, today</span></div>
+              <div class="srcs" data-beat="sources"><span class="tag recall"><svg class="i" aria-hidden="true"><use href="#i-memory"/></svg>Your chat, Tue 10 Nov</span><span class="tag live">Pricing pages, today</span></div>
             </div>
           </div>
         </div>

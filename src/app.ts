@@ -40,7 +40,9 @@ export function createApp(db: Db, env: Env): App {
       baseUrl: env.LLM_BASE_URL || 'https://api.openai.com/v1',
       model: env.LLM_MODEL || 'gpt-6-luna',
       reasoningEffort: env.LLM_REASONING_EFFORT ?? 'none', // gpt-6-luna calls tools on Chat Completions only at "none"
+      serviceTier: env.LLM_SERVICE_TIER || undefined,
     }),
+    preSearch: env.PRE_SEARCH !== '0',
   }
   const allowTimeTravel = env.ALLOW_TIME_TRAVEL === '1'
   // Spend caps for a public deployment: all users together, and each user.

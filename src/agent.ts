@@ -6,7 +6,7 @@
 import type { Chat, Msg, ToolCall } from './llm.ts'
 import { recall, remember, threadTurns, type Db, type Source } from './memory.ts'
 import { contextBlock, SYSTEM, threadMessages } from './prompt.ts'
-import { WEB_SEARCH_TOOL, type Search } from './search.ts'
+import { WEB_SEARCH_TOOL, type Hit, type Search } from './search.ts'
 
 // Everything the agent touches from outside. Tests pass fakes; `now` makes time travel possible.
 export interface Deps {
@@ -14,6 +14,7 @@ export interface Deps {
   chat: Chat
   search: Search
   now: () => Date
+  preSearch?: boolean // search the message itself while memory is recalled (saves a model round trip)
 }
 
 export interface Ask {
@@ -35,12 +36,18 @@ export type AgentEvent =
 // A turn's cost is bounded two ways: how many searches it may run, and how many
 // times it may call the model. The model is told what it has left after each search.
 const MAX_QUERIES_PER_TURN = 6
+// Questions about the conversation itself: searching their words would only find noise.
+const ABOUT_MEMORY = /\b(did I|I asked|we (asked|discussed|talked|shortlisted|compared)|you (said|told|answered|found))\b/i
 const MAX_MODEL_CALLS = 4 // the last one is made without the tool, so it has to answer
 const THREAD_TURNS = 3
 
 export async function* answer(deps: Deps, ask: Ask): AsyncGenerator<AgentEvent> {
   const startedAt = Date.now()
   const now = deps.now()
+  // The web search for the message starts now, beside recall: by the time memory is ready
+  // the results are usually in, and the model can answer in one call instead of two.
+  const early = deps.preSearch && ask.message.split(/\s+/).length >= 3 && !ABOUT_MEMORY.test(ask.message) ? deps.search(ask.message) : undefined
+  early?.catch(() => {}) // awaited (and reported) below; never an unhandled rejection
   try {
     const [memory, thread] = await Promise.all([
       recall(deps.db, ask.userId, ask.message, now, ask.tz),
@@ -69,6 +76,22 @@ export async function* answer(deps: Deps, ask: Ask): AsyncGenerator<AgentEvent> 
 
     let text = ''
     let queriesLeft = MAX_QUERIES_PER_TURN
+    const budgetNote = () =>
+      queriesLeft
+        ? `${queriesLeft} search queries left this message. Answer now unless a specific fact is still missing.`
+        : 'No search queries left this message. Answer now from the results above and MEMORY, and say what you could not verify.'
+    if (early) {
+      // Shown to the model as a search it already made, so it answers from it or searches for more.
+      yield { type: 'search', queries: [ask.message] }
+      const block = await searchBlock(deps.search, ask.message, cite, early)
+      queriesLeft--
+      yield numbered()
+      const args = JSON.stringify({ queries: [ask.message] })
+      messages.push({ role: 'assistant', content: '', tool_calls: [{ id: 'presearch', type: 'function', function: { name: WEB_SEARCH_TOOL.function.name, arguments: args } }] })
+      messages.push({ role: 'tool', tool_call_id: 'presearch', content: `${block}
+
+${budgetNote()}` })
+    }
     for (let modelCall = 1; ; modelCall++) {
       const isLastCall = modelCall === MAX_MODEL_CALLS
       const stream = deps.chat(messages, isLastCall ? undefined : [WEB_SEARCH_TOOL])
@@ -101,15 +124,12 @@ export async function* answer(deps: Deps, ask: Ask): AsyncGenerator<AgentEvent> 
       const results = await Promise.all(plans.map((queries) => Promise.all(queries.map((q) => searchBlock(deps.search, q, cite)))))
       if (asked.length) yield numbered()
 
-      const budgetNote = queriesLeft
-        ? `${queriesLeft} search queries left this message. Answer now unless a specific fact is still missing.`
-        : 'No search queries left this message. Answer now from the results above and MEMORY, and say what you could not verify.'
       messages.push({
         role: 'assistant',
         content: text,
         tool_calls: calls.map((c) => ({ id: c.id, type: 'function', function: { name: c.name, arguments: c.args } })),
       })
-      calls.forEach((c, i) => messages.push({ role: 'tool', tool_call_id: c.id, content: [...results[i], budgetNote].join('\n\n') }))
+      calls.forEach((c, i) => messages.push({ role: 'tool', tool_call_id: c.id, content: [...results[i], budgetNote()].join('\n\n') }))
     }
 
     if (!text.trim()) throw new Error('The model returned an empty answer. Please try again.')
@@ -128,9 +148,9 @@ export async function* answer(deps: Deps, ask: Ask): AsyncGenerator<AgentEvent> 
 
 // One query's results as the model sees them. A failed search is reported, not thrown,
 // so one bad query cannot sink the turn and the model can say what it could not check.
-async function searchBlock(search: Search, query: string, cite: (s: Source) => number): Promise<string> {
+async function searchBlock(search: Search, query: string, cite: (s: Source) => number, pending?: Promise<Hit[]>): Promise<string> {
   try {
-    const hits = await search(query)
+    const hits = await (pending ?? search(query))
     const body = hits.map((h) => `[${cite(h)}] ${h.title}\n${h.url}\n${h.snippet}`).join('\n\n')
     return `Results for "${query}":\n${body || 'No results.'}`
   } catch (err) {

@@ -1,18 +1,22 @@
-/* Shared by every page. Tokens from the brand kit (brand/README.md): Paper, Linen, Ink, Stone and one accent, Now (the dot in the mark). Light and dark. */
+/* Shared by every page. "Editorial Archive meets Live Terminal": archival paper and carbon ink,
+   one action color (Cobalt Index), and two meanings: Amber Bookmark is the past (recalled chats,
+   memory), Oxidized Verdigris is the live web (what was checked or changed today). Light only. */
 :root {
-  --canvas: #faf8f4; --side-bg: #f3f0ea; --raised: #ffffff; --raised-2: #efebe3; --sunken: #e9e5dc;
-  --hairline: rgb(27 26 23 / 0.1); --hairline-strong: rgb(27 26 23 / 0.18);
-  --text-1: #1b1a17; --text-2: #57534c; --text-3: #6e6a62; --text-off: #a9a49a;
-  --signal: #b42d43; --signal-ink: #ffffff; --signal-text: #a12a3e; --signal-wash: rgb(180 45 67 / 0.1);
-  --danger: #b93a0b; --ok: #3f7a4a; --scrim: rgb(27 26 23 / 0.32);
-  --shadow-float: 0 0 0 1px rgb(27 26 23 / 0.06), 0 6px 20px rgb(27 26 23 / 0.08);
-  --shadow-composer: 0 0 0 1px rgb(27 26 23 / 0.08), 0 4px 24px rgb(27 26 23 / 0.06);
-  --shadow-key: inset 0 1px 0 rgb(255 255 255 / 0.22), 0 1px 0 rgb(0 0 0 / 0.25), 0 3px 8px -2px rgb(120 20 40 / 0.45);
+  --canvas: #faf8f5; --side-bg: #f2efe9; --raised: #ffffff; --raised-2: #f2efe9; --sunken: #e8e4dc;
+  --hairline: rgb(20 20 19 / 0.09); --hairline-strong: rgb(20 20 19 / 0.16);
+  --text-1: #141413; --text-2: #3e3c38; --text-3: #5c5a55; --text-off: #a9a59d;
+  --signal: #254edb; --signal-ink: #ffffff; --signal-text: #254edb; --signal-wash: rgb(37 78 219 / 0.09);
+  --recall: #d97706; --recall-bg: #fef3c7; --recall-text: #92400e;
+  --live: #0d9488; --live-bg: #ccfbf1; --live-text: #115e59;
+  --danger: #9a3412; --ok: #0d9488; --scrim: rgb(20 20 19 / 0.32);
+  --shadow-float: 0 0 0 1px rgb(20 20 19 / 0.06), 0 6px 20px rgb(20 20 19 / 0.07);
+  --shadow-composer: 0 0 0 1px rgb(20 20 19 / 0.08), 0 4px 24px rgb(20 20 19 / 0.05);
+  --shadow-key: inset 0 1px 0 rgb(255 255 255 / 0.22), 0 1px 0 rgb(10 20 60 / 0.3), 0 3px 8px -2px rgb(37 78 219 / 0.45);
 
   --sans: Geist, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --serif: Newsreader, "Iowan Old Style", Georgia, serif;
   --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  --t-greet: 500 40px/1.15 var(--serif); --t-answer: 400 17px/1.65 var(--serif); --t-body: 400 15px/1.6 var(--sans);
+  --t-greet: 500 46px/1.12 var(--serif); --t-answer: 400 17px/1.65 var(--serif); --t-body: 400 15px/1.6 var(--sans);
   --t-ui: 500 14px/1.4 var(--sans); --t-small: 400 13px/1.45 var(--sans); --t-readout: 400 12px/1.4 var(--mono);
 
   --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 20px; --s6: 24px; --s8: 32px; --s10: 40px; --s12: 48px; --s16: 64px;
@@ -21,18 +25,24 @@
   --z-bar: 10; --z-drawer: 20; --z-island: 30; --z-tooltip: 40; --z-banner: 50;
   color-scheme: light;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --canvas: #1a1917; --side-bg: #201f1c; --raised: #262522; --raised-2: #2e2d29; --sunken: #141311;
-    --hairline: rgb(255 250 240 / 0.09); --hairline-strong: rgb(255 250 240 / 0.16);
-    --text-1: #eeeae3; --text-2: #b5afa5; --text-3: #958f85; --text-off: #5e5a53;
-    --signal: #e8667a; --signal-ink: #1a1917; --signal-text: #f07a8c; --signal-wash: rgb(232 102 122 / 0.14);
-    --danger: #f59e62; --ok: #7fc28b; --scrim: rgb(0 0 0 / 0.5);
-    --shadow-float: 0 0 0 1px rgb(255 250 240 / 0.07), 0 8px 24px rgb(0 0 0 / 0.4);
-    --shadow-composer: 0 0 0 1px rgb(255 250 240 / 0.09), 0 4px 24px rgb(0 0 0 / 0.25);
-    --shadow-key: inset 0 1px 0 rgb(255 255 255 / 0.3), 0 1px 0 rgb(0 0 0 / 0.5), 0 4px 10px -2px rgb(0 0 0 / 0.5);
-    color-scheme: dark;
-  }
+/* Semantic tags: the past and the live web. */
+.tag { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px 1px 6px; border-radius: var(--r-pill); font: 500 12px/1.5 var(--sans); white-space: nowrap; }
+.tag svg { width: 12px; height: 12px; }
+.tag.recall { background: var(--recall-bg); color: var(--recall-text); }
+.tag.live { background: var(--live-bg); color: var(--live-text); }
+/* The mark, live: bars draw in from the left, the dot is now. */
+.live-mark .m-bar { transform-box: fill-box; transform-origin: left center; }
+.live-mark .m-dot { transform-box: fill-box; transform-origin: center; fill: var(--signal); }
+html.thinking .live-mark .m-dot { animation: m-pulse 1s var(--ease) infinite; }
+html.thinking .live-mark .m-bar { animation: m-write 1.4s var(--ease) infinite; }
+html.thinking .live-mark .m-bar:nth-child(2) { animation-delay: 0.15s; }
+html.thinking .live-mark .m-bar:nth-child(3) { animation-delay: 0.3s; }
+@keyframes m-pulse { 50% { transform: scale(0.7); opacity: 0.55; } }
+@keyframes m-write { 50% { transform: scaleX(0.72); } }
+@media (hover: hover) and (pointer: fine) {
+  .brand:hover .live-mark .m-bar { transition: transform 0.35s var(--ease); }
+  .brand:hover .live-mark .m-bar:nth-child(1) { transform: scaleX(0.82); }
+  .brand:hover .live-mark .m-bar:nth-child(3) { transform: scaleX(1.5); }
 }
 * { box-sizing: border-box; }
 html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; overflow-x: clip; scrollbar-color: var(--raised-2) transparent;

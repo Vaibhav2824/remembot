@@ -144,7 +144,10 @@ if (M && !calm) {
     M.animate(words, { opacity: [0, 1], y: [14, 0], filter: ['blur(6px)', 'blur(0px)'] }, { delay: M.stagger(0.09), duration: 0.7, ease: [0.2, 0, 0, 1] }),
     M.animate(card, { opacity: [0, 1], y: [18, 0] }, { type: 'spring', stiffness: 180, damping: 24, delay: 0.15 }),
   ]
-  setTimeout(() => intro.forEach((a) => a.complete()), 2000) // the form must never stay invisible, even if a tab throttles animation
+  setTimeout(() => intro.forEach((a) => a.complete()), 2000)
+  const mark = document.querySelector('.brand .live-mark') // the mark draws itself: bars, then the dot
+  M.animate(mark.querySelectorAll('.m-bar'), { scaleX: [0, 1], originX: 0 }, { delay: M.stagger(0.09), type: 'spring', stiffness: 220, damping: 22 })
+  M.animate(mark.querySelector('.m-dot'), { scale: [0, 1] }, { delay: 0.32, type: 'spring', stiffness: 500, damping: 14 }) // the form must never stay invisible, even if a tab throttles animation
 }
 demo()
 

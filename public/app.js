@@ -14,11 +14,34 @@ const tz = -new Date().getTimezoneOffset()
 let busy = null // AbortController while a reply is streaming
 const MAX_CHARS = 2000
 
+// Starters work on day one; the last one appears only once there is a past to ask about.
 const EXAMPLES = [
-  ['Postgres pricing since Tuesday', 'Last Tuesday I asked you about Postgres hosting. Has any pricing changed since then?'],
-  ['What I asked on 3 Nov', 'What did I ask you on 3 November? Is your answer still correct today?'],
-  ['CRM news since Monday', 'On Monday we shortlisted 5 CRM tools for a 20-person sales team. Has any of them changed pricing or shipped something big since?'],
+  ['This week in AI', 'What are the biggest AI announcements this week?'],
+  ['Laptops under $1,000', 'What are the best laptops under $1,000 right now, with current prices?'],
+  ['Markets today', 'How are the major stock markets doing today, and why?'],
 ]
+const RECALL_EXAMPLE = ['What changed since last time?', 'What did I ask you most recently? Is your answer still correct today?']
+const MARK = '<svg class="mark live-mark" viewBox="0 0 256 256" aria-hidden="true"><g fill="currentColor"><rect class="m-bar" x="20" y="24" width="216" height="56" rx="28"/><rect class="m-bar" x="20" y="100" width="168" height="56" rx="28"/><rect class="m-bar" x="20" y="176" width="96" height="56" rx="28"/></g><circle class="m-dot" cx="207" cy="204" r="29"/></svg>'
+let me = null
+
+// A greeting that changes like Claude's: by time of day, by name, and by whether there is a past.
+function greeting() {
+  const h = new Date().getHours(), name = me?.name.trim().split(/\s+/)[0]
+  const part = h < 5 ? 'Up late' : h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'
+  const when = h < 12 ? 'this morning' : h < 17 ? 'this afternoon' : 'tonight'
+  const lines = name
+    ? [`${part}, ${name}`, `What should we look up ${when}, ${name}?`, `What’s on your mind ${when}?`]
+    : [part, `What should we look up ${when}?`]
+  if (threads.length) lines.push('Ask what has changed since last time', `Welcome back${name ? `, ${name}` : ''}`)
+  return lines[Math.floor(Math.random() * lines.length)]
+}
+
+// The mark draws itself: bars from the left, then the dot, now.
+function drawMark(svg) {
+  if (!M || calm || !svg) return
+  animate(svg.querySelectorAll('.m-bar'), { scaleX: [0, 1], originX: 0 }, { delay: M.stagger(0.09), type: 'spring', stiffness: 220, damping: 22 })
+  animate(svg.querySelector('.m-dot'), { scale: [0, 1] }, { delay: 0.32, type: 'spring', stiffness: 500, damping: 14 })
+}
 
 // ---------- helpers ----------
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
@@ -125,14 +148,14 @@ chat.addEventListener('error', (e) => { if (e.target.matches?.('.sources img')) 
 
 function welcome() {
   main.classList.add('empty')
-  chat.innerHTML = `<section class="welcome"><svg class="mark" aria-hidden="true"><use href="#i-mark"/></svg><h2>${'Ask again next week'.split(' ').map((w) => `<span>${w}</span>`).join(' ')}</h2></section>`
-  $('tries').innerHTML = EXAMPLES.map(([tag, q]) => `<li><button type="button" data-q="${esc(q)}" title="${esc(q)}">${esc(tag)}</button></li>`).join('')
+  chat.innerHTML = `<section class="welcome">${MARK}<h2>${esc(greeting()).split(' ').map((w) => `<span>${w}</span>`).join(' ')}</h2></section>`
+  $('tries').innerHTML = (threads.length ? [...EXAMPLES, RECALL_EXAMPLE] : EXAMPLES).map(([tag, q]) => `<li><button type="button" data-q="${esc(q)}" title="${esc(q)}">${esc(tag)}</button></li>`).join('')
   const tries = $('tries').querySelectorAll('button')
   tries.forEach((b) => b.addEventListener('click', () => send(b.dataset.q)))
   tactile(tries)
   scroller.scrollTop = 0
   if (M && !calm) {
-    animate(chat.querySelector('.mark'), { scale: [0.6, 1], rotate: [-12, 0], opacity: [0, 1] }, { type: 'spring', stiffness: 260, damping: 18 })
+    drawMark(chat.querySelector('.mark'))
     animate(chat.querySelectorAll('.welcome h2 span'), { opacity: [0, 1], y: [10, 0], filter: ['blur(6px)', 'blur(0px)'] }, { delay: M.stagger(0.07, { startDelay: 0.08 }), duration: 0.55, ease: [0.2, 0, 0, 1] })
     animate(tries, { opacity: [0, 1], y: [8, 0] }, { delay: M.stagger(0.06, { startDelay: 0.35 }), ...spring })
   }
@@ -300,6 +323,7 @@ async function* stream(path, body, signal) {
 
 function setBusy(controller) {
   busy = controller
+  document.documentElement.classList.toggle('thinking', !!busy) // the mark writes, the composer ring runs
   sendBtn.setAttribute('aria-label', busy ? 'Stop' : 'Send')
   sendBtn.innerHTML = icon(busy ? 'stop' : 'arrow')
   sendBtn.disabled = !busy && !input.value.trim()
@@ -343,7 +367,7 @@ async function send(text) {
         const found = e.windows.filter((w) => w.count)
         did.recalled += found.reduce((n, w) => n + w.count, 0) + (e.related || 0)
         did.missing = !found.length && e.windows.length > 0
-        if (found.length) step('memory', `Remembered ${found.map((w) => `${w.count} from <b>${esc(w.label)}</b>`).join(', ')}`)
+        if (found.length) step('memory', `Remembered ${found.map((w) => `${w.count} from <span class="tag recall">${esc(w.label)}</span>`).join(', ')}`)
         else if (e.windows.length) step('memory', `Nothing remembered for ${e.windows.map((w) => `<b>${esc(w.label)}</b>`).join(' or ')}`)
         if (e.related) step('memory', `Remembered ${e.related} related exchange${e.related > 1 ? 's' : ''}`)
         status('Thinking')
@@ -433,7 +457,8 @@ $('delete-form').addEventListener('submit', async (e) => {
     animate(dialog, { x: [0, -8, 7, -4, 3, 0] }, { duration: 0.35 })
   }
 })
-api('/api/auth/me').then((me) => {
+const signedIn = api('/api/auth/me').then((user) => {
+  me = user
   $('avatar').textContent = (me.name.trim()[0] || '?').toUpperCase()
   $('who-name').textContent = me.name
   $('who-email').textContent = me.email
@@ -501,9 +526,9 @@ $('days').addEventListener('keydown', (e) => {
   jumpTo(has[Math.max(0, Math.min(last, next))])
 })
 
-const tick = () => { $('clock').textContent = `${dayOf(Date.now())}, ${timeOf(Date.now())}` }
-tick(); setInterval(tick, 30_000)
 tactile(document.querySelectorAll('#send, .side-new, .icon-btn, .key'))
+drawMark(document.querySelector('.brand .mark'))
 const opening = new URLSearchParams(location.search).get('c')
-if (opening) { main.classList.remove('empty'); openChat(opening, false) } else welcome()
-loadChats()
+if (opening) { main.classList.remove('empty'); openChat(opening, false) }
+// The greeting needs the name and whether there is a past, so it waits for both (or their failure).
+Promise.allSettled([signedIn, loadChats()]).then(() => { if (!opening) welcome() })
