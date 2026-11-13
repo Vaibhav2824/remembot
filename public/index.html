@@ -219,7 +219,7 @@
   .msg.agent .body.cursor:empty { display: block; }
 
   /* Composer */
-  .dock { position: relative; padding: 0 var(--s6) max(var(--s4), env(safe-area-inset-bottom)); background: var(--canvas); }
+  .dock { position: relative; padding: 0 var(--s6) max(var(--s4), env(safe-area-inset-bottom)); } /* no fill: the ambient light runs behind the composer unbroken */
   .composer { max-width: var(--col); margin-inline: auto; display: flex; gap: var(--s2); align-items: flex-end; padding: var(--s3) var(--s3) var(--s3) var(--s5);
     border-radius: var(--r-xl); background: var(--raised); box-shadow: var(--shadow-composer); transition: box-shadow var(--d-quick) var(--ease); }
   .composer:focus-within { box-shadow: 0 0 0 1px var(--signal-text), var(--shadow-composer); }
