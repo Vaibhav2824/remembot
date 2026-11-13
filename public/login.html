@@ -28,23 +28,35 @@
 <link rel="stylesheet" href="/base.css">
 <style>
   body { min-height: 100dvh; display: flex; flex-direction: column; }
-  .top { display: flex; align-items: center; justify-content: space-between; width: min(1280px, 100%); margin: 0 auto; padding: var(--s4) clamp(var(--s4), 2vw, var(--s6)); }
-  .brand { display: inline-flex; align-items: center; gap: var(--s2); text-decoration: none; font: 600 20px/1 var(--serif); letter-spacing: -0.01em; }
+  /* After Dima Kazarov's "Wafer" sign-in (Collect UI): a framed public-domain painting, a light halftone
+     over its sky, one frosted card in the middle with the mark in a tile. */
+  .scene { position: relative; display: flex; flex-direction: column; min-height: calc(100dvh - 20px); margin: 10px; border-radius: 24px; overflow: hidden;
+    background: #b8b19f url(/turner.webp) center 62% / cover; box-shadow: inset 0 0 0 1px rgb(20 20 19 / 0.12); }
+  .scene::before { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.55; background: radial-gradient(rgb(255 255 255 / 0.7) 0.9px, transparent 1.3px) 0 0 / 5px 5px;
+    -webkit-mask-image: radial-gradient(60% 50% at 20% 20%, #000, transparent 72%); mask-image: radial-gradient(60% 50% at 20% 20%, #000, transparent 72%); }
+  :root[data-theme="dark"] .scene::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: rgb(12 12 11 / 0.55); }
+  .scene > * { position: relative; z-index: 1; }
+  .top { display: flex; align-items: center; justify-content: space-between; padding: var(--s4) clamp(var(--s4), 2.5vw, var(--s8)); }
+  .brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; }
   .top-actions { display: flex; align-items: center; gap: var(--s2); }
-  .top a.cta { font: var(--t-ui); color: var(--text-2); text-decoration: none; padding: var(--s2) var(--s3); border-radius: var(--r-sm); }
-  @media (hover: hover) and (pointer: fine) { .top a.cta:hover { background: var(--raised-2); color: var(--text-1); } }
+  .top a.cta { font: var(--t-ui); color: var(--text-1); text-decoration: none; padding: var(--s2) var(--s3); border-radius: var(--r-pill);
+    background: color-mix(in srgb, var(--canvas) 55%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  .top .theme-btn { border-radius: var(--r-pill); background: color-mix(in srgb, var(--canvas) 55%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: var(--text-1); }
+  @media (hover: hover) and (pointer: fine) { .top a.cta:hover, .top .theme-btn:hover { background: var(--canvas); } }
+  .hero { flex: 1; display: grid; place-items: center; padding: var(--s6) var(--s4) var(--s16); }
+  .card { width: min(400px, 100%); padding: var(--s8) var(--s6) var(--s6); border-radius: 24px; background: color-mix(in srgb, var(--canvas) 82%, transparent);
+    backdrop-filter: blur(20px) saturate(1.2); -webkit-backdrop-filter: blur(20px) saturate(1.2); box-shadow: 0 0 0 1px var(--hairline-strong), 0 30px 70px -24px rgb(20 20 19 / 0.45); }
+  .card .mark-tile { margin-bottom: var(--s4); }
+  .credit { position: absolute; left: 0; right: 0; bottom: var(--s3); margin: 0; text-align: center; font: var(--t-readout); color: rgb(20 20 19 / 0.6); }
+  :root[data-theme="dark"] .credit { color: rgb(250 248 245 / 0.55); }
 
-  /* Split layout: a parchment panel with the story and the product, the form on the plain page. */
-  .stage { flex: 1; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: clamp(var(--s6), 4vw, var(--s16)); align-items: stretch;
-    width: min(1280px, 100%); margin: 0 auto; padding: 0 clamp(var(--s4), 2vw, var(--s6)) var(--s6); }
-  .story { position: relative; display: flex; flex-direction: column; min-height: min(760px, calc(100dvh - 96px)); overflow: hidden;
+  /* Below the fold: the promise and the product, on parchment. */
+  .story { position: relative; display: flex; flex-direction: column; width: min(1280px, calc(100% - 20px)); min-height: 640px; margin: var(--s16) auto 0; overflow: hidden;
     padding: clamp(var(--s8), 5vw, var(--s16)) clamp(var(--s6), 5vw, var(--s16)) 0; border-radius: 28px; background: var(--side-bg); box-shadow: inset 0 0 0 1px var(--hairline); }
-  .story h1 { margin: 0; max-width: 12ch; font: 500 clamp(40px, 5.6vw, 72px)/1.02 var(--serif); letter-spacing: -0.03em; text-wrap: balance; }
-  /* Collect UI's inline badge: the promise sits in the headline as the product's own recall tag. */
+  .story h1 { margin: 0; max-width: 16ch; font: 500 clamp(40px, 5.6vw, 72px)/1.02 var(--serif); letter-spacing: -0.03em; text-wrap: balance; }
   .h-chip { display: inline-flex; align-items: center; gap: 0.18em; padding: 0.02em 0.28em 0.06em 0.2em; border-radius: 0.24em; background: var(--recall-bg); color: var(--recall-text); white-space: nowrap; }
   .h-chip svg { width: 0.62em; height: 0.62em; stroke-width: 2.4; }
-  .lede { margin: var(--s5) 0 0; max-width: 44ch; font: 400 17px/1.6 var(--sans); color: var(--text-2); text-wrap: pretty; }
-  .card { align-self: center; justify-self: center; width: min(400px, 100%); padding: var(--s8) 0; }
+  .lede { margin: var(--s5) 0 0; max-width: 52ch; font: 400 17px/1.6 var(--sans); color: var(--text-2); text-wrap: pretty; }
 
   /* The demo: a faux Remembot window playing the product's one story (Stageshow rules: one hero,
      one satellite straddling its edge, real words only on the subject, bars for the rest, the
@@ -124,10 +136,11 @@
   footer a:hover, footer button:hover { color: var(--text-1); text-decoration: underline; }
 
   @media (max-width: 880px) {
-    .stage { grid-template-columns: 1fr; gap: 0; }
-    .story { min-height: 0; padding-bottom: var(--s8); border-radius: 20px; }
+    .scene { margin: 6px; border-radius: 18px; min-height: calc(100dvh - 12px); }
+    .card { padding: var(--s6) var(--s5) var(--s5); }
+    .top a.cta { display: none; }
+    .story { min-height: 0; margin-top: var(--s10); padding-bottom: var(--s8); border-radius: 20px; }
     .demo { display: none; }
-    .card { padding-top: var(--s8); }
   }
 </style>
 <script src="/boot.js"></script>
@@ -138,13 +151,50 @@
   <symbol id="i-memory" viewBox="0 0 24 24"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></symbol>
   <symbol id="i-mark" viewBox="0 0 256 256"><path fill="currentColor" d="M48 24H208A28 28 0 0 1 208 80H48A28 28 0 0 1 48 24Z M48 100H160A28 28 0 0 1 160 156H48A28 28 0 0 1 48 100Z M48 176H88A28 28 0 0 1 88 232H48A28 28 0 0 1 48 176Z"/><path fill="var(--signal)" d="M178 204A29 29 0 1 1 236 204A29 29 0 1 1 178 204Z"/></symbol>
 </svg>
-<header class="top">
-  <a class="brand" href="/login" aria-label="Remembot home"><svg class="mark live-mark" viewBox="0 0 256 256" aria-hidden="true"><g fill="currentColor"><rect class="m-bar" x="20" y="24" width="216" height="56" rx="28"/><rect class="m-bar" x="20" y="100" width="168" height="56" rx="28"/><rect class="m-bar" x="20" y="176" width="96" height="56" rx="28"/></g><circle class="m-dot" cx="207" cy="204" r="29"/></svg>Remembot</a>
-  <div class="top-actions"><a class="cta" href="#faq">How it works</a><button class="icon-btn theme-btn" type="button" role="switch" aria-checked="false" aria-label="Switch to dark mode" title="Light or dark" data-theme-toggle><svg class="i sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg><svg class="i moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></button></div>
-</header>
 
-<main class="stage" id="main">
-  <section class="story" aria-labelledby="hero">
+<div class="scene">
+  <header class="top">
+  <a class="brand" href="/login" aria-label="Remembot home"><span class="mark-tile"><svg class="mark live-mark" viewBox="0 0 256 256" aria-hidden="true"><g fill="currentColor"><rect class="m-bar" x="20" y="24" width="216" height="56" rx="28"/><rect class="m-bar" x="20" y="100" width="168" height="56" rx="28"/><rect class="m-bar" x="20" y="176" width="96" height="56" rx="28"/></g><circle class="m-dot" cx="207" cy="204" r="29"/></svg></span>Remembot</a>
+  <div class="top-actions"><a class="cta" href="#faq">How it works</a><button class="icon-btn theme-btn" type="button" role="switch" aria-checked="false" aria-label="Switch to dark mode" title="Light or dark" data-theme-toggle><svg class="i sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg><svg class="i moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></button></div>
+  </header>
+  <main class="hero" id="main">
+    <section class="card" id="card" aria-labelledby="form-title">
+      <span class="mark-tile lg"><svg class="mark live-mark" viewBox="0 0 256 256" aria-hidden="true"><g fill="currentColor"><rect class="m-bar" x="20" y="24" width="216" height="56" rx="28"/><rect class="m-bar" x="20" y="100" width="168" height="56" rx="28"/><rect class="m-bar" x="20" y="176" width="96" height="56" rx="28"/></g><circle class="m-dot" cx="207" cy="204" r="29"/></svg></span>
+      <h2 id="form-title">Welcome back</h2>
+      <p class="sub" id="form-sub">Sign in to pick up your saved chats.</p>
+      <div class="tabs" role="tablist" aria-label="Sign in or create an account" id="tabs" data-mode="login">
+        <span class="ind" aria-hidden="true"></span>
+        <button type="button" role="tab" id="tab-login" aria-selected="true" aria-controls="auth">Sign in</button>
+        <button type="button" role="tab" id="tab-signup" aria-selected="false" aria-controls="auth" tabindex="-1">Create account</button>
+      </div>
+      <form id="auth" role="tabpanel" aria-labelledby="form-title" novalidate>
+        <div class="field" id="name-field" hidden>
+          <label for="name">Name</label>
+          <div class="well"><input id="name" name="name" autocomplete="name" maxlength="60" aria-describedby="name-hint"></div>
+          <span class="hint" id="name-hint"></span>
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <div class="well"><input id="email" name="email" type="email" inputmode="email" autocomplete="email" maxlength="254" required aria-describedby="email-hint" autocapitalize="off" spellcheck="false"></div>
+          <span class="hint" id="email-hint"></span>
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="well"><input id="password" name="password" type="password" autocomplete="current-password" maxlength="128" required aria-describedby="password-hint"><button type="button" class="peek" id="peek" aria-pressed="false" aria-controls="password">Show</button></div>
+          <div class="meter" id="meter" hidden aria-hidden="true"><b></b><b></b><b></b><b></b></div>
+          <span class="hint" id="password-hint"></span>
+        </div>
+        <div class="hp" aria-hidden="true"><label for="website">Leave this empty</label><input id="website" name="website" tabindex="-1" autocomplete="off"></div>
+        <p id="form-error" class="hint error" role="alert"></p>
+        <button class="key wide" type="submit" id="submit">Sign in</button>
+        <p class="fine" id="fine" hidden>By creating an account you agree to the <a href="/terms">Terms</a> and the <a href="/privacy">Privacy Policy</a>.</p>
+      </form>
+    </section>
+  </main>
+  <p class="credit">J. M. W. Turner, Fishing Boats Becalmed off le Havre, c. 1832</p>
+</div>
+
+<section class="story" aria-labelledby="hero">
     <h1 id="hero">Ask anything. Ask again <span class="h-chip"><svg class="i" aria-hidden="true"><use href="#i-memory"/></svg>next week.</span></h1>
     <p class="lede">Remembot answers from the live web, with sources. It remembers every question and when you asked it, so later you can ask what changed.</p>
     <figure class="demo" id="demo" aria-label="Remembot recalling a chat from Tuesday, checking the web, and answering with sources">
@@ -170,41 +220,7 @@
         <div class="sat" data-beat="recall"><time><i></i>Tue 10 Nov, 15:00</time><p>Compare managed Postgres hosting for a small startup</p></div>
       </div>
     </figure>
-  </section>
-
-  <section class="card" id="card" aria-labelledby="form-title">
-    <div class="tabs" role="tablist" aria-label="Sign in or create an account" id="tabs" data-mode="login">
-      <span class="ind" aria-hidden="true"></span>
-      <button type="button" role="tab" id="tab-login" aria-selected="true" aria-controls="auth">Sign in</button>
-      <button type="button" role="tab" id="tab-signup" aria-selected="false" aria-controls="auth" tabindex="-1">Create account</button>
-    </div>
-    <h2 id="form-title">Welcome back</h2>
-    <p class="sub" id="form-sub">Sign in to pick up your saved chats.</p>
-    <form id="auth" role="tabpanel" aria-labelledby="form-title" novalidate>
-      <div class="field" id="name-field" hidden>
-        <label for="name">Name</label>
-        <div class="well"><input id="name" name="name" autocomplete="name" maxlength="60" aria-describedby="name-hint"></div>
-        <span class="hint" id="name-hint"></span>
-      </div>
-      <div class="field">
-        <label for="email">Email</label>
-        <div class="well"><input id="email" name="email" type="email" inputmode="email" autocomplete="email" maxlength="254" required aria-describedby="email-hint" autocapitalize="off" spellcheck="false"></div>
-        <span class="hint" id="email-hint"></span>
-      </div>
-      <div class="field">
-        <label for="password">Password</label>
-        <div class="well"><input id="password" name="password" type="password" autocomplete="current-password" maxlength="128" required aria-describedby="password-hint"><button type="button" class="peek" id="peek" aria-pressed="false" aria-controls="password">Show</button></div>
-        <div class="meter" id="meter" hidden aria-hidden="true"><b></b><b></b><b></b><b></b></div>
-        <span class="hint" id="password-hint"></span>
-      </div>
-      <div class="hp" aria-hidden="true"><label for="website">Leave this empty</label><input id="website" name="website" tabindex="-1" autocomplete="off"></div>
-      <p id="form-error" class="hint error" role="alert"></p>
-      <button class="key wide" type="submit" id="submit">Sign in</button>
-      <p class="fine" id="fine" hidden>By creating an account you agree to the <a href="/terms">Terms</a> and the <a href="/privacy">Privacy Policy</a>.</p>
-    </form>
-  </section>
-
-</main>
+</section>
 
 <section class="faq" id="faq" aria-labelledby="faq-title">
   <h2 id="faq-title">Questions</h2>

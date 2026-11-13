@@ -179,7 +179,7 @@ function welcome() {
   const returning = threads.length > 0
   const words = (s) => s.split(' ').map((w) => `<span>${esc(w)}</span>`).join(' ')
   chat.innerHTML = `<section class="welcome">
-    <div class="greet">${MARK}<h2>${words(returning ? 'Welcome back.' : 'Create your first memory.')}</h2></div>
+    <div class="greet"><span class="mark-tile lg">${MARK}</span><h2>${words(returning ? 'Welcome back.' : 'Create your first memory.')}</h2></div>
     <p class="sub">${returning ? 'Ask what has changed since last time' : 'Ask something with moving parts today, so you can see what’s changed next week.'}</p>
     <ul class="cards" id="cards" aria-label="${returning ? 'Pick up a saved chat' : 'Try one'}">${returning
       ? '<li><div class="card skel" aria-hidden="true"><span class="sk" style="width:45%"></span><span class="sk" style="width:85%"></span><span class="sk" style="width:65%"></span></div></li>'.repeat(Math.min(3, threads.length))
@@ -602,7 +602,6 @@ $('days').addEventListener('keydown', (e) => {
 
 tactile(document.querySelectorAll('#send, .side-new, .icon-btn, .key'))
 magnetic(sendBtn)
-drawMark(document.querySelector('.brand .mark'))
 const opening = new URLSearchParams(location.search).get('c')
 if (opening) { main.classList.remove('empty'); openChat(opening, false) }
 // The greeting needs the name and whether there is a past, so it waits for both (or their failure).

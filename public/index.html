@@ -31,7 +31,7 @@
   aside { background: var(--side-bg); border-right: 1px solid var(--hairline); display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
   .side-top { display: flex; align-items: center; gap: var(--s2); padding: var(--s3) var(--s3) var(--s2) var(--s4); min-height: 60px; }
   .brand { display: flex; align-items: center; gap: var(--s2); min-width: 0; }
-  .wordmark { font: 600 20px/1 var(--serif); letter-spacing: -0.01em; white-space: nowrap; }
+  .wordmark { white-space: nowrap; }
   .side-top .theme-btn { margin-left: auto; }
   .panel { display: flex; flex-direction: column; min-height: 0; flex: 1; width: var(--side); }
   .side-new { display: flex; align-items: center; gap: var(--s2); margin: var(--s1) var(--s3) var(--s3); padding: var(--s2) var(--s3); border: 0; border-radius: var(--r-sm);
@@ -130,7 +130,7 @@
   main.empty .bar { position: absolute; inset: 0 0 auto; }
   main.empty #chat { flex: 0 0 auto; overflow: visible; padding-bottom: var(--s6); }
   .welcome { display: flex; align-items: center; justify-content: center; gap: var(--s3); }
-  .welcome .mark { width: 40px; height: 40px; }
+  .welcome .mark-tile { width: 48px; height: 48px; border-radius: 14px; }
   .welcome h2 span { display: inline-block; }
   .welcome h2 { margin: 0; font: var(--t-greet); letter-spacing: -0.015em; text-wrap: balance; text-align: center; }
   /* Welcome: a greeting, one line under it, then three cards above the composer. */
@@ -255,7 +255,7 @@
     #timeline { padding-bottom: max(var(--s4), env(safe-area-inset-bottom, 0px)); }
     main.empty { padding-bottom: 10vh; }
     .welcome h2 { font-size: 32px; }
-    .welcome .mark { width: 30px; height: 30px; }
+    .welcome .mark-tile { width: 38px; height: 38px; border-radius: 11px; }
   }
   @media (pointer: coarse) { #input { font-size: 16px; } }
 </style>
@@ -283,7 +283,7 @@
 </svg>
 <aside id="memory" aria-label="Memory" tabindex="-1">
   <div class="side-top">
-    <div class="brand"><svg class="mark live-mark" viewBox="0 0 256 256" aria-hidden="true"><g fill="currentColor"><rect class="m-bar" x="20" y="24" width="216" height="56" rx="28"/><rect class="m-bar" x="20" y="100" width="168" height="56" rx="28"/><rect class="m-bar" x="20" y="176" width="96" height="56" rx="28"/></g><circle class="m-dot" cx="207" cy="204" r="29"/></svg><span class="wordmark">Remembot</span></div>
+    <div class="brand"><span class="mark-tile"><svg class="mark live-mark" viewBox="0 0 256 256" aria-hidden="true"><g fill="currentColor"><rect class="m-bar" x="20" y="24" width="216" height="56" rx="28"/><rect class="m-bar" x="20" y="100" width="168" height="56" rx="28"/><rect class="m-bar" x="20" y="176" width="96" height="56" rx="28"/></g><circle class="m-dot" cx="207" cy="204" r="29"/></svg></span><span class="wordmark">Remembot</span></div>
     <button class="icon-btn theme-btn" type="button" role="switch" aria-checked="false" aria-label="Switch to dark mode" title="Light or dark" data-theme-toggle><svg class="i sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg><svg class="i moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></button>
     <button class="icon-btn" id="collapse" type="button" aria-controls="memory" aria-expanded="true" aria-label="Collapse sidebar" title="Collapse sidebar (Ctrl+B)"><svg class="i" aria-hidden="true"><use href="#i-panel"/></svg></button>
   </div>

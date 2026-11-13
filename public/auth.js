@@ -139,9 +139,6 @@ if (M && !calm) {
 // ---------- entrance ----------
 setMode(location.hash === '#signup' ? 'signup' : 'login')
 if (M && !calm) {
-  const mark = document.querySelector('.brand .live-mark') // the mark draws itself: bars, then the dot
-  M.animate(mark.querySelectorAll('.m-bar'), { scaleX: [0, 1], originX: 0 }, { delay: M.stagger(0.09), type: 'spring', stiffness: 220, damping: 22 })
-  M.animate(mark.querySelector('.m-dot'), { scale: [0, 1] }, { delay: 0.32, type: 'spring', stiffness: 500, damping: 14 })
 }
 demo()
 
