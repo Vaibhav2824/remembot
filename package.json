@@ -4,19 +4,23 @@
   "description": "A chat agent with one tool (web search) that remembers what you asked and when.",
   "type": "module",
   "private": true,
-  "engines": { "node": ">=22.18" },
+  "engines": {
+    "node": ">=22.18"
+  },
   "scripts": {
     "dev": "node --env-file-if-exists=.env --watch src/node.ts",
     "start": "node --env-file-if-exists=.env src/node.ts",
     "test": "node --test",
     "typecheck": "tsc --noEmit",
-    "deploy": "npx wrangler@4 deploy"
+    "deploy": "npx wrangler@4 deploy",
+    "vendor": "node -e \"require('fs').copyFileSync('node_modules/motion/dist/motion.js','public/vendor/motion.js')\""
   },
   "dependencies": {
     "chrono-node": "^2.9.0"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
+    "motion": "^12.43.0",
     "typescript": "^5.9.0"
   }
 }

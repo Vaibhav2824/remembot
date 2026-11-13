@@ -15,32 +15,34 @@ cp .env.example .env      # then fill in the two keys
 npm run dev               # http://localhost:3000
 ```
 
-Two keys, both with free tiers:
+Two keys:
 
 | Key | For | Get it |
 | --- | --- | --- |
-| `LLM_API_KEY` | the model (Groq, `openai/gpt-oss-120b`) | https://console.groq.com/keys |
+| `LLM_API_KEY` | the model (OpenAI, `gpt-6-luna`) | https://platform.openai.com/api-keys |
 | `FIRECRAWL_API_KEY` | web search | https://www.firecrawl.dev/app/api-keys |
 
-Any OpenAI-compatible endpoint works: set `LLM_BASE_URL` and `LLM_MODEL` in `.env`.
+Any OpenAI-compatible endpoint works: set `LLM_BASE_URL`, `LLM_MODEL` and `LLM_REASONING_EFFORT` in `.env`.
 
-**Free-tier limits.** Groq's free tier allows 8,000 tokens a minute on this model, which is about one searched answer a minute, and the Firecrawl plan I tested on allowed about 10 searches a minute. One question always fits. Ask several quickly and the agent waits for the model (the UI says "retrying in N s") or reports a search as failed and marks that fact unverified. Paid keys remove both.
+**Cost.** `gpt-6-luna` is OpenAI's cheapest model ($0.10 per million input tokens, $0.50 per million output). The heaviest turn (6 searches, 4 model calls, about 30k tokens in) costs about $0.006, so 25 questions cost roughly $0.15. It is called with `reasoning_effort: none`, the only setting at which it can call tools over Chat Completions. Spend is capped per account (`MAX_TURNS_PER_USER_PER_DAY`, 50 on the deployment) and in total (`MAX_TURNS_PER_DAY`). Firecrawl searches are billed separately in Firecrawl credits.
 
 ## Using it
 
+- **Accounts.** `/` sends you to `/login` until you sign in. Create an account with a name, email and password (8+ characters); the password is stored as a salted PBKDF2-SHA256 hash and the session is an HttpOnly cookie. Sign-in locks for 15 minutes after 10 wrong passwords.
+- **Saved chats.** Every chat is saved to your account and listed in the sidebar, newest activity first, grouped by day. Click one to reopen and continue it; its URL (`/?c=<id>`) can be bookmarked. Hover a chat and press the trash icon twice to delete it. The account menu (bottom left) has sign-out and **Delete account**, which erases everything after asking for your password.
 - **Each answer leads.** Above it, one quiet line says what the agent did ("Recalled 3 exchanges, searched 3 times"); click it to see the memory windows and the exact queries. Citations like `1` link to the source, show its title on hover or focus, and the cited sources sit under the answer.
 - **The readout line** under each answer gives the time, how long the first word and the whole answer took, and a six-cell meter of the searches used out of the 6 a message allows ("Answered from memory" when none).
-- **Memory is the left panel.** The 14-day bars show how many questions you asked each day: drag across them, or focus them and use the arrow keys, to jump the timeline to that day. As you scroll the timeline, the bar for the day in view lights up and day headings stay pinned. Open a timeline row to read the stored answer and its sources.
+- **The 14-day bars** above the chat list show how many chats were active each day: drag across them, or focus them and use the arrow keys, to jump the list to that day. Memory itself spans every chat of your account.
 - **Collapse the panel** to a slim rail of icons with the button beside the name, or **Ctrl+B** (**Cmd+B** on a Mac); the rail brings it back. The choice is remembered. On a phone the panel is a drawer behind the menu button (Escape or a tap outside closes it).
 - **A streaming answer is followed while you are at the bottom;** scroll up to read and it stops, showing **Latest**. Each finished answer has **Copy answer**.
-- **The look** is calm and quiet: warm paper (or a warm dark theme, following your system), a serif greeting with the composer centred on an empty chat, answers set in a reading serif, and one accent. Motion is kept to short colour fades. The brand kit (logo, colours, type, usage) is in [`brand/`](brand/README.md).
+- **The look** is calm and quiet: warm paper (or a warm dark theme, following your system), a serif greeting with the composer centred on an empty chat, answers set in a reading serif, and one accent. Motion ([Motion](https://motion.dev), vendored in `public/vendor/`) is springy and short: keys that sink when pressed, messages that settle in, a word-by-word greeting, a stack of dated questions on the sign-in page. All of it is off under "reduce motion". The brand kit (logo, colours, type, usage) is in [`brand/`](brand/README.md).
 
 ## Try the questions from the brief
 
-A new install has no past. To give it one, replay three real questions with the clock set to 3 November, last Monday and last Tuesday (live searches, real answers, backdated timestamps). There is no button for this in the UI; call the endpoint with the id your browser uses (run `localStorage.getItem('remembot-user')` in the console) and reload:
+A new install has no past. To give it one, replay three real questions with the clock set to 3 November, last Monday and last Tuesday (live searches, real answers, backdated timestamps). There is no button for this in the UI; while signed in, run this in the browser console, then reload:
 
-```bash
-curl -N localhost:3000/api/demo -H 'content-type: application/json' -d '{"userId": "<your id>", "tz": 330}'
+```js
+await (await fetch('/api/demo', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ tz: -new Date().getTimezoneOffset() }) })).text()
 ```
 
 It takes about half a minute and uses ten searches, so on free keys give it a minute before asking:
@@ -53,22 +55,20 @@ Also worth trying: ask about a day with no history ("what did I ask last Friday?
 
 ### Replaying your own dated conversation
 
-With `ALLOW_TIME_TRAVEL=1` (the default in `.env.example`), a request can carry its own clock:
+With `ALLOW_TIME_TRAVEL=1` (the default in `.env.example`), a request can carry its own clock. Signed in, from the browser console:
 
-```bash
-curl -N localhost:3000/api/chat -H 'content-type: application/json' -d '{
-  "userId": "reviewer-01", "threadId": "thread-01", "tz": 330,
-  "now": "2026-11-03T10:00:00+05:30",
-  "message": "Which managed Postgres host is cheapest for a side project?"
-}'
+```js
+await (await fetch('/api/chat', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({
+  threadId: 'thread-01', tz: 330, now: '2026-11-03T10:00:00+05:30',
+  message: 'Which managed Postgres host is cheapest for a side project?' }) })).text()
 ```
 
-Send later messages with a later `now` (or none) and the agent treats the first one as having happened on 3 November. To see that user's memory in the UI, run `localStorage.setItem('remembot-user', 'reviewer-01')` in the browser console and reload.
+Send later messages with a later `now` (or none) and the agent treats the first one as having happened on 3 November.
 
 ## Tests
 
 ```bash
-npm test          # 36 tests, offline: time phrases, recall, the agent loop against a scripted model, the HTTP API
+npm test          # 42 tests, offline: time phrases, recall, the agent loop, accounts, sessions, rate limits, CSRF, saved chats
 npm run typecheck
 ```
 
@@ -82,19 +82,25 @@ npm run typecheck
 | `src/prompt.ts` | The rules and the per-message context the model sees |
 | `src/search.ts` | The one tool: web search |
 | `src/llm.ts` | Streaming chat completions client |
-| `src/app.ts` | HTTP API as a `Request -> Response` handler |
+| `src/app.ts` | HTTP API as a `Request -> Response` handler, sign-in redirects, security headers |
+| `src/auth.ts` | Password hashing, sessions, rate limiting (Web Crypto, runs on both runtimes) |
 | `src/node.ts`, `src/sqlite.ts` | Node entry point and node:sqlite adapter |
 | `src/worker.ts` | Cloudflare Workers entry point and D1 adapter |
 | `src/demo.ts` | Demo memory replay |
-| `public/index.html` | The UI: one file of HTML, CSS and JS, no framework, no build |
+| `public/index.html`, `public/app.js` | The chat UI: no framework, no build |
+| `public/login.html`, `public/auth.js` | Sign in and create account, with the landing copy and FAQ |
+| `public/base.css` | Shared tokens and components (keys, fields, consent banner) |
+| `public/consent.js` | Cookie consent; loads Cloudflare Web Analytics only after "Accept all" (paste your token at the top) |
+| `public/privacy.html`, `terms.html`, `404.html` | Legal pages and the not-found page |
+| `public/robots.txt`, `sitemap.xml`, `og.png` | Crawling and the social preview image |
 | `brand/` | Logo (Strata), lockups, icon set, colours, type and usage guide |
-| `schema.sql` | The one table and its search index |
+| `schema.sql` | Turns and their search index; users, sessions, sign-in events |
 
 ## Deploy to Cloudflare (optional)
 
 ```bash
-npx wrangler d1 create remembot                       # put the printed id in wrangler.jsonc
-npx wrangler d1 execute remembot --remote --file schema.sql
+npx wrangler d1 create asof                           # put the printed id in wrangler.jsonc
+npx wrangler d1 execute asof --remote --file schema.sql   # again after every schema.sql change
 npx wrangler secret put LLM_API_KEY
 npx wrangler secret put FIRECRAWL_API_KEY
 npm run deploy
