@@ -15,20 +15,28 @@ cp .env.example .env      # then fill in the two keys
 npm run dev               # http://localhost:3000
 ```
 
-Two keys:
+Keys:
 
 | Key | For | Get it |
 | --- | --- | --- |
-| `LLM_API_KEY` | the model (OpenAI, `gpt-6-luna`) | https://platform.openai.com/api-keys |
+| `LLM_API_KEY` | the primary model (Groq, `openai/gpt-oss-120b`; the free tier works) | https://console.groq.com/keys |
+| `FALLBACK_LLM_API_KEY` | optional backup (OpenAI, `gpt-6-luna`) | https://platform.openai.com/api-keys |
 | `FIRECRAWL_API_KEY` | web search | https://www.firecrawl.dev/app/api-keys |
 
-Any OpenAI-compatible endpoint works: set `LLM_BASE_URL`, `LLM_MODEL` and `LLM_REASONING_EFFORT` in `.env`.
+Any OpenAI-compatible endpoint works for either: set `LLM_BASE_URL`, `LLM_MODEL` and `LLM_REASONING_EFFORT` (or the `FALLBACK_LLM_*` versions) in `.env`.
 
-**Cost.** `gpt-6-luna` is OpenAI's cheapest model ($0.10 per million input tokens, $0.50 per million output). The heaviest turn (6 searches, 4 model calls, about 30k tokens in) costs about $0.006, so 25 questions cost roughly $0.15. It is called with `reasoning_effort: none`, the only setting at which it can call tools over Chat Completions. Spend is capped per account (`MAX_TURNS_PER_USER_PER_DAY`, 50 on the deployment) and in total (`MAX_TURNS_PER_DAY`). Firecrawl searches are billed separately in Firecrawl credits.
+**Speed and cost.** The first word arrives in about 1.5 to 2.5 s, search included:
+- **Search starts immediately.** The question is searched while memory is recalled, so most answers take one model call.
+- **Search skips the slow extras.** It runs without Firecrawl's highlights and domain-tool lookups, which tripled its latency.
+- **The model is fast.** gpt-oss-120b on Groq streams its first token in about 0.5 s.
+
+On Groq's free tier the model costs nothing. That tier allows 8,000 tokens a minute, about two answers a minute across all users. When Groq is rate-limited or down, the turn goes straight to OpenAI's `gpt-6-luna` on the fast tier: about $0.012 for a heavy turn, $0.10 / $0.50 per million tokens doubled. Groq's paid Developer plan raises the limit to 250k tokens a minute at $0.15 / $0.60. Spend is capped per account (`MAX_TURNS_PER_USER_PER_DAY`, 50 on the deployment) and in total (`MAX_TURNS_PER_DAY`). Firecrawl searches are billed in Firecrawl credits.
 
 ## Using it
 
 - **Accounts.** `/` sends you to `/login` until you sign in. Create an account with a name, email and password (8+ characters); the password is stored as a salted PBKDF2-SHA256 hash and the session is an HttpOnly cookie. Sign-in locks for 15 minutes after 10 wrong passwords.
+- **Welcome.** A new account sees "Create your first memory" with three starter questions that have moving parts (prices, events, rumours). A returning user sees "Welcome back" with a card per recent chat. Each card shows when it was saved, a short topic, and a "what has changed since?" question the model writes once per chat and caches. A card reopens that chat and asks its question there.
+- **Light and dark.** The sun/moon switch beside the sidebar's collapse button (and on the sign-in page) changes theme with a circle that grows from the switch. The choice is remembered.
 - **Saved chats.** Every chat is saved to your account and listed in the sidebar, newest activity first, grouped by day. Click one to reopen and continue it; its URL (`/?c=<id>`) can be bookmarked. Hover a chat and press the trash icon twice to delete it. The account menu (bottom left) has sign-out and **Delete account**, which erases everything after asking for your password.
 - **Each answer leads.** Above it, one quiet line says what the agent did ("Recalled 3 exchanges, searched 3 times"); click it to see the memory windows and the exact queries. Citations like `1` link to the source, show its title on hover or focus, and the cited sources sit under the answer.
 - **The readout line** under each answer gives the time, how long the first word and the whole answer took, and a six-cell meter of the searches used out of the 6 a message allows ("Answered from memory" when none).
@@ -68,7 +76,7 @@ Send later messages with a later `now` (or none) and the agent treats the first 
 ## Tests
 
 ```bash
-npm test          # 42 tests, offline: time phrases, recall, the agent loop, accounts, sessions, rate limits, CSRF, saved chats
+npm test          # 46 tests, offline: time phrases, recall, the agent loop, accounts, sessions, rate limits, CSRF, saved chats
 npm run typecheck
 ```
 

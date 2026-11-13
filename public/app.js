@@ -15,25 +15,47 @@ let busy = null // AbortController while a reply is streaming
 const MAX_CHARS = 2000
 
 // Starters work on day one; the last one appears only once there is a past to ask about.
-const EXAMPLES = [
-  ['This week in AI', 'What are the biggest AI announcements this week?'],
-  ['Laptops under $1,000', 'What are the best laptops under $1,000 right now, with current prices?'],
-  ['Markets today', 'How are the major stock markets doing today, and why?'],
+// A first-time user gets questions with moving parts, so next week has something to compare.
+const STARTERS = [
+  ['tag', 'Price tracking', 'Are there any active deals or discount codes for the Apple MacBook Air today?'],
+  ['ticket', 'Event highlights', 'What is the current Coachella 2027 lineup, and are passes still on sale?'],
+  ['gamepad', 'Industry rumors', 'What are the latest release-date and spec rumors for the next Nintendo console?'],
 ]
-const RECALL_EXAMPLE = ['What changed since last time?', 'What did I ask you most recently? Is your answer still correct today?']
 const MARK = '<svg class="mark live-mark" viewBox="0 0 256 256" aria-hidden="true"><g fill="currentColor"><rect class="m-bar" x="20" y="24" width="216" height="56" rx="28"/><rect class="m-bar" x="20" y="100" width="168" height="56" rx="28"/><rect class="m-bar" x="20" y="176" width="96" height="56" rx="28"/></g><circle class="m-dot" cx="207" cy="204" r="29"/></svg>'
+const DOTS = '<span class="dots" aria-label="Thinking"><i></i><i></i><i></i></span>'
 let me = null
 
-// A greeting that changes like Claude's: by time of day, by name, and by whether there is a past.
-function greeting() {
-  const h = new Date().getHours(), name = me?.name.trim().split(/\s+/)[0]
-  const part = h < 5 ? 'Up late' : h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'
-  const when = h < 12 ? 'this morning' : h < 17 ? 'this afternoon' : 'tonight'
-  const lines = name
-    ? [`${part}, ${name}`, `What should we look up ${when}, ${name}?`, `What’s on your mind ${when}?`]
-    : [part, `What should we look up ${when}?`]
-  if (threads.length) lines.push('Ask what has changed since last time', `Welcome back${name ? `, ${name}` : ''}`)
-  return lines[Math.floor(Math.random() * lines.length)]
+// "Saved today", "Saved yesterday", "Saved last Tuesday", "Saved 10 days ago".
+function savedAgo(ms) {
+  const days = Math.round((new Date().setHours(0, 0, 0, 0) - new Date(ms).setHours(0, 0, 0, 0)) / DAY)
+  if (days <= 0) return 'Saved today'
+  if (days === 1) return 'Saved yesterday'
+  if (days < 7) return `Saved last ${new Date(ms).toLocaleDateString('en-GB', { weekday: 'long' })}`
+  return `Saved ${days} days ago`
+}
+
+// Motion's "pulse dots" loader: each dot swells in turn.
+function pulse(root) {
+  if (M && !calm) M.animate(root.querySelectorAll('.dots i'), { scale: [1, 1.5, 1] }, { duration: 1.2, repeat: Infinity, delay: M.stagger(0.2), ease: 'easeInOut' })
+}
+
+// SmoothUI's icon swap: the old icon blurs out upward, the new one blurs in from below.
+async function swapIcon(btn, html) {
+  if (!M || calm) { btn.innerHTML = html; return }
+  await animate(btn.firstElementChild, { opacity: 0, y: -8, filter: 'blur(6px)' }, { type: 'spring', bounce: 0, duration: 0.2 })
+  btn.innerHTML = html
+  animate(btn.firstElementChild, { opacity: [0, 1], y: [8, 0], filter: ['blur(6px)', 'blur(0px)'] }, { type: 'spring', bounce: 0, duration: 0.25 })
+}
+
+// SmoothUI's magnetic button: within 150 px it leans toward the pointer (strength 0.3), on a soft spring.
+function magnetic(el) {
+  if (!M || calm || !matchMedia('(hover: hover) and (pointer: fine)').matches) return
+  const to = (x, y) => M.animate(el, { x, y }, { type: 'spring', bounce: 0.1, duration: 0.4 })
+  addEventListener('pointermove', (e) => {
+    const r = el.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2)
+    const d = Math.hypot(dx, dy), f = d < 150 ? 1 - d / 150 : 0
+    to(dx * 0.3 * f, dy * 0.3 * f)
+  }, { passive: true })
 }
 
 // The mark draws itself: bars from the left, then the dot, now.
@@ -67,7 +89,7 @@ async function api(path, opts = {}) {
 function tactile(els) {
   if (!M || calm) return
   M.press(els, (el) => {
-    M.animate(el, { scale: 0.94 }, { type: 'spring', stiffness: 900, damping: 30 })
+    M.animate(el, { scale: 0.97 }, { type: 'spring', stiffness: 900, damping: 30 }) // SmoothUI's press depth
     return () => M.animate(el, { scale: 1 }, { type: 'spring', stiffness: 500, damping: 18 })
   })
 }
@@ -139,27 +161,67 @@ function finish(el, answer, sources, parts) {
     `<b>${s.n}</b><img src="https://icons.duckduckgo.com/ip3/${esc(host(s.url))}.ico" alt="" width="14" height="14" loading="lazy" decoding="async"><span>${esc(s.title)}</span>`,
     `title="${esc(s.title)}"`)}</li>`).join('')
   const meta = el.querySelector('.meta')
-  meta.innerHTML = parts.map((s) => `<span>${s}</span>`).join('') + '<button type="button" class="copy">Copy answer</button>'
+  const idle = `<span class="copy-in">${icon('copy')}Copy answer</span>`
+  meta.innerHTML = parts.map((s) => `<span>${s}</span>`).join('') + `<button type="button" class="copy">${idle}</button>`
   const copy = meta.querySelector('.copy')
-  copy.addEventListener('click', () => navigator.clipboard?.writeText(answer).then(() => { copy.textContent = 'Copied'; setTimeout(() => { copy.textContent = 'Copy answer' }, 1500) }))
+  copy.addEventListener('click', () => navigator.clipboard?.writeText(answer).then(async () => {
+    await swapIcon(copy, `<span class="copy-in done">${icon('check')}Copied</span>`)
+    setTimeout(() => swapIcon(copy, idle), 2000)
+  }))
 }
 // A favicon that fails to load is removed (no inline handler: the CSP forbids them).
 chat.addEventListener('error', (e) => { if (e.target.matches?.('.sources img')) e.target.remove() }, true)
 
+// Two welcomes. First time: "Create your first memory" with starter questions. Returning: "Welcome
+// back" with a card per recent chat asking what has changed since (written by the server, cached).
 function welcome() {
   main.classList.add('empty')
-  chat.innerHTML = `<section class="welcome">${MARK}<h2>${esc(greeting()).split(' ').map((w) => `<span>${w}</span>`).join(' ')}</h2></section>`
-  $('tries').innerHTML = (threads.length ? [...EXAMPLES, RECALL_EXAMPLE] : EXAMPLES).map(([tag, q]) => `<li><button type="button" data-q="${esc(q)}" title="${esc(q)}">${esc(tag)}</button></li>`).join('')
-  const tries = $('tries').querySelectorAll('button')
-  tries.forEach((b) => b.addEventListener('click', () => send(b.dataset.q)))
-  tactile(tries)
+  const returning = threads.length > 0
+  const words = (s) => s.split(' ').map((w) => `<span>${esc(w)}</span>`).join(' ')
+  chat.innerHTML = `<section class="welcome">
+    <div class="greet">${MARK}<h2>${words(returning ? 'Welcome back.' : 'Create your first memory.')}</h2></div>
+    <p class="sub">${returning ? 'Ask what has changed since last time' : 'Ask something with moving parts today, so you can see what’s changed next week.'}</p>
+    <ul class="cards" id="cards" aria-label="${returning ? 'Pick up a saved chat' : 'Try one'}">${returning
+      ? '<li><div class="card skel" aria-hidden="true"><span class="sk" style="width:45%"></span><span class="sk" style="width:85%"></span><span class="sk" style="width:65%"></span></div></li>'.repeat(Math.min(3, threads.length))
+      : STARTERS.map(([ic, label, q]) => `<li><button type="button" class="card" data-q="${esc(q)}"><span class="pill">${icon(ic)}${esc(label)}</span><span class="q">${esc(q)}</span></button></li>`).join('')}</ul>
+  </section>`
   scroller.scrollTop = 0
   if (M && !calm) {
     drawMark(chat.querySelector('.mark'))
     animate(chat.querySelectorAll('.welcome h2 span'), { opacity: [0, 1], y: [10, 0], filter: ['blur(6px)', 'blur(0px)'] }, { delay: M.stagger(0.07, { startDelay: 0.08 }), duration: 0.55, ease: [0.2, 0, 0, 1] })
-    animate(tries, { opacity: [0, 1], y: [8, 0] }, { delay: M.stagger(0.06, { startDelay: 0.35 }), ...spring })
+    animate(chat.querySelector('.welcome .sub'), { opacity: [0, 1] }, { delay: 0.3, duration: 0.4 })
   }
+  cardsIn()
+  if (returning) savedCards()
 }
+
+function cardsIn() {
+  const cards = chat.querySelectorAll('#cards .card')
+  tactile([...cards].filter((c) => c.tagName === 'BUTTON'))
+  animate(cards, { opacity: [0, 1], y: [12, 0] }, { delay: M?.stagger(0.07, { startDelay: 0.25 }), ...spring })
+}
+
+async function savedCards() {
+  let list
+  try {
+    list = await api(`/api/suggestions?tz=${tz}`)
+  } catch {
+    list = threads.slice(0, 3).map((t) => ({ threadId: t.id, updatedAt: t.updatedAt, topic: t.title.split(' ').slice(0, 4).join(' '), followup: 'What has changed since I last asked about this?' }))
+  }
+  const box = $('cards')
+  if (!box || !main.classList.contains('empty')) return // the user moved on while these loaded
+  box.innerHTML = list.map((s) => `<li><button type="button" class="card saved" data-thread="${esc(s.threadId)}" data-q="${esc(s.followup)}">
+    <span class="tag recall">${icon('memory')}${esc(savedAgo(s.updatedAt))}</span><span class="pill">${esc(s.topic)}</span><span class="q">${esc(s.followup)}</span></button></li>`).join('')
+  cardsIn()
+}
+
+// A starter asks in a new chat; a saved card reopens its chat and asks the follow-up there, so memory has the thread.
+chat.addEventListener('click', async (e) => {
+  const card = e.target.closest('#cards button.card')
+  if (!card) return
+  if (card.dataset.thread) await openChat(card.dataset.thread)
+  send(card.dataset.q)
+})
 
 let islandTimer = 0
 function status(text, kind = '') {
@@ -237,11 +299,17 @@ function markActive() {
 async function openChat(id, push = true) {
   if (busy) return
   let turns
+  const bar = $('progress') // Motion's progress-bar loader, along the top while the chat loads
+  bar.hidden = false
+  const run = M && !calm ? M.animate(bar, { scaleX: [0, 0.8] }, { duration: 1.2, ease: [0.2, 0, 0, 1] }) : null
   try {
     turns = await api(`/api/threads/${encodeURIComponent(id)}`)
   } catch (err) {
     status(`Couldn’t open that chat: ${err.message}`, 'error')
     return
+  } finally {
+    run?.stop()
+    animate(bar, { scaleX: 1, opacity: [1, 0] }, { duration: 0.25 }).then(() => { bar.hidden = true; bar.style.opacity = '' })
   }
   if (!turns.length) { newChat(false); history.replaceState(null, '', '/'); return } // deleted, or never yours
   threadId = id
@@ -325,7 +393,7 @@ function setBusy(controller) {
   busy = controller
   document.documentElement.classList.toggle('thinking', !!busy) // the mark writes, the composer ring runs
   sendBtn.setAttribute('aria-label', busy ? 'Stop' : 'Send')
-  sendBtn.innerHTML = icon(busy ? 'stop' : 'arrow')
+  swapIcon(sendBtn, icon(busy ? 'stop' : 'arrow'))
   sendBtn.disabled = !busy && !input.value.trim()
 }
 
@@ -356,9 +424,15 @@ async function send(text) {
   }
   let answer = '', sources = [], firstTokenMs = 0
   const started = performance.now()
-  const paint = () => { body.innerHTML = markdown(answer, sources); scrollDown() }
+  // Until the first word, the answer is Motion's pulsing dots.
+  const paint = () => {
+    body.innerHTML = answer ? markdown(answer, sources) : DOTS
+    if (!answer) pulse(body)
+    scrollDown()
+  }
 
   setBusy(new AbortController())
+  paint()
   body.classList.add('cursor')
   status('Recalling')
   try {
@@ -407,6 +481,7 @@ async function send(text) {
       status('Answer failed. Ask again to retry.', 'error')
     }
   }
+  if (!answer) body.innerHTML = '' // no dots left pulsing after a stop or an error
   body.classList.remove('cursor')
   setBusy(null)
   input.focus()
@@ -527,6 +602,7 @@ $('days').addEventListener('keydown', (e) => {
 })
 
 tactile(document.querySelectorAll('#send, .side-new, .icon-btn, .key'))
+magnetic(sendBtn)
 drawMark(document.querySelector('.brand .mark'))
 const opening = new URLSearchParams(location.search).get('c')
 if (opening) { main.classList.remove('empty'); openChat(opening, false) }

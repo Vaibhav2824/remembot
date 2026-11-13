@@ -3,9 +3,10 @@
 import { answer, type Ask, type Deps } from './agent.ts'
 import { createSession, dummyHash, endSession, hashPassword, overLimit, sessionCookie, sessionUser, verifyPassword, type User } from './auth.ts'
 import { loadDemo } from './demo.ts'
-import { createChat } from './llm.ts'
+import { createChat, type LlmConfig } from './llm.ts'
 import { forget, listThreads, threadTurns, type Db } from './memory.ts'
 import { createSearch } from './search.ts'
+import { suggestions } from './suggest.ts'
 
 export type Env = Record<string, string | undefined>
 export type App = (req: Request) => Promise<Response | undefined> // undefined = not handled here: serve the static file
@@ -35,13 +36,7 @@ export function createApp(db: Db, env: Env): App {
     db,
     now: () => new Date(),
     search: createSearch(env.FIRECRAWL_API_KEY!),
-    chat: createChat({
-      apiKey: env.LLM_API_KEY!,
-      baseUrl: env.LLM_BASE_URL || 'https://api.openai.com/v1',
-      model: env.LLM_MODEL || 'gpt-6-luna',
-      reasoningEffort: env.LLM_REASONING_EFFORT ?? 'none', // gpt-6-luna calls tools on Chat Completions only at "none"
-      serviceTier: env.LLM_SERVICE_TIER || undefined,
-    }),
+    chat: createChat(llmConfig(env, 'LLM_')!, llmConfig(env, 'FALLBACK_LLM_')),
     preSearch: env.PRE_SEARCH !== '0',
   }
   const allowTimeTravel = env.ALLOW_TIME_TRAVEL === '1'
@@ -140,6 +135,11 @@ export function createApp(db: Db, env: Env): App {
         return sse(loadDemo(deps, user.id, tz))
       }
       if (req.method === 'GET' && pathname === '/api/threads') return json(await listThreads(db, user.id, MAX_THREADS))
+      if (req.method === 'GET' && pathname === '/api/suggestions') {
+        const tz = Number(url.searchParams.get('tz') ?? 0)
+        if (!Number.isInteger(tz) || Math.abs(tz) > 14 * 60) throw new HttpError(400, 'Invalid tz.')
+        return json(await suggestions(db, deps.chat, user.id, tz))
+      }
       const thread = pathname.match(/^\/api\/threads\/([^/]+)$/)?.[1]
       if (thread !== undefined) {
         if (!ID.test(thread)) throw new HttpError(400, 'Invalid chat id.')
@@ -155,6 +155,19 @@ export function createApp(db: Db, env: Env): App {
       console.error(err)
       return json({ error: 'Something went wrong on the server.' }, 500)
     }
+  }
+}
+
+// One model endpoint from env vars under a prefix: LLM_* is the primary, FALLBACK_LLM_* the optional backup.
+function llmConfig(env: Env, prefix: string): LlmConfig | undefined {
+  const apiKey = env[`${prefix}API_KEY`]
+  if (!apiKey) return undefined
+  return {
+    apiKey,
+    baseUrl: env[`${prefix}BASE_URL`] || 'https://api.openai.com/v1',
+    model: env[`${prefix}MODEL`] || 'gpt-6-luna',
+    reasoningEffort: env[`${prefix}REASONING_EFFORT`] ?? 'none', // gpt-6-luna calls tools on Chat Completions only at "none"
+    serviceTier: env[`${prefix}SERVICE_TIER`] || undefined,
   }
 }
 

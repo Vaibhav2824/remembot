@@ -127,6 +127,7 @@ export async function forget(db: Db, userId: string, threadId?: string): Promise
   const params = threadId ? [userId, threadId] : [userId]
   await db.run(`DELETE FROM turns_fts WHERE rowid IN (SELECT id FROM turns WHERE ${where})`, ...params)
   await db.run(`DELETE FROM turns WHERE ${where}`, ...params)
+  await db.run(`DELETE FROM thread_notes WHERE ${where}`, ...params)
 }
 
 async function turnsBetween(db: Db, userId: string, from: number, to: number): Promise<Turn[]> {

@@ -38,3 +38,12 @@ CREATE TABLE IF NOT EXISTS auth_events (
 );
 CREATE INDEX IF NOT EXISTS auth_events_by_key ON auth_events (key, at);
 CREATE INDEX IF NOT EXISTS auth_events_by_time ON auth_events (at);
+
+-- The topic and "what changed?" question shown on a returning user's welcome cards, one per chat.
+CREATE TABLE IF NOT EXISTS thread_notes (
+  user_id   TEXT NOT NULL,
+  thread_id TEXT NOT NULL,
+  topic     TEXT NOT NULL,
+  followup  TEXT NOT NULL,
+  PRIMARY KEY (user_id, thread_id)
+);
